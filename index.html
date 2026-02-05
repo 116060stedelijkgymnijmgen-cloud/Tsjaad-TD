@@ -144,17 +144,17 @@ function showRoundMsg(txt){ const el=document.getElementById('roundMsg'); el.tex
 // ===== SPAWN ENEMIES =====
 function spawnEnemy(){
   let base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
-  let hpScale = 1 + round*0.18;
+  let hpScale = 1 + round*0.14;
   let speedScale = 1 + round*0.02;
 
   if(round > 8){
-    hpScale *= 1 + 0.6*(round-8);
+    hpScale *= 1 + 0.06*(round-8);
     speedScale *= 1 + 0.01*(round-8);
   }
 
   if(round > 20){
-    hpScale *= 1.08;
-    speedScale *= 1.02;
+    hpScale *= 0.09;
+    speedScale *= 0.03;
   }
 
   enemies.push(makeEnemy({...base,

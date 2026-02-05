@@ -21,10 +21,10 @@
   <div>🌊 Ronde: <span id="round">1</span>/30</div>
   <div id="roundMsg" class="small"></div>
 
-  <button onclick="selectTower('speer')">Speer Werper (€100)</button>
-  <button onclick="selectTower('boog')">Boog Schutter (€150)</button>
-  <button onclick="selectTower('geweer')">Soldaat (€300)</button>
-  <button onclick="selectTower('atoom')">Atoombommenwerper (€750)</button>
+  <button onclick="selectTower('speer')">Speer Werper (€80)</button>
+  <button onclick="selectTower('boog')">Boog Schutter (€125)</button>
+  <button onclick="selectTower('geweer')">Soldaat (€350)</button>
+  <button onclick="selectTower('atoom')">Atoombommenwerper (€600)</button>
   <button onclick="selectTower('katoen')">Katoen Plantage (€950)</button>
   <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€1000)</button>
 
@@ -57,7 +57,7 @@ const towerTypes={
   boog:{range:130,rate:55,dmg:2,speed:5,cost:150,color:'#3a5a2e',ultCost:1500},
   geweer:{range:9999,rate:12,dmg:1.4,speed:10,cost:300,color:'#444',ultCost:3000},
 
-  tsjaadinator:{range:120,rate:5,dmg:3,speed:8,cost:1000,color:'#00bcd4',ultCost:20000},
+  tsjaadinator:{range:120,rate:5,dmg:5,speed:8,cost:1000,color:'#00bcd4',ultCost:20000},
   atoom:{range:180,rate:120,dmg:4.2,speed:3,cost:750,color:'#4caf50',bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:6000}
 };
@@ -70,7 +70,7 @@ const animalTypes=[
   {name:'Olifant',hp:16,speed:0.75,size:20,reward:25,type:'olifant'}
 ];
 
-const bossType = {name:'Malaria Mug',hp:20000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
+const bossType = {name:'Malaria Mug',hp:15000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
@@ -112,8 +112,8 @@ function handleUpgrade(t){
 
   // ultimate aanpassingen
   if(t.key==='atoom'){ t.dmg*=1.8; t.rate*=0.55; }
-  else if(t.key==='tsjaadinator'){ t.dmg*=0.4; t.rate*=0.2; }   // 60% minder dmg
-  else if(t.key==='speer'){ t.dmg*=0.6; t.rate*=0.65; }       // 40% minder dmg
+  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }   // 60% minder dmg
+  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }       // 40% minder dmg
   else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }      // 20% minder dmg
   t.upText=140;
 }
@@ -148,12 +148,12 @@ function spawnEnemy(){
   let speedScale = 1 + round*0.02;
 
   if(round > 8){
-    hpScale *= 1 + 0.10*(round-8);
+    hpScale *= 1 + 0.6*(round-8);
     speedScale *= 1 + 0.01*(round-8);
   }
 
   if(round > 20){
-    hpScale *= 1.15;
+    hpScale *= 1.08;
     speedScale *= 1.02;
   }
 
@@ -221,7 +221,7 @@ function update(){
   document.getElementById('lives').textContent=lives;
 }
 
-function winGame(){ gameWon=true; showRoundMsg('🏆 Gefeliciteerd! Sandbox unlocked'); }
+function winGame(){ gameWon=true; showRoundMsg('🏆 Gefeliciteerd! Je hebt de plaag in Tsjaad overleefd! Je bent Tsjaadtastisch!'); }
 
 // ===== DRAW =====
 function drawPath(){ 

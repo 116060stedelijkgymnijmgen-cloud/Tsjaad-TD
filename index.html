@@ -23,7 +23,7 @@
 
   <button onclick="selectTower('speer')">Speer Werper (€80)</button>
   <button onclick="selectTower('boog')">Boog Schutter (€125)</button>
-  <button onclick="selectTower('geweer')">Soldaat (€400)</button>
+  <button onclick="selectTower('geweer')">Soldaat (€550)</button>
   <button onclick="selectTower('atoom')">Atoombommenwerper (€600)</button>
   <button onclick="selectTower('katoen')">Katoen Plantage (€950)</button>
   <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€2500)</button>
@@ -55,9 +55,9 @@ let gameWon=false;
 const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
-  geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:400,color:'#444',ultCost:3000},
+  geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:550,color:'#444',ultCost:3000},
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
-  atoom:{range:180,rate:120,dmg:11.5,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
+  atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
 };
 
@@ -109,10 +109,10 @@ function handleUpgrade(t){
   t.ultimate=true;
   t.level=4;
 
-  if(t.key==='atoom'){ t.dmg*=1.8; t.rate*=0.55; }
-  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }
-  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }
-  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }
+  if(t.key==='atoom'){ t.dmg*=3.8; t.rate*=0.55; }
+  else if(t.key==='tsjaadinator'){ t.dmg*=2; t.rate*=0.25; }
+  else if(t.key==='speer'){ t.dmg*=3; t.rate*=1.2; }
+  else if(t.key==='geweer'){ t.dmg*=2.8; t.rate*=0.35; }
   t.upText=140;
 }
 
@@ -165,7 +165,7 @@ function spawnEnemy(){
   }
 
   if(round > 20){
-    hpScale *= 1.80;
+    hpScale *= 1.70;
     speedScale *= 1.3;
   }
 

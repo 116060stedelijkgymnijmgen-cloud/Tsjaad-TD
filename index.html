@@ -56,7 +56,6 @@ const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
   geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:400,color:'#444',ultCost:3000},
-
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
   atoom:{range:180,rate:120,dmg:11.5,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
@@ -110,11 +109,10 @@ function handleUpgrade(t){
   t.ultimate=true;
   t.level=4;
 
-  // ultimate aanpassingen
   if(t.key==='atoom'){ t.dmg*=1.8; t.rate*=0.55; }
-  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }   // 60% minder dmg
-  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }       // 40% minder dmg
-  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }      // 20% minder dmg
+  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }
+  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }
+  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }
   t.upText=140;
 }
 
@@ -133,16 +131,30 @@ function startRound(){
   }
   showRoundMsg(farmCash>0 ? `🌾 Plantages verdienden €${farmCash}` : `▶️ Ronde ${round} gestart`);
 
-  if(round===30){ spawnLeft=1; spawning=true; return; }
+  if(round === 30){ 
+    spawnLeft = 1;  // 1 boss
+    spawning = true; 
+    return; 
+  }
+
   spawnLeft = Math.floor(5 + round*1.8);
-  spawning=true;
-  spawnTimer=0;
+  spawning = true;
+  spawnTimer = 0;
 }
 
-function showRoundMsg(txt){ const el=document.getElementById('roundMsg'); el.textContent=txt; setTimeout(()=>el.textContent='',2000); }
+function showRoundMsg(txt){ 
+  const el=document.getElementById('roundMsg'); 
+  el.textContent=txt; 
+  setTimeout(()=>el.textContent='',2000); 
+}
 
 // ===== SPAWN ENEMIES =====
 function spawnEnemy(){
+  if(round === 30){
+    enemies.push(makeEnemy({...bossType}));
+    return;
+  }
+
   let base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
   let hpScale = 1 + round*0.14;
   let speedScale = 1 + round*0.02;
@@ -157,21 +169,38 @@ function spawnEnemy(){
     speedScale *= 1.3;
   }
 
-  enemies.push(makeEnemy({...base,
-    hp:Math.floor(base.hp*hpScale),
-    speed:base.speed*speedScale,
-    reward:Math.floor(base.reward*(1+round*0.15))
+  enemies.push(makeEnemy({
+    ...base,
+    hp: Math.floor(base.hp*hpScale),
+    speed: base.speed*speedScale,
+    reward: Math.floor(base.reward*(1+round*0.15))
   }));
 }
 
-function makeEnemy(t){ return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss}; }
+function makeEnemy(t){ 
+  return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss}; 
+}
+
+// ===== WIN & LOSS =====
+function winGame(){
+  gameWon=true;
+  document.getElementById('roundMsg').textContent = '🏆 GEFELICITEERD! JE HEBT DE PLAAG IN TSJAAD OVERLEEFD! JE BENT TSJAADTASTISCH!';
+}
+
+function loseGame(){
+  gameWon=true;
+  document.getElementById('roundMsg').textContent = '💀 je hebt helaas verloren LOOOOSER';
+}
 
 // ===== UPDATE =====
 function update(){
   if(spawning){
     spawnTimer--;
     if(spawnTimer<=0 && spawnLeft>0){ spawnEnemy(); spawnLeft--; spawnTimer=60-Math.min(40,round); }
-    if(spawnLeft===0 && enemies.length===0){ spawning=false; round=Math.min(30,round+1); }
+    if(spawnLeft===0 && enemies.length===0){ 
+      spawning=false; 
+      if(round<30) round=Math.min(30,round+1); 
+    }
   }
 
   for(const e of enemies){
@@ -179,7 +208,8 @@ function update(){
     const dx=p.x-e.x, dy=p.y-e.y;
     const d=Math.hypot(dx,dy);
     if(d<e.speed){ e.i++; } else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
-    if(e.boss && e.i>=path.length-1){ lives=0; }
+
+    if(e.boss && e.i>=path.length-1){ lives=0; loseGame(); }
   }
 
   for(const t of towers){
@@ -189,7 +219,7 @@ function update(){
     const cfg=towerTypes[t.key];
     const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
     if(!target) continue;
-    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,gold:t.ultimate});
+    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:t.bomb,gold:t.ultimate});
     t.cool=t.rate;
   }
 
@@ -212,7 +242,11 @@ function update(){
       money+=e.reward; 
       return false;
     } 
-    if(e.i>=path.length-1){ lives--; return false;} 
+    if(e.i>=path.length-1){ 
+      lives--; 
+      if(lives<=0) loseGame(); 
+      return false;
+    } 
     return true; 
   });
   projectiles=projectiles.filter(p=>!p.dead);
@@ -220,8 +254,6 @@ function update(){
   document.getElementById('money').textContent=money;
   document.getElementById('lives').textContent=lives;
 }
-
-function winGame(){ gameWon=true; showRoundMsg('🏆 Gefeliciteerd! Je hebt de plaag in Tsjaad overleefd! Je bent Tsjaadtastisch!'); }
 
 // ===== DRAW =====
 function drawPath(){ 
@@ -297,7 +329,7 @@ function draw(){
 function loop(){ 
   update(); 
   draw(); 
-  if(lives>0) requestAnimationFrame(loop); 
+  if(!gameWon) requestAnimationFrame(loop); 
 }
 loop();
 </script>

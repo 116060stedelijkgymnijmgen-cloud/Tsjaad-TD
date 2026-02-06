@@ -51,6 +51,41 @@ let enemies=[], towers=[], projectiles=[], explosions=[];
 let spawning=false, spawnLeft=0, spawnTimer=0;
 let gameWon=false;
 
+// ===== AUDIO =====
+const sounds = {
+  mainTheme: new Audio('Audio/MainTheme.mp3'),
+  kill: new Audio('Audio/Kill.mp3'),
+  upgrade: new Audio('Audio/Upgrade.mp3'),
+  placement: new Audio('Audio/Placement.mp3')
+};
+
+// Set main theme to loop
+sounds.mainTheme.loop = true;
+sounds.mainTheme.volume = 0.5;
+
+// Play main theme when game loads (user interaction might be needed for autoplay)
+window.addEventListener('load', () => {
+  sounds.mainTheme.play().catch(e => {
+    console.log('Audio autoplay blocked, will play on first user interaction');
+  });
+});
+
+// Also try to play on first click
+let audioStarted = false;
+canvas.addEventListener('click', () => {
+  if(!audioStarted) {
+    sounds.mainTheme.play().catch(e => console.log('Audio play failed'));
+    audioStarted = true;
+  }
+}, { once: true });
+
+function playSound(soundName) {
+  if(sounds[soundName]) {
+    sounds[soundName].currentTime = 0;
+    sounds[soundName].play().catch(e => console.log('Sound play failed:', e));
+  }
+}
+
 // ===== TOWERS =====
 const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
@@ -93,6 +128,7 @@ canvas.onclick=e=>{
   money-=cfg.cost;
 
   towers.push({x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,ultimate:false,upText:0,farm:cfg.farm||false});
+  playSound('placement');
 };
 
 function handleUpgrade(t){
@@ -112,6 +148,7 @@ function handleUpgrade(t){
     t.level++;
     if(!t.farm){ t.dmg*=1.25; t.rate*=0.85; }
     t.upText=90;
+    playSound('upgrade');
     return;
   }
 
@@ -128,6 +165,7 @@ function handleUpgrade(t){
   else if(t.key==='geweer'){ t.dmg*=2.8; t.rate*=0.35; }
   else if(t.key==='boog'){ t.dmg*=3; t.rate*=0.50; }
   t.upText=140;
+  playSound('upgrade');
 }
 
 // ===== ROUND =====
@@ -261,7 +299,8 @@ function update(){
   enemies=enemies.filter(e=>{
     if(e.hp<=0){ 
       if(e.boss){ winGame(); } 
-      money+=e.reward; 
+      money+=e.reward;
+      playSound('kill');
       return false;
     } 
     if(e.i>=path.length-1){ 

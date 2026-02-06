@@ -54,7 +54,7 @@ let gameWon=false;
 // ===== TOWERS =====
 const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
-  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:2000},
+  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
   geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:550,color:'#444',ultCost:3000},
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
   atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
@@ -67,10 +67,11 @@ const animalTypes=[
   {name:'Leeuw',hp:6,speed:1.25,size:14,reward:12,type:'leeuw'},
   {name:'Neushoorn',hp:12,speed:0.95,size:18,reward:18,type:'neushoorn'},
   {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'},
-  {name:'Cheetah',hp:4,speed:1.8,size:14,reward:15,type:'cheetah',minRound:15}
+  {name:'Cheetah',hp:5.6,speed:1.485,size:14,reward:15,type:'cheetah',minRound:15},
+  {name:'Nijlpaard',hp:28,speed:0.4,size:22,reward:30,type:'nijlpaard',minRound:20}
 ];
 
-const bossType = {name:'Malaria Mug',hp:25000,speed:0.75,size:152,reward:1000,boss:true,type:'mug'};
+const bossType = {name:'Malaria Mug',hp:25000,speed:0.75,size:42,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
@@ -447,6 +448,47 @@ function drawEnemy(e){
     ctx.fillRect(-7,5,2,9);
     ctx.fillRect(-1,5,2,9);
     ctx.fillRect(7,5,2,9);
+  }
+  else if(e.type==='nijlpaard'){
+    // Realistische nijlpaard
+    ctx.fillStyle='#5a5a5a';
+    // Groot rond lichaam
+    ctx.beginPath();
+    ctx.ellipse(0,0,18,14,0,0,Math.PI*2);
+    ctx.fill();
+    // Hoofd (groot en vierkant)
+    ctx.fillStyle='#4a4a4a';
+    ctx.fillRect(12,-10,14,16);
+    // Oren (klein)
+    ctx.fillStyle='#5a5a5a';
+    ctx.beginPath();
+    ctx.ellipse(14,-9,3,2,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(24,-9,3,2,0,0,Math.PI*2);
+    ctx.fill();
+    // Ogen
+    ctx.fillStyle='#2a2a2a';
+    ctx.beginPath();
+    ctx.arc(16,-6,2,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(22,-6,2,0,Math.PI*2);
+    ctx.fill();
+    // Grote bek
+    ctx.fillStyle='#ff69b4';
+    ctx.fillRect(14,2,12,4);
+    // Tanden
+    ctx.fillStyle='#fff';
+    ctx.fillRect(16,2,2,3);
+    ctx.fillRect(20,2,2,3);
+    ctx.fillRect(24,2,2,3);
+    // Korte, dikke poten
+    ctx.fillStyle='#4a4a4a';
+    ctx.fillRect(-14,8,6,10);
+    ctx.fillRect(-4,8,6,10);
+    ctx.fillRect(6,8,6,10);
+    ctx.fillRect(16,8,6,10);
   }
   else if(e.type==='mug'){
     // Realistische malaria mug

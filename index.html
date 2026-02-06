@@ -1,257 +1,223 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Tsjaad TD</title>
+<style>
+body {
+  margin:0;
+  background:#1e1e1e;
+  color:white;
+  font-family:sans-serif;
+  display:flex;
+}
+#ui {
+  width:260px;
+  padding:12px;
+  background:#2b2b2b;
+}
+button {
+  width:100%;
+  margin:4px 0;
+  padding:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+canvas {
+  background:#263238;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+<h2>Tsjaad TD</h2>
+<div>💰 <span id="money">800</span></div>
+<div>❤️ <span id="lives">20</span></div>
+<div>🎯 Ronde <span id="round">1</span></div>
+
+<button onclick="startRound()">Start Ronde</button>
+
+<hr>
+
+<b>Towers</b>
+<button onclick="selectTower('speer')">Speer</button>
+<button onclick="selectTower('boog')">Boog</button>
+<button onclick="selectTower('geweer')">Geweer</button>
+<button onclick="selectTower('atoom')">Atoom</button>
+<button onclick="selectTower('katoen')">Katoen Farm</button>
+</div>
+
+<canvas id="game" width="960" height="520"></canvas>
+
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const path = [
-  {x:-20,y:260},{x:180,y:260},{x:180,y:120},{x:420,y:120},
-  {x:420,y:380},{x:700,y:380},{x:700,y:220},{x:920,y:220}
+const path=[
+{x:-20,y:260},{x:180,y:260},{x:180,y:120},{x:420,y:120},
+{x:420,y:380},{x:700,y:380},{x:700,y:220},{x:920,y:220}
 ];
 
-let money=800, lives=20, round=1;
+let money=800,lives=20,round=1;
 let selectedTower=null;
-let enemies=[], towers=[], projectiles=[], explosions=[];
-let spawning=false, spawnLeft=0, spawnTimer=0;
+let enemies=[],towers=[],projectiles=[];
+let spawning=false,spawnLeft=0,spawnTimer=0;
 let gameWon=false;
 
-// ===== TOWERS =====
 const towerTypes={
-  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:400},
-  boog:{range:130,rate:55,dmg:6,speed:2,cost:125,color:'#3a5a2e',ultCost:700},
-  geweer:{range:9999,rate:8,dmg:1.4,speed:8,cost:400,color:'#444',ultCost:3500},
-  tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
-  atoom:{range:180,rate:120,dmg:11.5,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
-  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
+speer:{range:90,rate:40,dmg:4,speed:3,cost:80,color:'#2e6b3a'},
+boog:{range:130,rate:55,dmg:6,speed:2,cost:125,color:'#3a5a2e'},
+geweer:{range:9999,rate:8,dmg:1.4,speed:8,cost:400,color:'#555'},
+atoom:{range:180,rate:120,dmg:12,speed:3,cost:600,color:'#4caf50',bomb:true},
+katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true}
 };
 
-// ===== ENEMIES =====
 const animalTypes=[
-  {name:'Giraffe',hp:4,speed:1.1,size:14,reward:10,type:'giraffe'},
-  {name:'Leeuw',hp:6,speed:1.25,size:14,reward:12,type:'leeuw'},
-  {name:'Neushoorn',hp:12,speed:0.95,size:18,reward:18,type:'neushoorn'},
-  {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'}
+{hp:4,speed:1.1,size:14,reward:10,color:'#d4a373'},
+{hp:6,speed:1.25,size:14,reward:12,color:'#c19a6b'},
+{hp:12,speed:0.95,size:18,reward:18,color:'#888'},
+{hp:20,speed:0.8,size:20,reward:25,color:'#777'}
 ];
 
-const bossType = {name:'Malaria Mug',hp:30000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
+const boss={hp:30000,speed:0.75,size:26,reward:1000,boss:true,color:'#ff1744'};
 
-function selectTower(t){ selectedTower=t; }
+function selectTower(t){selectedTower=t;}
 
-// ===== CLICK =====
 canvas.onclick=e=>{
-  if(gameWon) return;
-  const r=canvas.getBoundingClientRect();
-  const x=e.clientX-r.left, y=e.clientY-r.top;
-
-  for(const tw of towers){
-    if(Math.hypot(tw.x-x,tw.y-y)<18){ handleUpgrade(tw); return; }
-  }
-
-  if(!selectedTower) return;
-  const cfg=towerTypes[selectedTower];
-  if(money<cfg.cost) return;
-  money-=cfg.cost;
-
-  towers.push({x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,ultimate:false,upText:0,farm:cfg.farm||false});
+if(gameWon) return;
+const r=canvas.getBoundingClientRect();
+const x=e.clientX-r.left,y=e.clientY-r.top;
+if(!selectedTower) return;
+const cfg=towerTypes[selectedTower];
+if(money<cfg.cost) return;
+money-=cfg.cost;
+towers.push({x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,farm:cfg.farm});
 };
 
-function handleUpgrade(t){
-  if(t.level<3){
-    if(money<200) return;
-    money-=200;
-    t.level++;
-    if(!t.farm){ t.dmg*=1.25; t.rate*=0.85; }
-    t.upText=90;
-    return;
-  }
-
-  if(t.ultimate) return;
-  const cost = towerTypes[t.key].ultCost;
-  if(money<cost) return;
-  money-=cost;
-  t.ultimate=true;
-  t.level=4;
-
-  if(t.key==='atoom'){ t.dmg*=1.8; t.rate*=0.55; }
-  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }
-  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }
-  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }
-  t.upText=140;
-}
-
-// ===== ROUND =====
 function startRound(){
-  if(spawning || gameWon) return;
-  document.getElementById('round').textContent=round;
-
-  let farmCash=0;
-  for(const t of towers){
-    if(t.farm){
-      const base = 80 + t.level*40 + (t.ultimate?500:0);
-      money += base;
-      farmCash += base;
-    }
-  }
-
-  showRoundMsg(
-    farmCash>0 
-      ? `🌾 Plantages verdienden €${farmCash}` 
-      : `▶️ Ronde ${round} gestart`
-  );
-
-  if(round===30){ spawnLeft=1; spawning=true; return; }
-  spawnLeft = Math.floor(5 + round*1.8);
-  spawning=true;
-  spawnTimer=0;
+if(spawning||gameWon) return;
+document.getElementById('round').textContent=round;
+if(round===30){
+enemies.push(makeEnemy(boss));
+spawning=true;
+return;
+}
+spawnLeft=6+round*2;
+spawnTimer=0;
+spawning=true;
 }
 
-function showRoundMsg(txt){
-  const el=document.getElementById('roundMsg');
-  el.textContent=txt;
-  setTimeout(()=>el.textContent='',2000);
-}
-
-// ===== SPAWN =====
 function spawnEnemy(){
-  let base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
-  let hpScale = 1 + round*0.14;
-  let speedScale = 1 + round*0.02;
-
-  if(round > 8){
-    hpScale *= 1 + 0.08*(round-8);
-    speedScale *= 1 + 0.01*(round-8);
-  }
-
-  if(round > 20){
-    hpScale *= 0.16;
-    speedScale *= 0.03;
-  }
-
-  enemies.push(makeEnemy({...base,
-    hp:Math.floor(base.hp*hpScale),
-    speed:base.speed*speedScale,
-    reward:Math.floor(base.reward*(1+round*0.15))
-  }));
+const b=animalTypes[Math.floor(Math.random()*animalTypes.length)];
+enemies.push(makeEnemy({...b,hp:b.hp*(1+round*0.2)}));
 }
 
 function makeEnemy(t){
-  return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss};
+return{x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,
+speed:t.speed,size:t.size,reward:t.reward,boss:t.boss,color:t.color};
 }
 
-// ===== UPDATE =====
 function update(){
-  if(spawning){
-    spawnTimer--;
-    if(spawnTimer<=0 && spawnLeft>0){
-      spawnEnemy();
-      spawnLeft--;
-      spawnTimer=60-Math.min(40,round);
-    }
-    if(spawnLeft===0 && enemies.length===0){
-      spawning=false;
-      round=Math.min(30,round+1);
-    }
-  }
 
-  for(const e of enemies){
-    const p=path[e.i+1]; if(!p) continue;
-    const dx=p.x-e.x, dy=p.y-e.y;
-    const d=Math.hypot(dx,dy);
-    if(d<e.speed){ e.i++; }
-    else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
-    if(e.boss && e.i>=path.length-1){ lives=0; }
-  }
-
-  for(const t of towers){
-    if(t.upText>0) t.upText--;
-    if(t.farm) continue;
-    t.cool--; if(t.cool>0) continue;
-    const cfg=towerTypes[t.key];
-    const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
-    if(!target) continue;
-    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb});
-    t.cool=t.rate;
-  }
-
-  for(const p of projectiles){
-    const dx=p.tx-p.x, dy=p.ty-p.y;
-    const d=Math.hypot(dx,dy);
-    if(d<p.speed){
-      p.target.hp-=p.dmg;
-      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22});
-      p.dead=true;
-    } else {
-      p.x+=dx/d*p.speed;
-      p.y+=dy/d*p.speed;
-    }
-  }
-
-  for(const ex of explosions){ ex.r+=2.5; ex.t--; }
-  explosions=explosions.filter(e=>e.t>0);
-
-  enemies=enemies.filter(e=>{
-    if(e.hp<=0){
-      money+=e.reward;
-      return false;
-    }
-    if(e.i>=path.length-1){ lives--; return false;}
-    return true;
-  });
-
-  projectiles=projectiles.filter(p=>!p.dead);
-
-  document.getElementById('money').textContent=money;
-  document.getElementById('lives').textContent=lives;
+if(spawning && spawnLeft>0){
+spawnTimer--;
+if(spawnTimer<=0){
+spawnEnemy();
+spawnLeft--;
+spawnTimer=50;
+}
 }
 
-// ===== DRAW =====
-function drawPath(){
-  ctx.strokeStyle='#c2b280';
-  ctx.lineWidth=26;
-  ctx.lineCap='round';
-  ctx.beginPath();
-  ctx.moveTo(path[0].x,path[0].y);
-  for(const p of path) ctx.lineTo(p.x,p.y);
-  ctx.stroke();
+for(const e of enemies){
+const p=path[e.i+1]; if(!p) continue;
+const dx=p.x-e.x,dy=p.y-e.y;
+const d=Math.hypot(dx,dy);
+if(d<e.speed) e.i++;
+else{e.x+=dx/d*e.speed;e.y+=dy/d*e.speed;}
 }
 
-function drawTower(t){
-  ctx.save();
-  ctx.translate(t.x,t.y);
+for(const t of towers){
+if(t.farm) continue;
+t.cool--;
+if(t.cool>0) continue;
+const cfg=towerTypes[t.key];
+const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
+if(!target) continue;
+projectiles.push({x:t.x,y:t.y,target,speed:cfg.speed,dmg:t.dmg});
+t.cool=t.rate;
+}
 
-  ctx.fillStyle='#444';
-  ctx.beginPath();
-  ctx.arc(0,0,10,0,Math.PI*2);
-  ctx.fill();
+for(const p of projectiles){
+const dx=p.target.x-p.x,dy=p.target.y-p.y;
+const d=Math.hypot(dx,dy);
+if(d<p.speed){p.target.hp-=p.dmg;p.dead=true;}
+else{p.x+=dx/d*p.speed;p.y+=dy/d*p.speed;}
+}
 
-  const cfg=towerTypes[t.key];
-  const nextCost = t.level<3 ? 200 : (!t.ultimate ? cfg.ultCost : 0);
-  const label = t.level < 3
-    ? `${t.level}/4 (€${nextCost})`
-    : (t.ultimate ? 'ULTIMATE' : `ULTIMATE (€${cfg.ultCost})`);
+enemies=enemies.filter(e=>{
+if(e.hp<=0){
+money+=e.reward;
+if(e.boss) gameWon=true;
+return false;
+}
+if(e.i>=path.length-1){lives--;return false;}
+return true;
+});
 
-  ctx.fillStyle='white';
-  ctx.font='10px sans-serif';
-  ctx.textAlign='center';
-  ctx.fillText(label,0,24);
+projectiles=projectiles.filter(p=>!p.dead);
 
-  if(t.upText>0){
-    ctx.fillStyle='yellow';
-    ctx.fillText('UPGRADED',0,-18);
-  }
-
-  ctx.restore();
+document.getElementById('money').textContent=money;
+document.getElementById('lives').textContent=lives;
 }
 
 function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawPath();
-  towers.forEach(drawTower);
+ctx.clearRect(0,0,960,520);
+
+ctx.strokeStyle='#c2b280';
+ctx.lineWidth=26;
+ctx.beginPath();
+ctx.moveTo(path[0].x,path[0].y);
+for(const p of path) ctx.lineTo(p.x,p.y);
+ctx.stroke();
+
+for(const t of towers){
+ctx.fillStyle='#00e676';
+ctx.fillRect(t.x-10,t.y-10,20,20);
 }
 
-// ===== LOOP =====
+for(const e of enemies){
+ctx.fillStyle=e.color;
+ctx.beginPath();
+ctx.arc(e.x,e.y,e.size,0,Math.PI*2);
+ctx.fill();
+
+ctx.fillStyle='red';
+ctx.fillRect(e.x-20,e.y-30,40,4);
+ctx.fillStyle='lime';
+ctx.fillRect(e.x-20,e.y-30,40*(e.hp/e.max),4);
+}
+
+if(gameWon){
+ctx.fillStyle='rgba(0,0,0,0.75)';
+ctx.fillRect(0,0,960,520);
+ctx.fillStyle='white';
+ctx.textAlign='center';
+ctx.font='bold 34px sans-serif';
+ctx.fillText("GEFELICITEERD!",480,220);
+ctx.fillText("JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!",480,270);
+ctx.fillText("JE BENT TSJAADTASTISCH!",480,320);
+}
+}
+
 function loop(){
-  update();
-  draw();
-  if(lives>0) requestAnimationFrame(loop);
+update();
+draw();
+if(lives>0 && !gameWon) requestAnimationFrame(loop);
 }
 loop();
 </script>
+
+</body>
+</html>

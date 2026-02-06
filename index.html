@@ -1,41 +1,3 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-<meta charset="UTF-8">
-<title>Tsjaad TD – 30 Rondes</title>
-<style>
-  body { margin:0; background:#1e1e1e; color:white; font-family:sans-serif; display:flex; }
-  #ui { width:260px; padding:12px; background:#2b2b2b; box-sizing:border-box; }
-  #gameWrap { flex:1; display:flex; justify-content:center; align-items:center; }
-  canvas { background:#87c27a; border:3px solid #111; }
-  button { width:100%; margin:6px 0; padding:10px; font-size:14px; cursor:pointer; }
-  .small { font-size:12px; opacity:.9 }
-</style>
-</head>
-<body>
-
-<div id="ui">
-  <h2>🛡️ Tsjaad TD</h2>
-  <div>💰 Geld: <span id="money">800</span></div>
-  <div>❤️ Levens: <span id="lives">20</span></div>
-  <div>🌊 Ronde: <span id="round">1</span>/30</div>
-  <div id="roundMsg" class="small"></div>
-
-  <button onclick="selectTower('speer')">Speer Werper (€80)</button>
-  <button onclick="selectTower('boog')">Boog Schutter (€125)</button>
-  <button onclick="selectTower('geweer')">Soldaat (€400)</button>
-  <button onclick="selectTower('atoom')">Atoombommenwerper (€600)</button>
-  <button onclick="selectTower('katoen')">Katoen Plantage (€950)</button>
-  <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€2500)</button>
-
-  <button onclick="startRound()">▶️ Start Ronde</button>
-  <p class="small">Klik toren = upgrade. Max 4 (ultimate).</p>
-</div>
-
-<div id="gameWrap">
-  <canvas id="game" width="900" height="520"></canvas>
-</div>
-
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -45,7 +7,7 @@ const path = [
   {x:420,y:380},{x:700,y:380},{x:700,y:220},{x:920,y:220}
 ];
 
-let money=500, lives=20, round=1;
+let money=800, lives=20, round=1;
 let selectedTower=null;
 let enemies=[], towers=[], projectiles=[], explosions=[];
 let spawning=false, spawnLeft=0, spawnTimer=0;
@@ -56,7 +18,6 @@ const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:400},
   boog:{range:130,rate:55,dmg:6,speed:2,cost:125,color:'#3a5a2e',ultCost:700},
   geweer:{range:9999,rate:8,dmg:1.4,speed:10,cost:400,color:'#444',ultCost:3500},
-
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
   atoom:{range:180,rate:120,dmg:11.5,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
@@ -72,7 +33,6 @@ const animalTypes=[
 
 const bossType = {name:'Malaria Mug',hp:30000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
 
-// ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
 
 // ===== CLICK =====
@@ -110,11 +70,10 @@ function handleUpgrade(t){
   t.ultimate=true;
   t.level=4;
 
-  // ultimate aanpassingen
   if(t.key==='atoom'){ t.dmg*=1.8; t.rate*=0.55; }
-  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }   // 60% minder dmg
-  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }       // 40% minder dmg
-  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }      // 20% minder dmg
+  else if(t.key==='tsjaadinator'){ t.dmg*=0.5; t.rate*=1.9; }
+  else if(t.key==='speer'){ t.dmg*=0.9; t.rate*=0.95; }
+  else if(t.key==='geweer'){ t.dmg*=0.8; t.rate*=0.65; }
   t.upText=140;
 }
 
@@ -131,7 +90,12 @@ function startRound(){
       farmCash += base;
     }
   }
-  showRoundMsg(farmCash>0 ? 🌾 Plantages verdienden €${farmCash} : ▶️ Ronde ${round} gestart);
+
+  showRoundMsg(
+    farmCash>0 
+      ? `🌾 Plantages verdienden €${farmCash}` 
+      : `▶️ Ronde ${round} gestart`
+  );
 
   if(round===30){ spawnLeft=1; spawning=true; return; }
   spawnLeft = Math.floor(5 + round*1.8);
@@ -139,9 +103,13 @@ function startRound(){
   spawnTimer=0;
 }
 
-function showRoundMsg(txt){ const el=document.getElementById('roundMsg'); el.textContent=txt; setTimeout(()=>el.textContent='',2000); }
+function showRoundMsg(txt){
+  const el=document.getElementById('roundMsg');
+  el.textContent=txt;
+  setTimeout(()=>el.textContent='',2000);
+}
 
-// ===== SPAWN ENEMIES =====
+// ===== SPAWN =====
 function spawnEnemy(){
   let base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
   let hpScale = 1 + round*0.14;
@@ -164,21 +132,31 @@ function spawnEnemy(){
   }));
 }
 
-function makeEnemy(t){ return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss}; }
+function makeEnemy(t){
+  return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss};
+}
 
 // ===== UPDATE =====
 function update(){
   if(spawning){
     spawnTimer--;
-    if(spawnTimer<=0 && spawnLeft>0){ spawnEnemy(); spawnLeft--; spawnTimer=60-Math.min(40,round); }
-    if(spawnLeft===0 && enemies.length===0){ spawning=false; round=Math.min(30,round+1); }
+    if(spawnTimer<=0 && spawnLeft>0){
+      spawnEnemy();
+      spawnLeft--;
+      spawnTimer=60-Math.min(40,round);
+    }
+    if(spawnLeft===0 && enemies.length===0){
+      spawning=false;
+      round=Math.min(30,round+1);
+    }
   }
 
   for(const e of enemies){
     const p=path[e.i+1]; if(!p) continue;
     const dx=p.x-e.x, dy=p.y-e.y;
     const d=Math.hypot(dx,dy);
-    if(d<e.speed){ e.i++; } else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
+    if(d<e.speed){ e.i++; }
+    else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
     if(e.boss && e.i>=path.length-1){ lives=0; }
   }
 
@@ -189,117 +167,91 @@ function update(){
     const cfg=towerTypes[t.key];
     const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
     if(!target) continue;
-    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,gold:t.ultimate});
+    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb});
     t.cool=t.rate;
   }
 
   for(const p of projectiles){
     const dx=p.tx-p.x, dy=p.ty-p.y;
     const d=Math.hypot(dx,dy);
-    if(d<p.speed){ 
-      p.target.hp-=p.dmg; 
-      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22}); 
-      p.dead=true; 
-    } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
+    if(d<p.speed){
+      p.target.hp-=p.dmg;
+      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22});
+      p.dead=true;
+    } else {
+      p.x+=dx/d*p.speed;
+      p.y+=dy/d*p.speed;
+    }
   }
 
   for(const ex of explosions){ ex.r+=2.5; ex.t--; }
   explosions=explosions.filter(e=>e.t>0);
 
   enemies=enemies.filter(e=>{
-    if(e.hp<=0){ 
-      if(e.boss){ winGame(); } 
-      money+=e.reward; 
+    if(e.hp<=0){
+      money+=e.reward;
       return false;
-    } 
-    if(e.i>=path.length-1){ lives--; return false;} 
-    return true; 
+    }
+    if(e.i>=path.length-1){ lives--; return false;}
+    return true;
   });
+
   projectiles=projectiles.filter(p=>!p.dead);
 
   document.getElementById('money').textContent=money;
   document.getElementById('lives').textContent=lives;
 }
 
-function winGame(){ gameWon=true; showRoundMsg('🏆 Gefeliciteerd! Je hebt de plaag in Tsjaad overleefd! Je bent Tsjaadtastisch!'); }
-
 // ===== DRAW =====
-function drawPath(){ 
-  ctx.strokeStyle='#c2b280'; ctx.lineWidth=26; ctx.lineCap='round'; 
-  ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y); for(const p of path) ctx.lineTo(p.x,p.y); ctx.stroke(); 
-}
-
-function drawEnemy(e){
-  ctx.save(); ctx.translate(e.x,e.y);
-  if(e.type==='olifant'){ ctx.fillStyle='#7a7a7a'; ctx.fillRect(-14,-10,28,20); ctx.fillRect(10,-6,10,6); }
-  else if(e.type==='neushoorn'){ ctx.fillStyle='#666'; ctx.fillRect(-12,-9,24,18); ctx.beginPath(); ctx.moveTo(12,-2); ctx.lineTo(20,0); ctx.lineTo(12,2); ctx.fill(); }
-  else if(e.type==='giraffe'){ ctx.fillStyle='#d1a86e'; ctx.fillRect(-10,-8,20,16); ctx.fillRect(6,-18,6,10); }
-  else if(e.type==='mug'){ ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#aaa'; ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(14,0); ctx.stroke(); }
-  else { ctx.fillStyle='#555'; ctx.fillRect(-10,-8,20,16); }
-
-  ctx.fillStyle='red'; ctx.fillRect(-20,-24,40,5);
-  ctx.fillStyle='lime'; ctx.fillRect(-20,-24,40*(e.hp/e.max),5);
-  ctx.fillStyle='white'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText(e.name,0,-28);
-  ctx.restore();
+function drawPath(){
+  ctx.strokeStyle='#c2b280';
+  ctx.lineWidth=26;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(path[0].x,path[0].y);
+  for(const p of path) ctx.lineTo(p.x,p.y);
+  ctx.stroke();
 }
 
 function drawTower(t){
+  ctx.save();
+  ctx.translate(t.x,t.y);
+
+  ctx.fillStyle='#444';
+  ctx.beginPath();
+  ctx.arc(0,0,10,0,Math.PI*2);
+  ctx.fill();
+
   const cfg=towerTypes[t.key];
-  ctx.save(); ctx.translate(t.x,t.y);
-
-  if(t.key==='speer'){
-    ctx.fillStyle='#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
-    ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill();
-  }
-  else if(t.key==='boog'){
-    ctx.strokeStyle='#c68642'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); ctx.stroke();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke();
-    ctx.fillStyle='#8b5a2b'; ctx.fillRect(-3,-3,6,6);
-  }
-  else if(t.key==='geweer'){
-    ctx.fillStyle='#444'; ctx.fillRect(-8,-6,16,12); ctx.fillRect(8,-2,10,4);
-  }
-  else if(t.key==='atoom'){
-    ctx.fillStyle='#4caf50'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#b2ffb2'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
-  }
-  else if(t.key==='katoen'){
-    ctx.fillStyle='#e8e2b8'; ctx.fillRect(-12,-12,24,24);
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
-  }
-  else if(t.key==='tsjaadinator'){
-    ctx.fillStyle='#00bcd4'; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#00363a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-10,-10); ctx.lineTo(10,10); ctx.moveTo(10,-10); ctx.lineTo(-10,10); ctx.stroke();
-  }
-
-  ctx.fillStyle='white'; ctx.font='10px sans-serif'; ctx.textAlign='center';
   const nextCost = t.level<3 ? 200 : (!t.ultimate ? cfg.ultCost : 0);
-  const label = t.level<3 ? ${t.level}/4 (€${nextCost}) : (t.ultimate? 'ULTIMATE' : ULTIMATE (€${cfg.ultCost}));
+  const label = t.level < 3
+    ? `${t.level}/4 (€${nextCost})`
+    : (t.ultimate ? 'ULTIMATE' : `ULTIMATE (€${cfg.ultCost})`);
+
+  ctx.fillStyle='white';
+  ctx.font='10px sans-serif';
+  ctx.textAlign='center';
   ctx.fillText(label,0,24);
 
-  if(t.upText>0){ ctx.fillStyle='yellow'; ctx.fillText('UPGRADED',0,-18); }
+  if(t.upText>0){
+    ctx.fillStyle='yellow';
+    ctx.fillText('UPGRADED',0,-18);
+  }
+
   ctx.restore();
 }
 
-// ===== DRAW =====
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPath();
   towers.forEach(drawTower);
-  enemies.forEach(drawEnemy);
-
-  for(const p of projectiles){ ctx.fillStyle = p.bomb?'green':'black'; ctx.beginPath(); ctx.arc(p.x,p.y,p.bomb?7:3,0,Math.PI*2); ctx.fill(); }
-  for(const ex of explosions){ ctx.globalAlpha=ex.t/22; ctx.fillStyle='lime'; ctx.beginPath(); ctx.arc(ex.x,ex.y,ex.r,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
 }
 
 // ===== LOOP =====
-function loop(){ 
-  update(); 
-  draw(); 
-  if(lives>0) requestAnimationFrame(loop); 
+function loop(){
+  update();
+  draw();
+  if(lives>0) requestAnimationFrame(loop);
 }
 loop();
 </script>
-</body>
-</html>

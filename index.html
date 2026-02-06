@@ -54,7 +54,7 @@ let gameWon=false;
 // ===== TOWERS =====
 const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
-  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
+  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:2000},
   geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:550,color:'#444',ultCost:3000},
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
   atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
@@ -67,10 +67,10 @@ const animalTypes=[
   {name:'Leeuw',hp:6,speed:1.25,size:14,reward:12,type:'leeuw'},
   {name:'Neushoorn',hp:12,speed:0.95,size:18,reward:18,type:'neushoorn'},
   {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'},
-  {name:'Cheetah',hp:5.6,speed:1.485,size:14,reward:15,type:'cheetah',minRound:15}
+  {name:'Cheetah',hp:4,speed:1.8,size:14,reward:15,type:'cheetah',minRound:15}
 ];
 
-const bossType = {name:'Malaria Mug',hp:25000,speed:0.75,size:42,reward:1000,boss:true,type:'mug'};
+const bossType = {name:'Malaria Mug',hp:25000,speed:0.75,size:152,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }

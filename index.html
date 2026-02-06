@@ -63,21 +63,7 @@ const sounds = {
 sounds.mainTheme.loop = true;
 sounds.mainTheme.volume = 0.5;
 
-// Play main theme when game loads (user interaction might be needed for autoplay)
-window.addEventListener('load', () => {
-  sounds.mainTheme.play().catch(e => {
-    console.log('Audio autoplay blocked, will play on first user interaction');
-  });
-});
-
-// Also try to play on first click
-let audioStarted = false;
-canvas.addEventListener('click', () => {
-  if(!audioStarted) {
-    sounds.mainTheme.play().catch(e => console.log('Audio play failed'));
-    audioStarted = true;
-  }
-}, { once: true });
+let musicStarted = false;
 
 function playSound(soundName) {
   if(sounds[soundName]) {
@@ -171,6 +157,13 @@ function handleUpgrade(t){
 // ===== ROUND =====
 function startRound(){
   if(spawning || gameWon) return;
+  
+  // Start music on first round
+  if(!musicStarted) {
+    sounds.mainTheme.play().catch(e => console.log('Audio play failed:', e));
+    musicStarted = true;
+  }
+  
   document.getElementById('round').textContent=round;
 
   let farmCash=0;

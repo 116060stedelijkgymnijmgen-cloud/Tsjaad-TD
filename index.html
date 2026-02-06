@@ -81,7 +81,8 @@ canvas.onclick=e=>{
   const x=e.clientX-r.left, y=e.clientY-r.top;
 
   for(const tw of towers){
-    if(Math.hypot(tw.x-x,tw.y-y)<18){ handleUpgrade(tw); return; }
+    const towerSize = 18 * (1 + tw.level * 0.05);
+    if(Math.hypot(tw.x-x,tw.y-y)<towerSize){ handleUpgrade(tw); return; }
   }
 
   if(!selectedTower) return;
@@ -113,6 +114,7 @@ function handleUpgrade(t){
   else if(t.key==='tsjaadinator'){ t.dmg*=2; t.rate*=0.25; }
   else if(t.key==='speer'){ t.dmg*=3; t.rate*=1.2; }
   else if(t.key==='geweer'){ t.dmg*=2.8; t.rate*=0.35; }
+  else if(t.key==='boog'){ t.dmg*=3; t.rate*=0.50; }
   t.upText=140;
 }
 
@@ -132,7 +134,7 @@ function startRound(){
   showRoundMsg(farmCash>0 ? `🌾 Plantages verdienden €${farmCash}` : `▶️ Ronde ${round} gestart`);
 
   if(round === 30){ 
-    spawnLeft = 1;  // 1 boss
+    spawnLeft = 1;
     spawning = true; 
     return; 
   }
@@ -219,7 +221,12 @@ function update(){
     const cfg=towerTypes[t.key];
     const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
     if(!target) continue;
-    projectiles.push({x:t.x,y:t.y,tx:target.x,ty:target.y,target,speed:cfg.speed,dmg:t.dmg,bomb:t.bomb,gold:t.ultimate});
+    projectiles.push({
+      x:t.x,y:t.y,tx:target.x,ty:target.y,target,
+      speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,
+      gold:t.ultimate,
+      towerKey:t.key
+    });
     t.cool=t.rate;
   }
 
@@ -228,7 +235,7 @@ function update(){
     const d=Math.hypot(dx,dy);
     if(d<p.speed){ 
       p.target.hp-=p.dmg; 
-      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22}); 
+      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold}); 
       p.dead=true; 
     } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
   }
@@ -262,67 +269,369 @@ function drawPath(){
 }
 
 function drawEnemy(e){
-  ctx.save(); ctx.translate(e.x,e.y);
-  if(e.type==='olifant'){ ctx.fillStyle='#7a7a7a'; ctx.fillRect(-14,-10,28,20); ctx.fillRect(10,-6,10,6); }
-  else if(e.type==='neushoorn'){ ctx.fillStyle='#666'; ctx.fillRect(-12,-9,24,18); ctx.beginPath(); ctx.moveTo(12,-2); ctx.lineTo(20,0); ctx.lineTo(12,2); ctx.fill(); }
-  else if(e.type==='giraffe'){ ctx.fillStyle='#d1a86e'; ctx.fillRect(-10,-8,20,16); ctx.fillRect(6,-18,6,10); }
-  else if(e.type==='mug'){ ctx.fillStyle='#222'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#aaa'; ctx.beginPath(); ctx.moveTo(-14,0); ctx.lineTo(14,0); ctx.stroke(); }
-  else { ctx.fillStyle='#555'; ctx.fillRect(-10,-8,20,16); }
+  ctx.save(); 
+  ctx.translate(e.x,e.y);
+  
+  if(e.type==='olifant'){
+    // Realistische olifant
+    ctx.fillStyle='#8b8b8b';
+    // Lichaam
+    ctx.beginPath();
+    ctx.ellipse(0,0,16,12,0,0,Math.PI*2);
+    ctx.fill();
+    // Hoofd
+    ctx.beginPath();
+    ctx.ellipse(14,-2,8,7,0,0,Math.PI*2);
+    ctx.fill();
+    // Slurf
+    ctx.strokeStyle='#8b8b8b';
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.moveTo(20,-2);
+    ctx.quadraticCurveTo(26,4,24,10);
+    ctx.stroke();
+    // Oren
+    ctx.fillStyle='#7a7a7a';
+    ctx.beginPath();
+    ctx.ellipse(12,-8,5,6,0,0,Math.PI*2);
+    ctx.fill();
+    // Poten
+    ctx.fillRect(-12,8,4,6);
+    ctx.fillRect(-4,8,4,6);
+    ctx.fillRect(4,8,4,6);
+    ctx.fillRect(12,8,4,6);
+  }
+  else if(e.type==='neushoorn'){
+    // Realistische neushoorn
+    ctx.fillStyle='#6b6b6b';
+    // Lichaam
+    ctx.fillRect(-14,-10,28,18);
+    // Hoofd
+    ctx.fillRect(10,-8,10,14);
+    // Hoorn
+    ctx.fillStyle='#d4d4d4';
+    ctx.beginPath();
+    ctx.moveTo(20,-4);
+    ctx.lineTo(28,-6);
+    ctx.lineTo(20,-2);
+    ctx.fill();
+    // Poten
+    ctx.fillStyle='#5a5a5a';
+    ctx.fillRect(-12,8,5,8);
+    ctx.fillRect(-2,8,5,8);
+    ctx.fillRect(8,8,5,8);
+  }
+  else if(e.type==='giraffe'){
+    // Realistische giraffe
+    ctx.fillStyle='#daa520';
+    // Lichaam
+    ctx.fillRect(-12,-8,20,14);
+    // Nek
+    ctx.fillRect(6,-20,5,12);
+    // Hoofd
+    ctx.beginPath();
+    ctx.ellipse(8.5,-22,4,3,0,0,Math.PI*2);
+    ctx.fill();
+    // Vlekken
+    ctx.fillStyle='#8b4513';
+    ctx.fillRect(-8,-4,3,3);
+    ctx.fillRect(-2,-6,3,3);
+    ctx.fillRect(2,0,3,3);
+    // Poten
+    ctx.fillStyle='#b8860b';
+    ctx.fillRect(-10,6,3,10);
+    ctx.fillRect(-2,6,3,10);
+    ctx.fillRect(4,6,3,10);
+  }
+  else if(e.type==='leeuw'){
+    // Realistische leeuw
+    ctx.fillStyle='#cd853f';
+    // Lichaam
+    ctx.fillRect(-12,-8,22,14);
+    // Hoofd met manen
+    ctx.fillStyle='#8b6914';
+    ctx.beginPath();
+    ctx.arc(12,-2,8,0,Math.PI*2);
+    ctx.fill();
+    // Gezicht
+    ctx.fillStyle='#cd853f';
+    ctx.beginPath();
+    ctx.arc(12,-2,5,0,Math.PI*2);
+    ctx.fill();
+    // Staart
+    ctx.strokeStyle='#cd853f';
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(-12,0);
+    ctx.lineTo(-20,2);
+    ctx.stroke();
+    // Poten
+    ctx.fillRect(-8,6,3,8);
+    ctx.fillRect(0,6,3,8);
+    ctx.fillRect(8,6,3,8);
+  }
+  else if(e.type==='mug'){
+    // Realistische malaria mug
+    ctx.fillStyle='#1a1a1a';
+    // Lichaam
+    ctx.beginPath();
+    ctx.ellipse(0,0,12,5,0,0,Math.PI*2);
+    ctx.fill();
+    // Vleugels
+    ctx.fillStyle='rgba(200,200,255,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-8,-4,10,6,-0.3,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(8,-4,10,6,0.3,0,Math.PI*2);
+    ctx.fill();
+    // Poten
+    ctx.strokeStyle='#2a2a2a';
+    ctx.lineWidth=1.5;
+    for(let i=-1;i<=1;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*6,4);
+      ctx.lineTo(i*8,12);
+      ctx.stroke();
+    }
+    // Steeksnuit
+    ctx.strokeStyle='#3a3a3a';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(12,0);
+    ctx.lineTo(20,0);
+    ctx.stroke();
+  }
 
-  ctx.fillStyle='red'; ctx.fillRect(-20,-24,40,5);
-  ctx.fillStyle='lime'; ctx.fillRect(-20,-24,40*(e.hp/e.max),5);
-  ctx.fillStyle='white'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText(e.name,0,-28);
+  // Health bar
+  ctx.fillStyle='red'; 
+  ctx.fillRect(-20,-24,40,5);
+  ctx.fillStyle='lime'; 
+  ctx.fillRect(-20,-24,40*(e.hp/e.max),5);
+  ctx.fillStyle='white'; 
+  ctx.font='10px sans-serif'; 
+  ctx.textAlign='center'; 
+  ctx.fillText(e.name,0,-28);
   ctx.restore();
 }
 
 function drawTower(t){
   const cfg=towerTypes[t.key];
-  ctx.save(); ctx.translate(t.x,t.y);
+  const scale = 1 + t.level * 0.05;
+  
+  ctx.save(); 
+  ctx.translate(t.x,t.y);
+  ctx.scale(scale, scale);
 
   if(t.key==='speer'){
-    ctx.fillStyle='#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
-    ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill();
+    ctx.fillStyle='#3f8f4a'; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,9,0,Math.PI*2); 
+    ctx.fill();
+    ctx.strokeStyle='#e0e0e0'; 
+    ctx.lineWidth=3; 
+    ctx.beginPath(); 
+    ctx.moveTo(-12,0); 
+    ctx.lineTo(12,0); 
+    ctx.stroke();
+    ctx.fillStyle='#ccc'; 
+    ctx.beginPath(); 
+    ctx.moveTo(12,0); 
+    ctx.lineTo(6,-4); 
+    ctx.lineTo(6,4); 
+    ctx.fill();
   }
   else if(t.key==='boog'){
-    ctx.strokeStyle='#c68642'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); ctx.stroke();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke();
-    ctx.fillStyle='#8b5a2b'; ctx.fillRect(-3,-3,6,6);
+    ctx.strokeStyle='#c68642'; 
+    ctx.lineWidth=4; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); 
+    ctx.stroke();
+    ctx.strokeStyle='#fff'; 
+    ctx.lineWidth=2; 
+    ctx.beginPath(); 
+    ctx.moveTo(0,-10); 
+    ctx.lineTo(0,10); 
+    ctx.stroke();
+    ctx.fillStyle='#8b5a2b'; 
+    ctx.fillRect(-3,-3,6,6);
   }
   else if(t.key==='geweer'){
-    ctx.fillStyle='#444'; ctx.fillRect(-8,-6,16,12); ctx.fillRect(8,-2,10,4);
+    // Verbeterde soldaat sprite
+    ctx.fillStyle='#4a6741';
+    // Helm
+    ctx.beginPath();
+    ctx.arc(0,-4,6,0,Math.PI*2);
+    ctx.fill();
+    // Lichaam
+    ctx.fillStyle='#5a7a51';
+    ctx.fillRect(-6,2,12,10);
+    // Geweer
+    ctx.fillStyle='#2a2a2a';
+    ctx.fillRect(6,4,12,3);
+    // Details
+    ctx.fillStyle='#3a5a31';
+    ctx.fillRect(-2,2,4,4);
   }
   else if(t.key==='atoom'){
-    ctx.fillStyle='#4caf50'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#b2ffb2'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#4caf50'; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,10,0,Math.PI*2); 
+    ctx.fill();
+    ctx.fillStyle='#b2ffb2'; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,5,0,Math.PI*2); 
+    ctx.fill();
+    // Radioactief symbool
+    ctx.strokeStyle='#000';
+    ctx.lineWidth=2;
+    for(let i=0;i<3;i++){
+      ctx.save();
+      ctx.rotate(i*Math.PI*2/3);
+      ctx.beginPath();
+      ctx.moveTo(0,0);
+      ctx.lineTo(0,-8);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
   else if(t.key==='katoen'){
-    ctx.fillStyle='#e8e2b8'; ctx.fillRect(-12,-12,24,24);
-    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#e8e2b8'; 
+    ctx.fillRect(-12,-12,24,24);
+    ctx.fillStyle='#fff'; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,7,0,Math.PI*2); 
+    ctx.fill();
+    // Extra katoen bollen
+    ctx.beginPath();
+    ctx.arc(-4,-4,3,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(4,-4,3,0,Math.PI*2);
+    ctx.fill();
   }
   else if(t.key==='tsjaadinator'){
-    ctx.fillStyle='#00bcd4'; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#00363a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-10,-10); ctx.lineTo(10,10); ctx.moveTo(10,-10); ctx.lineTo(-10,10); ctx.stroke();
+    ctx.fillStyle='#00bcd4'; 
+    ctx.beginPath(); 
+    ctx.arc(0,0,11,0,Math.PI*2); 
+    ctx.fill();
+    ctx.strokeStyle='#00363a'; 
+    ctx.lineWidth=3; 
+    ctx.beginPath(); 
+    ctx.moveTo(-10,-10); 
+    ctx.lineTo(10,10); 
+    ctx.moveTo(10,-10); 
+    ctx.lineTo(-10,10); 
+    ctx.stroke();
   }
 
-  ctx.fillStyle='white'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillStyle='white'; 
+  ctx.font='10px sans-serif'; 
+  ctx.textAlign='center';
   const nextCost = t.level<3 ? 200 : (!t.ultimate ? cfg.ultCost : 0);
   const label = t.level<3 ? `${t.level}/4 (€${nextCost})` : (t.ultimate? 'ULTIMATE' : `ULTIMATE (€${cfg.ultCost})`);
-  ctx.fillText(label,0,24);
+  ctx.fillText(label,0,24/scale);
 
-  if(t.upText>0){ ctx.fillStyle='yellow'; ctx.fillText('UPGRADED',0,-18); }
+  if(t.upText>0){ 
+    ctx.fillStyle='yellow'; 
+    ctx.fillText('UPGRADED',0,-18/scale); 
+  }
   ctx.restore();
 }
 
-// ===== DRAW =====
+// ===== DRAW PROJECTILES & EXPLOSIONS =====
+function drawProjectiles(){
+  for(const p of projectiles){
+    if(p.towerKey === 'atoom'){
+      // Groene bom voor atoombommenwerper
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      
+      if(p.gold){
+        // Gouden bom voor ultimate
+        ctx.fillStyle='#ffd700';
+        ctx.strokeStyle='#ffed4e';
+      } else {
+        // Normale groene bom
+        ctx.fillStyle='#2d5016';
+        ctx.strokeStyle='#4caf50';
+      }
+      
+      // Bom lichaam
+      ctx.beginPath();
+      ctx.arc(0,0,7,0,Math.PI*2);
+      ctx.fill();
+      ctx.lineWidth=2;
+      ctx.stroke();
+      
+      // Lont
+      ctx.strokeStyle = p.gold ? '#ff6b35' : '#ff4444';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(-2,-7);
+      ctx.lineTo(-3,-12);
+      ctx.stroke();
+      
+      // Vonk
+      ctx.fillStyle = p.gold ? '#ffaa00' : '#ff6b35';
+      ctx.beginPath();
+      ctx.arc(-3,-12,2,0,Math.PI*2);
+      ctx.fill();
+      
+      ctx.restore();
+    } else {
+      // Normale projectielen
+      ctx.fillStyle = p.gold ? '#ffd700' : (p.bomb ? 'green' : 'black');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.bomb ? 7 : 3, 0, Math.PI*2);
+      ctx.fill();
+      
+      // Extra gloed voor gouden projectielen
+      if(p.gold){
+        ctx.strokeStyle='#ffed4e';
+        ctx.lineWidth=2;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function drawExplosions(){
+  for(const ex of explosions){
+    ctx.globalAlpha = ex.t / 22;
+    
+    if(ex.gold){
+      // Gouden explosie
+      const gradient = ctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, ex.r);
+      gradient.addColorStop(0, '#ffd700');
+      gradient.addColorStop(0.5, '#ffed4e');
+      gradient.addColorStop(1, 'rgba(255,215,0,0)');
+      ctx.fillStyle = gradient;
+    } else {
+      // Groene explosie
+      const gradient = ctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, ex.r);
+      gradient.addColorStop(0, '#4caf50');
+      gradient.addColorStop(0.5, '#8bc34a');
+      gradient.addColorStop(1, 'rgba(76,175,80,0)');
+      ctx.fillStyle = gradient;
+    }
+    
+    ctx.beginPath();
+    ctx.arc(ex.x, ex.y, ex.r, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ===== MAIN DRAW =====
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPath();
   towers.forEach(drawTower);
   enemies.forEach(drawEnemy);
-
-  for(const p of projectiles){ ctx.fillStyle = p.bomb?'green':'black'; ctx.beginPath(); ctx.arc(p.x,p.y,p.bomb?7:3,0,Math.PI*2); ctx.fill(); }
-  for(const ex of explosions){ ctx.globalAlpha=ex.t/22; ctx.fillStyle='lime'; ctx.beginPath(); ctx.arc(ex.x,ex.y,ex.r,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
+  drawProjectiles();
+  drawExplosions();
 }
 
 // ===== LOOP =====

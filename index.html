@@ -28,7 +28,7 @@ Je zei:
   <button onclick="selectTower('geweer')">Soldaat (€400)</button>
   <button onclick="selectTower('atoom')">Atoombommenwerper (€600)</button>
   <button onclick="selectTower('katoen')">Katoen Plantage (€950)</button>
-  <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€1000)</button>
+  <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€2500)</button>
 
   <button onclick="startRound()">▶️ Start Ronde</button>
   <p class="small">Klik toren = upgrade. Max 4 (ultimate).</p>
@@ -55,13 +55,13 @@ let gameWon=false;
 
 // ===== TOWERS =====
 const towerTypes={
-  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
-  boog:{range:130,rate:55,dmg:6,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
-  geweer:{range:9999,rate:12,dmg:1.4,speed:10,cost:400,color:'#444',ultCost:3000},
+  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:400},
+  boog:{range:130,rate:55,dmg:6,speed:2,cost:125,color:'#3a5a2e',ultCost:700},
+  geweer:{range:9999,rate:8,dmg:1.4,speed:10,cost:400,color:'#444',ultCost:3500},
 
-  tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:1000,color:'#00bcd4',ultCost:15000},
+  tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
   atoom:{range:180,rate:120,dmg:11.5,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
-  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:6000}
+  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
 };
 
 // ===== ENEMIES =====
@@ -72,7 +72,7 @@ const animalTypes=[
   {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'}
 ];
 
-const bossType = {name:'Malaria Mug',hp:15000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
+const bossType = {name:'Malaria Mug',hp:30000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
@@ -155,7 +155,7 @@ function spawnEnemy(){
   }
 
   if(round > 20){
-    hpScale *= 0.09;
+    hpScale *= 0.16;
     speedScale *= 0.03;
   }
 

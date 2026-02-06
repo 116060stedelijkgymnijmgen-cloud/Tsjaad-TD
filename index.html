@@ -7,7 +7,7 @@
   body { margin:0; background:#1e1e1e; color:white; font-family:sans-serif; display:flex; }
   #ui { width:260px; padding:12px; background:#2b2b2b; box-sizing:border-box; }
   #gameWrap { flex:1; display:flex; justify-content:center; align-items:center; }
-  canvas { background:#87c27a; border:3px solid #111; }
+  canvas { background:#7ab86d; border:3px solid #111; }
   button { width:100%; margin:6px 0; padding:10px; font-size:14px; cursor:pointer; }
   .small { font-size:12px; opacity:.9 }
 </style>
@@ -53,11 +53,11 @@ let gameWon=false;
 
 // ===== TOWERS =====
 const towerTypes={
-  speer:{range:90,rate:40,dmg:3,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
+  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
   geweer:{range:9999,rate:12,dmg:1.4,speed:6,cost:550,color:'#444',ultCost:3000},
   tsjaadinator:{range:120,rate:5,dmg:2.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
-  atoom:{range:80,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
+  atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
 };
 
@@ -66,10 +66,11 @@ const animalTypes=[
   {name:'Giraffe',hp:4,speed:1.1,size:14,reward:10,type:'giraffe'},
   {name:'Leeuw',hp:6,speed:1.25,size:14,reward:12,type:'leeuw'},
   {name:'Neushoorn',hp:12,speed:0.95,size:18,reward:18,type:'neushoorn'},
-  {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'}
+  {name:'Olifant',hp:20,speed:0.8,size:20,reward:25,type:'olifant'},
+  {name:'Cheetah',hp:5.6,speed:1.485,size:14,reward:15,type:'cheetah',minRound:15}
 ];
 
-const bossType = {name:'Malaria Mug',hp:30000,speed:0.65,size:42,reward:1000,boss:true,type:'mug'};
+const bossType = {name:'Malaria Mug',hp:15000,speed:0.75,size:22,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
@@ -94,9 +95,19 @@ canvas.onclick=e=>{
 };
 
 function handleUpgrade(t){
+  // Verschillende upgrade kosten per tower
+  let upgradeCost;
+  if(t.key === 'speer') upgradeCost = 50;
+  else if(t.key === 'boog') upgradeCost = 100;
+  else if(t.key === 'geweer') upgradeCost = 350;
+  else if(t.key === 'atoom') upgradeCost = 500;
+  else if(t.key === 'tsjaadinator') upgradeCost = 2000;
+  else if(t.key === 'katoen') upgradeCost = 200;
+  else upgradeCost = 200;
+
   if(t.level<3){
-    if(money<200) return;
-    money-=200;
+    if(money<upgradeCost) return;
+    money-=upgradeCost;
     t.level++;
     if(!t.farm){ t.dmg*=1.25; t.rate*=0.85; }
     t.upText=90;
@@ -157,7 +168,10 @@ function spawnEnemy(){
     return;
   }
 
-  let base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
+  // Filter dieren op basis van ronde
+  const availableAnimals = animalTypes.filter(a => !a.minRound || round >= a.minRound);
+  let base = availableAnimals[Math.floor(Math.random()*availableAnimals.length)];
+  
   let hpScale = 1 + round*0.14;
   let speedScale = 1 + round*0.02;
 
@@ -264,9 +278,32 @@ function update(){
 
 // ===== DRAW =====
 function drawPath(){ 
-  ctx.strokeStyle='#c2b280'; ctx.lineWidth=26; ctx.lineCap='round'; 
-  ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y); for(const p of path) ctx.lineTo(p.x,p.y); ctx.stroke(); 
-}
+  // Gras textuur achtergrond
+  ctx.fillStyle='#7ab86d';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  
+  
+  // Weg/pad
+  ctx.strokeStyle='#c2b280'; 
+  ctx.lineWidth=26; 
+  ctx.lineCap='round'; 
+  ctx.beginPath(); 
+  ctx.moveTo(path[0].x,path[0].y); 
+  for(const p of path) ctx.lineTo(p.x,p.y); 
+  ctx.stroke();
+  
+  // Weg rand (donkerder)
+  ctx.strokeStyle='#a89968'; 
+  ctx.lineWidth=28; 
+  ctx.lineCap='round';
+  ctx.globalAlpha=0.3;
+  ctx.beginPath(); 
+  ctx.moveTo(path[0].x,path[0].y); 
+  for(const p of path) ctx.lineTo(p.x,p.y); 
+  ctx.stroke();
+  ctx.globalAlpha=1;
+  
+  
 
 function drawEnemy(e){
   ctx.save(); 
@@ -370,6 +407,45 @@ function drawEnemy(e){
     ctx.fillRect(0,6,3,8);
     ctx.fillRect(8,6,3,8);
   }
+  else if(e.type==='cheetah'){
+    // Realistische cheetah
+    ctx.fillStyle='#daa520';
+    // Lichaam (slanker dan leeuw)
+    ctx.fillRect(-10,-6,20,11);
+    // Hoofd
+    ctx.fillStyle='#daa520';
+    ctx.beginPath();
+    ctx.arc(12,-1,6,0,Math.PI*2);
+    ctx.fill();
+    // Zwarte traan strepen
+    ctx.strokeStyle='#000';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(14,-4);
+    ctx.lineTo(14,2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(10,-4);
+    ctx.lineTo(10,2);
+    ctx.stroke();
+    // Vlekken
+    ctx.fillStyle='#8b4513';
+    ctx.fillRect(-6,-3,2,2);
+    ctx.fillRect(-2,-5,2,2);
+    ctx.fillRect(2,-2,2,2);
+    ctx.fillRect(6,-4,2,2);
+    // Staart (lang en dun)
+    ctx.strokeStyle='#daa520';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(-10,0);
+    ctx.lineTo(-18,4);
+    ctx.stroke();
+    // Poten (lang en dun voor snelheid)
+    ctx.fillRect(-7,5,2,9);
+    ctx.fillRect(-1,5,2,9);
+    ctx.fillRect(7,5,2,9);
+  }
   else if(e.type==='mug'){
     // Realistische malaria mug
     ctx.fillStyle='#1a1a1a';
@@ -428,6 +504,8 @@ function drawTower(t){
     ctx.beginPath(); 
     ctx.arc(0,0,9,0,Math.PI*2); 
     ctx.fill();
+    
+    // Upgrade visual: meer speren
     ctx.strokeStyle='#e0e0e0'; 
     ctx.lineWidth=3; 
     ctx.beginPath(); 
@@ -440,6 +518,44 @@ function drawTower(t){
     ctx.lineTo(6,-4); 
     ctx.lineTo(6,4); 
     ctx.fill();
+    
+    if(t.level >= 2){
+      ctx.strokeStyle='#e0e0e0'; 
+      ctx.lineWidth=2; 
+      ctx.beginPath(); 
+      ctx.moveTo(-8,-6); 
+      ctx.lineTo(8,-6); 
+      ctx.stroke();
+      ctx.fillStyle='#ccc'; 
+      ctx.beginPath(); 
+      ctx.moveTo(8,-6); 
+      ctx.lineTo(4,-9); 
+      ctx.lineTo(4,-3); 
+      ctx.fill();
+    }
+    
+    if(t.level >= 3){
+      ctx.strokeStyle='#e0e0e0'; 
+      ctx.lineWidth=2; 
+      ctx.beginPath(); 
+      ctx.moveTo(-8,6); 
+      ctx.lineTo(8,6); 
+      ctx.stroke();
+      ctx.fillStyle='#ccc'; 
+      ctx.beginPath(); 
+      ctx.moveTo(8,6); 
+      ctx.lineTo(4,3); 
+      ctx.lineTo(4,9); 
+      ctx.fill();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,12,0,Math.PI*2);
+      ctx.stroke();
+    }
   }
   else if(t.key==='boog'){
     ctx.strokeStyle='#c68642'; 
@@ -455,6 +571,31 @@ function drawTower(t){
     ctx.stroke();
     ctx.fillStyle='#8b5a2b'; 
     ctx.fillRect(-3,-3,6,6);
+    
+    // Upgrade visual: extra bogen
+    if(t.level >= 2){
+      ctx.strokeStyle='#c68642';
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2);
+      ctx.stroke();
+    }
+    
+    if(t.level >= 3){
+      ctx.strokeStyle='#c68642';
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(6,0,8,-Math.PI/2,Math.PI/2);
+      ctx.stroke();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,13,0,Math.PI*2);
+      ctx.stroke();
+    }
   }
   else if(t.key==='geweer'){
     // Verbeterde soldaat sprite
@@ -472,6 +613,29 @@ function drawTower(t){
     // Details
     ctx.fillStyle='#3a5a31';
     ctx.fillRect(-2,2,4,4);
+    
+    // Upgrade visual: extra wapens/pantsering
+    if(t.level >= 2){
+      ctx.fillStyle='#777';
+      ctx.fillRect(-7,3,2,8);
+      ctx.fillRect(5,3,2,8);
+    }
+    
+    if(t.level >= 3){
+      ctx.strokeStyle='#888';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,-4,7,0,Math.PI);
+      ctx.stroke();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,14,0,Math.PI*2);
+      ctx.stroke();
+    }
   }
   else if(t.key==='atoom'){
     ctx.fillStyle='#4caf50'; 
@@ -482,17 +646,34 @@ function drawTower(t){
     ctx.beginPath(); 
     ctx.arc(0,0,5,0,Math.PI*2); 
     ctx.fill();
+    
     // Radioactief symbool
+    const symbols = t.level >= 2 ? (t.level >= 3 ? 4 : 3) : 3;
     ctx.strokeStyle='#000';
     ctx.lineWidth=2;
-    for(let i=0;i<3;i++){
+    for(let i=0;i<symbols;i++){
       ctx.save();
-      ctx.rotate(i*Math.PI*2/3);
+      ctx.rotate(i*Math.PI*2/symbols);
       ctx.beginPath();
       ctx.moveTo(0,0);
       ctx.lineTo(0,-8);
       ctx.stroke();
       ctx.restore();
+    }
+    
+    if(t.level >= 3){
+      ctx.fillStyle='#76ff03';
+      ctx.beginPath();
+      ctx.arc(0,0,3,0,Math.PI*2);
+      ctx.fill();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,13,0,Math.PI*2);
+      ctx.stroke();
     }
   }
   else if(t.key==='katoen'){
@@ -502,13 +683,22 @@ function drawTower(t){
     ctx.beginPath(); 
     ctx.arc(0,0,7,0,Math.PI*2); 
     ctx.fill();
-    // Extra katoen bollen
-    ctx.beginPath();
-    ctx.arc(-4,-4,3,0,Math.PI*2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(4,-4,3,0,Math.PI*2);
-    ctx.fill();
+    
+    // Extra katoen bollen op basis van level
+    const bollen = [[0,0],[-4,-4],[4,-4],[4,4],[-4,4]];
+    for(let i=0; i<=t.level && i<bollen.length; i++){
+      ctx.beginPath();
+      ctx.arc(bollen[i][0],bollen[i][1],i===0?7:3,0,Math.PI*2);
+      ctx.fill();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,14,0,Math.PI*2);
+      ctx.stroke();
+    }
   }
   else if(t.key==='tsjaadinator'){
     ctx.fillStyle='#00bcd4'; 
@@ -523,12 +713,51 @@ function drawTower(t){
     ctx.moveTo(10,-10); 
     ctx.lineTo(-10,10); 
     ctx.stroke();
+    
+    // Extra kruizen voor upgrades
+    if(t.level >= 2){
+      ctx.strokeStyle='#00bcd4';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,8,0,Math.PI*2);
+      ctx.stroke();
+    }
+    
+    if(t.level >= 3){
+      ctx.strokeStyle='#00bcd4';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,5,0,Math.PI*2);
+      ctx.stroke();
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.arc(0,0,14,0,Math.PI*2);
+      ctx.stroke();
+    }
   }
 
   ctx.fillStyle='white'; 
   ctx.font='10px sans-serif'; 
   ctx.textAlign='center';
-  const nextCost = t.level<3 ? 200 : (!t.ultimate ? cfg.ultCost : 0);
+  
+  // Verschillende upgrade kosten per tower
+  let nextCost;
+  if(t.level < 3){
+    if(t.key === 'speer') nextCost = 50;
+    else if(t.key === 'boog') nextCost = 100;
+    else if(t.key === 'geweer') nextCost = 350;
+    else if(t.key === 'atoom') nextCost = 500;
+    else if(t.key === 'tsjaadinator') nextCost = 2000;
+    else if(t.key === 'katoen') nextCost = 200;
+    else nextCost = 200;
+  } else {
+    nextCost = t.ultimate ? 0 : cfg.ultCost;
+  }
+  
   const label = t.level<3 ? `${t.level}/4 (€${nextCost})` : (t.ultimate? 'ULTIMATE' : `ULTIMATE (€${cfg.ultCost})`);
   ctx.fillText(label,0,24/scale);
 
@@ -542,11 +771,15 @@ function drawTower(t){
 // ===== DRAW PROJECTILES & EXPLOSIONS =====
 function drawProjectiles(){
   for(const p of projectiles){
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    
+    // Bereken hoek naar doel
+    const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
+    ctx.rotate(angle);
+    
     if(p.towerKey === 'atoom'){
       // Groene bom voor atoombommenwerper
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      
       if(p.gold){
         // Gouden bom voor ultimate
         ctx.fillStyle='#ffd700';
@@ -557,42 +790,155 @@ function drawProjectiles(){
         ctx.strokeStyle='#4caf50';
       }
       
-      // Bom lichaam
+      // Bom lichaam (kleiner)
       ctx.beginPath();
-      ctx.arc(0,0,7,0,Math.PI*2);
+      ctx.arc(0,0,5,0,Math.PI*2);
       ctx.fill();
-      ctx.lineWidth=2;
+      ctx.lineWidth=1.5;
       ctx.stroke();
       
       // Lont
       ctx.strokeStyle = p.gold ? '#ff6b35' : '#ff4444';
-      ctx.lineWidth=2;
+      ctx.lineWidth=1.5;
       ctx.beginPath();
-      ctx.moveTo(-2,-7);
-      ctx.lineTo(-3,-12);
+      ctx.moveTo(-1.5,-5);
+      ctx.lineTo(-2,-9);
       ctx.stroke();
       
       // Vonk
       ctx.fillStyle = p.gold ? '#ffaa00' : '#ff6b35';
       ctx.beginPath();
-      ctx.arc(-3,-12,2,0,Math.PI*2);
+      ctx.arc(-2,-9,1.5,0,Math.PI*2);
       ctx.fill();
+    } 
+    else if(p.towerKey === 'speer'){
+      // Speer voor speerwerper (kleiner)
+      if(p.gold){
+        ctx.strokeStyle='#ffd700';
+        ctx.fillStyle='#ffd700';
+      } else {
+        ctx.strokeStyle='#8b7355';
+        ctx.fillStyle='#c0c0c0';
+      }
       
-      ctx.restore();
-    } else {
-      // Normale projectielen
-      ctx.fillStyle = p.gold ? '#ffd700' : (p.bomb ? 'green' : 'black');
+      // Speer schacht
+      ctx.lineWidth=2;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.bomb ? 7 : 3, 0, Math.PI*2);
+      ctx.moveTo(-9,0);
+      ctx.lineTo(6,0);
+      ctx.stroke();
+      
+      // Speer punt
+      ctx.beginPath();
+      ctx.moveTo(6,0);
+      ctx.lineTo(11,-3);
+      ctx.lineTo(11,3);
+      ctx.closePath();
       ctx.fill();
       
-      // Extra gloed voor gouden projectielen
       if(p.gold){
         ctx.strokeStyle='#ffed4e';
-        ctx.lineWidth=2;
+        ctx.lineWidth=1;
         ctx.stroke();
       }
     }
+    else if(p.towerKey === 'boog'){
+      // Pijl voor boogschutter (kleiner)
+      if(p.gold){
+        ctx.strokeStyle='#ffd700';
+        ctx.fillStyle='#ffd700';
+      } else {
+        ctx.strokeStyle='#8b4513';
+        ctx.fillStyle='#a0522d';
+      }
+      
+      // Pijl schacht
+      ctx.lineWidth=1.5;
+      ctx.beginPath();
+      ctx.moveTo(-8,0);
+      ctx.lineTo(8,0);
+      ctx.stroke();
+      
+      // Pijl punt
+      ctx.fillStyle = p.gold ? '#ffd700' : '#696969';
+      ctx.beginPath();
+      ctx.moveTo(8,0);
+      ctx.lineTo(11,-2.5);
+      ctx.lineTo(11,2.5);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Veren
+      ctx.fillStyle = p.gold ? '#ffed4e' : '#f5f5dc';
+      ctx.beginPath();
+      ctx.moveTo(-8,-2.5);
+      ctx.lineTo(-10,-1);
+      ctx.lineTo(-8,0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-8,2.5);
+      ctx.lineTo(-10,1);
+      ctx.lineTo(-8,0);
+      ctx.closePath();
+      ctx.fill();
+    }
+    else if(p.towerKey === 'tsjaadinator'){
+      // Blauwe speer voor tsjaadinator (kleiner)
+      if(p.gold){
+        ctx.strokeStyle='#ffd700';
+        ctx.fillStyle='#00ffff';
+      } else {
+        ctx.strokeStyle='#00bcd4';
+        ctx.fillStyle='#00e5ff';
+      }
+      
+      // Speer schacht (blauw)
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(-9,0);
+      ctx.lineTo(7,0);
+      ctx.stroke();
+      
+      // Speer punt (cyan)
+      ctx.beginPath();
+      ctx.moveTo(7,0);
+      ctx.lineTo(12,-3);
+      ctx.lineTo(12,3);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Glow effect
+      if(p.gold){
+        ctx.strokeStyle='#ffed4e';
+      } else {
+        ctx.strokeStyle='#80deea';
+      }
+      ctx.lineWidth=1;
+      ctx.stroke();
+    }
+    else if(p.towerKey === 'geweer'){
+      // Gele kogel voor soldaat (kleiner)
+      ctx.fillStyle = p.gold ? '#ffd700' : '#ffeb3b';
+      ctx.beginPath();
+      ctx.ellipse(0,0,3.5,1.5,0,0,Math.PI*2);
+      ctx.fill();
+      
+      if(p.gold){
+        ctx.strokeStyle='#ffed4e';
+        ctx.lineWidth=1;
+        ctx.stroke();
+      }
+    }
+    else {
+      // Fallback voor andere towers
+      ctx.fillStyle = p.gold ? '#ffd700' : 'black';
+      ctx.beginPath();
+      ctx.arc(0,0,2.5,0,Math.PI*2);
+      ctx.fill();
+    }
+    
+    ctx.restore();
   }
 }
 

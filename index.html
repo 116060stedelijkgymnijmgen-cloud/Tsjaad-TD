@@ -10,6 +10,8 @@
   canvas { background:#7ab86d; border:3px solid #111; }
   button { width:100%; margin:6px 0; padding:10px; font-size:14px; cursor:pointer; }
   .small { font-size:12px; opacity:.9 }
+  #musicBtn { background:#4CAF50; color:white; border:2px solid #45a049; }
+  #musicBtn.playing { background:#ff9800; border-color:#e68900; }
 </style>
 </head>
 <body>
@@ -29,6 +31,7 @@
   <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€2500)</button>
 
   <button onclick="startRound()">▶️ Start Ronde</button>
+  <button id="musicBtn" onclick="toggleMusic()">🔇 Muziek Aan</button>
   <p class="small">Klik toren = upgrade. Max 4 (ultimate).</p>
 </div>
 
@@ -63,7 +66,29 @@ const sounds = {
 sounds.mainTheme.loop = true;
 sounds.mainTheme.volume = 0.5;
 
-let musicStarted = false;
+let musicPlaying = false;
+
+function toggleMusic() {
+  const btn = document.getElementById('musicBtn');
+  
+  if(musicPlaying) {
+    sounds.mainTheme.pause();
+    musicPlaying = false;
+    btn.textContent = '🔇 Muziek Aan';
+    btn.classList.remove('playing');
+  } else {
+    sounds.mainTheme.play()
+      .then(() => {
+        musicPlaying = true;
+        btn.textContent = '🔊 Muziek Uit';
+        btn.classList.add('playing');
+      })
+      .catch(e => {
+        console.log('Music play failed:', e);
+        alert('Kon muziek niet afspelen. Controleer of het Audio/MainTheme.mp3 bestand bestaat.');
+      });
+  }
+}
 
 function playSound(soundName) {
   if(sounds[soundName]) {
@@ -157,12 +182,6 @@ function handleUpgrade(t){
 // ===== ROUND =====
 function startRound(){
   if(spawning || gameWon) return;
-  
-  // Start music on first round
-  if(!musicStarted) {
-    sounds.mainTheme.play().catch(e => console.log('Audio play failed:', e));
-    musicStarted = true;
-  }
   
   document.getElementById('round').textContent=round;
 

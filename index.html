@@ -62,11 +62,26 @@ const sounds = {
   placement: new Audio('Audio/Placement.mp3')
 };
 
-// Set main theme to loop
+// Set main theme to loop and preload
 sounds.mainTheme.loop = true;
 sounds.mainTheme.volume = 0.5;
+sounds.mainTheme.preload = 'auto';
 
 let musicPlaying = false;
+let musicLoaded = false;
+
+// Preload music
+sounds.mainTheme.addEventListener('canplaythrough', () => {
+  musicLoaded = true;
+  console.log('Music loaded successfully');
+});
+
+sounds.mainTheme.addEventListener('error', (e) => {
+  console.error('Failed to load music:', e);
+});
+
+// Start loading the music immediately
+sounds.mainTheme.load();
 
 function toggleMusic() {
   const btn = document.getElementById('musicBtn');
@@ -77,15 +92,30 @@ function toggleMusic() {
     btn.textContent = '🔇 Muziek Aan';
     btn.classList.remove('playing');
   } else {
+    btn.textContent = '⏳ Laden...';
+    btn.disabled = true;
+    
+    // Try to play
     sounds.mainTheme.play()
       .then(() => {
         musicPlaying = true;
         btn.textContent = '🔊 Muziek Uit';
         btn.classList.add('playing');
+        btn.disabled = false;
       })
       .catch(e => {
-        console.log('Music play failed:', e);
-        alert('Kon muziek niet afspelen. Controleer of het Audio/MainTheme.mp3 bestand bestaat.');
+        console.error('Music play error:', e);
+        btn.textContent = '🔇 Muziek Aan';
+        btn.disabled = false;
+        
+        // Show more detailed error
+        if(e.name === 'NotSupportedError') {
+          alert('Audio formaat wordt niet ondersteund door je browser.');
+        } else if(e.name === 'NotAllowedError') {
+          alert('Browser blokkeert het afspelen. Probeer opnieuw.');
+        } else {
+          alert('Fout bij afspelen: ' + e.message + '\n\nControleer de browser console (F12) voor details.');
+        }
       });
   }
 }

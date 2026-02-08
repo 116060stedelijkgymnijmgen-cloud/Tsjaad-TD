@@ -796,11 +796,11 @@ function drawTower(t){
     ctx.beginPath();
     ctx.arc(0,0,11,0,Math.PI*2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-10,-10);
 
     ctx.strokeStyle = t.ultimate ? '#003366' : '#00363a';
     ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(-10,-10);
     ctx.lineTo(10,10);
     ctx.moveTo(10,-10);
     ctx.lineTo(-10,10);

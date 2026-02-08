@@ -2,37 +2,327 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Tsjaad TD – 30 Rondes</title>
+<title>Tsjaad TD UPDATE 3.0</title>
 <style>
-  body { margin:0; background:#1e1e1e; color:white; font-family:sans-serif; display:flex; }
-  #ui { width:260px; padding:12px; background:#2b2b2b; box-sizing:border-box; }
-  #gameWrap { flex:1; display:flex; justify-content:center; align-items:center; }
-  canvas { background:#7ab86d; border:3px solid #111; }
-  button { width:100%; margin:6px 0; padding:10px; font-size:14px; cursor:pointer; }
-  .small { font-size:12px; opacity:.9 }
-  #musicBtn { background:#4CAF50; color:white; border:2px solid #45a049; }
-  #musicBtn.playing { background:#ff9800; border-color:#e68900; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { 
+    background:#1e1e1e; 
+    color:white; 
+    font-family:'Arial Black', sans-serif; 
+    display:flex; 
+    overflow:hidden;
+    height:100vh;
+  }
+  #ui { 
+    width:280px; 
+    padding:12px; 
+    background:#ac8d10; 
+    overflow-y:auto;
+    max-height:100vh;
+    border-right:3px solid #111;
+  }
+  #gameWrap { 
+    flex:1; 
+    display:flex; 
+    justify-content:center; 
+    align-items:center; 
+    background:#000;
+  }
+  canvas { 
+    border:4px solid #111; 
+    box-shadow:0 0 30px rgba(0,0,0,0.8);
+  }
+  button { 
+    width:100%; 
+    margin:6px 0; 
+    padding:12px; 
+    font-size:13px; 
+    cursor:pointer;
+    font-weight:bold;
+    border:2px solid #444;
+    background:#333;
+    color:#fff;
+    transition:all 0.2s;
+  }
+  button:hover { background:#444; transform:scale(1.02); }
+  .small { font-size:11px; opacity:.85; margin:8px 0; }
+  #musicBtn { 
+    background:#4CAF50; 
+    border-color:#45a049; 
+  }
+  #musicBtn.playing { 
+    background:#ff9800; 
+    border-color:#e68900; 
+  }
+  
+  /* Title Screen */
+  #titleScreen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+    background-size: 400% 400%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: bgShift 15s ease infinite;
+  }
+  
+  @keyframes bgShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  #titleScreen h1 {
+    font-size: 80px;
+    margin: 30px;
+    text-shadow: 0 0 20px #fff, 0 0 40px #ff00de, 0 0 60px #ff00de, 0 0 80px #ff00de;
+    animation: glow 2s ease-in-out infinite, float 3s ease-in-out infinite;
+    letter-spacing: 8px;
+  }
+  
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 0 20px #fff, 0 0 40px #ff00de, 0 0 60px #ff00de; }
+    50% { text-shadow: 0 0 30px #fff, 0 0 60px #00ff00, 0 0 80px #00ff00, 0 0 100px #00ff00; }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  #titleScreen .subtitle {
+    font-size: 28px;
+    margin-bottom: 50px;
+    opacity: 0.9;
+    animation: pulse 3s ease-in-out infinite;
+    letter-spacing: 4px;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+  
+  .modeBtn {
+    width: 350px;
+    padding: 25px;
+    margin: 18px;
+    font-size: 26px;
+    font-weight: bold;
+    border: 4px solid #fff;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  }
+  
+  .modeBtn.standard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+  
+  .modeBtn.plaag {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    animation: plaagPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes plaagPulse {
+    0%, 100% { box-shadow: 0 8px 20px rgba(245,87,108,0.4); }
+    50% { box-shadow: 0 8px 40px rgba(245,87,108,0.8), 0 0 30px rgba(245,87,108,0.6); }
+  }
+  
+  .modeBtn:hover {
+    transform: scale(1.1) rotate(2deg);
+    box-shadow: 0 12px 40px rgba(255,255,255,0.3);
+  }
+  
+  /* End Screens */
+  .endScreen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    text-align: center;
+    animation: fadeIn 0.5s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  #victoryScreen {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffa500 100%);
+    background-size: 400% 400%;
+    animation: victoryPulse 2s ease-in-out infinite, bgShift 10s ease infinite;
+  }
+  
+  @keyframes victoryPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+  }
+  
+  #deathScreen {
+    background: linear-gradient(135deg, #8b0000 0%, #ff0000 50%, #8b0000 100%);
+    background-size: 400% 400%;
+    animation: bgShift 8s ease infinite;
+  }
+  
+  .endScreen h1 {
+    font-size: 72px;
+    margin: 30px;
+    text-shadow: 4px 4px 8px rgba(0,0,0,0.7);
+    animation: float 2s ease-in-out infinite;
+  }
+  
+  .endScreen .message {
+    font-size: 24px;
+    margin: 20px;
+    max-width: 700px;
+    line-height: 1.6;
+  }
+  
+  .endScreen .stats {
+    font-size: 28px;
+    margin: 25px;
+    padding: 20px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 15px;
+    border: 3px solid rgba(255,255,255,0.3);
+  }
+  
+  #leaderboard {
+    background: rgba(0,0,0,0.8);
+    padding: 35px;
+    border-radius: 20px;
+    margin: 25px;
+    min-width: 500px;
+    border: 4px solid #ffd700;
+  }
+  
+  #leaderboard h2 {
+    font-size: 36px;
+    margin-bottom: 25px;
+    color: #ffd700;
+    text-shadow: 0 0 10px #ffd700;
+  }
+  
+  .leaderboard-entry {
+    padding: 12px;
+    margin: 8px 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .leaderboard-entry.player {
+    background: rgba(255,215,0,0.3);
+    border: 3px solid #ffd700;
+    animation: highlight 1s ease-in-out infinite;
+  }
+  
+  @keyframes highlight {
+    0%, 100% { box-shadow: 0 0 10px #ffd700; }
+    50% { box-shadow: 0 0 20px #ffd700; }
+  }
+  
+  .restartBtn {
+    padding: 18px 50px;
+    font-size: 28px;
+    margin-top: 35px;
+    border: 4px solid #fff;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    transition: all 0.3s;
+  }
+  
+  .restartBtn:hover {
+    transform: scale(1.1);
+    background: rgba(255,255,255,0.2);
+    box-shadow: 0 0 30px rgba(255,255,255,0.5);
+  }
 </style>
 </head>
 <body>
 
-<div id="ui">
-  <h2>🛡️ Tsjaad TD</h2>
-  <div>💰 Geld: <span id="money">500</span></div>
-  <div>❤️ Levens: <span id="lives">20</span></div>
-  <div>🌊 Ronde: <span id="round">1</span>/30</div>
+<!-- Title Screen -->
+<div id="titleScreen">
+  <h1>🛡️ TSJAAD TD 🛡️</h1>
+  <div class="subtitle">⚔️ ULTIMATE TOWER DEFENSE ⚔️</div>
+  <button class="modeBtn standard" onclick="startGame('standard')">STANDAARD MODUS</button>
+  <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS</button>
+</div>
+
+<!-- Victory Screen -->
+<div id="victoryScreen" class="endScreen">
+  <h1>🏆 JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!!🏆</h1>
+  <div class="message">
+    <strong>JE HEBT DE MALARIA MUG VERSLAGEN!</strong><br>
+    TSJAAD IS VEILIG DANKZIJ JOU!<br>
+    <em>JE BENT TSJAADTASTISCH!</em>
+  </div>
+  <div class="stats">
+    ⚔️ Rondes Overleefd: <strong><span id="finalRound"></span></strong><br>
+    💰 Totaal Verdiend: <strong>€<span id="finalMoney"></span></strong>
+  </div>
+  <button class="restartBtn" onclick="location.reload()">🔄 Opnieuw Spelen</button>
+</div>
+
+<!-- Death Screen -->
+<div id="deathScreen" class="endScreen">
+  <h1>💀 GAME OVER 💀</h1>
+  <div class="message" id="deathMessage"></div>
+  <div class="stats" id="deathStats"></div>
+  <div id="leaderboard" style="display:none;">
+    <h2>🏆 LEADERBOARD 🏆</h2>
+    <div id="leaderboardList"></div>
+  </div>
+  <button class="restartBtn" onclick="location.reload()">🔄 Opnieuw Proberen</button>
+</div>
+
+<!-- Game UI -->
+<div id="ui" style="display:none;">
+  <h2 id="gameTitle">🛡️ Tsjaad TD</h2>
+  <div style="margin:10px 0; font-size:16px;">
+    <div>💰 Geld: <strong><span id="money">500</span></strong></div>
+    <div>❤️ Levens: <strong><span id="lives">20</span></strong></div>
+    <div>🌊 Ronde: <strong><span id="round">1</span><span id="roundMax">/30</span></strong></div>
+  </div>
   <div id="roundMsg" class="small"></div>
+  <hr style="margin:10px 0; border-color:#444;">
 
-  <button onclick="selectTower('speer')">Speer Werper (€80)</button>
-  <button onclick="selectTower('boog')">Boog Schutter (€125)</button>
-  <button onclick="selectTower('geweer')">Soldaat (€550)</button>
-  <button onclick="selectTower('atoom')">Atoombommenwerper (€600)</button>
-  <button onclick="selectTower('katoen')">Katoen Plantage (€950)</button>
-  <button onclick="selectTower('tsjaadinator')">Tsjaadinator (€2500)</button>
+  <button onclick="selectTower('speer')">⚔️ Speer Werper (€80)</button>
+  <button onclick="selectTower('boog')">🏹 Boog Schutter (€125)</button>
+  <button onclick="selectTower('plaagdokter')">💉 Plaag Dokter (€300)</button>
+  <button onclick="selectTower('geweer')">🔫 Soldaat (€550)</button>
+  <button onclick="selectTower('atoom')">💣 Atoombommenwerper (€600)</button>
+  <button onclick="selectTower('katoen')">🌾 Katoen Plantage (€950)</button>
+  <button onclick="selectTower('tsjaadinator')">⚡ Tsjaadinator (€2500)</button>
+  <button onclick="selectTower('sniper')">🎯 Sniper (€3000)</button>
 
-  <button onclick="startRound()">▶️ Start Ronde</button>
+  <hr style="margin:10px 0; border-color:#444;">
+  <button onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
   <button id="musicBtn" onclick="toggleMusic()">🔇 Muziek Aan</button>
-  <p class="small">Klik toren = upgrade. Max 4 (ultimate).</p>
+  <p class="small">💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)</p>
 </div>
 
 <div id="gameWrap">
@@ -43,98 +333,114 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-const path = [
+// Game mode
+let gameMode = null;
+
+// Paths
+const standardPath = [
   {x:-20,y:260},{x:180,y:260},{x:180,y:120},{x:420,y:120},
   {x:420,y:380},{x:700,y:380},{x:700,y:220},{x:920,y:220}
 ];
 
+const volcanoPath = [
+  {x:-20,y:100},{x:150,y:100},{x:150,y:300},{x:350,y:300},
+  {x:350,y:150},{x:550,y:150},{x:550,y:400},{x:750,y:400},
+  {x:750,y:200},{x:920,y:200}
+];
+
+let path = standardPath;
 let money=500, lives=20, round=1;
 let selectedTower=null;
 let enemies=[], towers=[], projectiles=[], explosions=[];
 let spawning=false, spawnLeft=0, spawnTimer=0;
 let gameWon=false;
+let totalMoneyEarned = 0;
 
 // ===== AUDIO =====
 const sounds = {
   mainTheme: new Audio('Audio/MainTheme.mp3'),
+  volcanoTheme: new Audio('Audio/VolcanoTheme.mp3'),
   kill: new Audio('Audio/Kill.mp3'),
   upgrade: new Audio('Audio/Upgrade.mp3'),
-  placement: new Audio('Audio/Placement.mp3')
+  placement: new Audio('Audio/Placement.mp3'),
+  sniper: new Audio('Audio/Sniper.mp3')
 };
 
-// Set main theme to loop and preload
 sounds.mainTheme.loop = true;
 sounds.mainTheme.volume = 0.5;
-sounds.mainTheme.preload = 'auto';
+sounds.volcanoTheme.loop = true;
+sounds.volcanoTheme.volume = 0.5;
 
 let musicPlaying = false;
-let musicLoaded = false;
-
-// Preload music
-sounds.mainTheme.addEventListener('canplaythrough', () => {
-  musicLoaded = true;
-  console.log('Music loaded successfully');
-});
-
-sounds.mainTheme.addEventListener('error', (e) => {
-  console.error('Failed to load music:', e);
-});
-
-// Start loading the music immediately
-sounds.mainTheme.load();
+let currentTheme = null;
 
 function toggleMusic() {
   const btn = document.getElementById('musicBtn');
   
   if(musicPlaying) {
-    sounds.mainTheme.pause();
+    if(currentTheme) currentTheme.pause();
     musicPlaying = false;
     btn.textContent = '🔇 Muziek Aan';
     btn.classList.remove('playing');
   } else {
-    btn.textContent = '⏳ Laden...';
-    btn.disabled = true;
-    
-    // Try to play
-    sounds.mainTheme.play()
-      .then(() => {
-        musicPlaying = true;
-        btn.textContent = '🔊 Muziek Uit';
-        btn.classList.add('playing');
-        btn.disabled = false;
-      })
-      .catch(e => {
-        console.error('Music play error:', e);
-        btn.textContent = '🔇 Muziek Aan';
-        btn.disabled = false;
-        
-        // Show more detailed error
-        if(e.name === 'NotSupportedError') {
-          alert('Audio formaat wordt niet ondersteund door je browser.');
-        } else if(e.name === 'NotAllowedError') {
-          alert('Browser blokkeert het afspelen. Probeer opnieuw.');
-        } else {
-          alert('Fout bij afspelen: ' + e.message + '\n\nControleer de browser console (F12) voor details.');
-        }
-      });
+    if(currentTheme) {
+      currentTheme.play()
+        .then(() => {
+          musicPlaying = true;
+          btn.textContent = '🔊 Muziek Uit';
+          btn.classList.add('playing');
+        })
+        .catch(e => {
+          console.error('Music play error:', e);
+          btn.textContent = '🔇 Muziek Aan';
+        });
+    }
   }
 }
 
 function playSound(soundName) {
   if(sounds[soundName]) {
-    sounds[soundName].currentTime = 0;
-    sounds[soundName].play().catch(e => console.log('Sound play failed:', e));
+    const sound = sounds[soundName].cloneNode();
+    sound.volume = soundName === 'sniper' ? 0.4 : 0.5;
+    sound.play().catch(e => console.log('Sound play failed:', e));
   }
+}
+
+// ===== GAME MODE SELECTION =====
+function startGame(mode) {
+  gameMode = mode;
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('ui').style.display = 'block';
+  
+  if(mode === 'plaag') {
+    path = volcanoPath;
+    document.getElementById('gameTitle').innerHTML = '🌋 <span style="color:#ff6b35">PLAAG MODUS</span> 🦠';
+    document.getElementById('roundMax').textContent = '';
+    lives = 15;
+    money = 600;
+    currentTheme = sounds.volcanoTheme;
+  } else {
+    path = standardPath;
+    document.getElementById('gameTitle').textContent = '🛡️ Tsjaad TD';
+    document.getElementById('roundMax').textContent = '/30';
+    currentTheme = sounds.mainTheme;
+  }
+  
+  document.getElementById('lives').textContent = lives;
+  document.getElementById('money').textContent = money;
+  loop();
 }
 
 // ===== TOWERS =====
 const towerTypes={
-  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,color:'#2e6b3a',ultCost:800},
-  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,color:'#3a5a2e',ultCost:1000},
-  geweer:{range:240,rate:12,dmg:2,speed:7,cost:550,color:'#444',ultCost:3000},
-  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,color:'#00bcd4',ultCost:15000},
-  atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,color:'#4caf50',bomb:true,ultCost:3500},
-  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,color:'#ffffff',farm:true,ultCost:4000}
+  speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,ultCost:800},
+  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1000},
+  plaagdokter:{range:140,rate:90,dmg:5,speed:3.5,cost:300,ultCost:2000,slow:true},
+  geweer:{range:240,rate:12,dmg:2,speed:7,cost:550,ultCost:3000},
+  sniper:{range:99999999999,rate:300,dmg:300,speed:10,cost:3000,ultCost:20000},
+  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000},
+  atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,bomb:true,ultCost:3500},
+  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000}
 };
 
 // ===== ENEMIES =====
@@ -168,17 +474,28 @@ canvas.onclick=e=>{
   if(money<cfg.cost) return;
   money-=cfg.cost;
 
-  towers.push({x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,ultimate:false,upText:0,farm:cfg.farm||false});
+  const newTower = {
+    x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,
+    ultimate:false,upText:0,farm:cfg.farm||false,slow:cfg.slow||false
+  };
+  
+  if(selectedTower === 'plaagdokter') {
+    newTower.slowAmount = 0.20;
+    newTower.slowDuration = 180; // 3 seconds
+  }
+  
+  towers.push(newTower);
   playSound('placement');
 };
 
 function handleUpgrade(t){
-  // Verschillende upgrade kosten per tower
   let upgradeCost;
   if(t.key === 'speer') upgradeCost = 50;
   else if(t.key === 'boog') upgradeCost = 100;
+  else if(t.key === 'plaagdokter') upgradeCost = 250;
   else if(t.key === 'geweer') upgradeCost = 350;
   else if(t.key === 'atoom') upgradeCost = 500;
+  else if(t.key === 'sniper') upgradeCost = 2500;
   else if(t.key === 'tsjaadinator') upgradeCost = 800;
   else if(t.key === 'katoen') upgradeCost = 200;
   else upgradeCost = 200;
@@ -187,7 +504,18 @@ function handleUpgrade(t){
     if(money<upgradeCost) return;
     money-=upgradeCost;
     t.level++;
-    if(!t.farm){ t.dmg*=1.25; t.rate*=0.85; }
+    
+    if(t.key === 'sniper') {
+      t.dmg += 200;
+    } else if(t.key === 'plaagdokter') {
+      t.dmg *= 1.25;
+      t.rate *= 0.85;
+      t.slowAmount += 0.05;
+    } else if(!t.farm) {
+      t.dmg *= 1.25;
+      t.rate *= 0.85;
+    }
+    
     t.upText=90;
     playSound('upgrade');
     return;
@@ -205,6 +533,12 @@ function handleUpgrade(t){
   else if(t.key==='speer'){ t.dmg*=3; t.rate*=1.2; }
   else if(t.key==='geweer'){ t.dmg*=2.8; t.rate*=0.35; }
   else if(t.key==='boog'){ t.dmg*=3; t.rate*=0.50; }
+  else if(t.key==='sniper'){ t.dmg=5000; }
+  else if(t.key==='plaagdokter'){ 
+    t.dmg*=2; 
+    t.slowDuration = 999999;
+  }
+  
   t.upText=140;
   playSound('upgrade');
 }
@@ -223,15 +557,20 @@ function startRound(){
       farmCash += base;
     }
   }
-  showRoundMsg(farmCash>0 ? `🌾 Plantages verdienden €${farmCash}` : `▶️ Ronde ${round} gestart`);
+  showRoundMsg(farmCash>0 ? `🌾 Plantages: €${farmCash}` : `▶️ Ronde ${round}`);
 
-  if(round === 30){ 
+  if(gameMode === 'standard' && round === 30){ 
     spawnLeft = 1;
     spawning = true; 
     return; 
   }
 
-  spawnLeft = Math.floor(5 + round*1.8);
+  let baseEnemies = Math.floor(5 + round*1.8);
+  if(gameMode === 'plaag') {
+    baseEnemies = Math.floor(8 + round*2.2);
+  }
+  
+  spawnLeft = baseEnemies;
   spawning = true;
   spawnTimer = 0;
 }
@@ -244,17 +583,21 @@ function showRoundMsg(txt){
 
 // ===== SPAWN ENEMIES =====
 function spawnEnemy(){
-  if(round === 30){
+  if(gameMode === 'standard' && round === 30){
     enemies.push(makeEnemy({...bossType}));
     return;
   }
 
-  // Filter dieren op basis van ronde
   const availableAnimals = animalTypes.filter(a => !a.minRound || round >= a.minRound);
   let base = availableAnimals[Math.floor(Math.random()*availableAnimals.length)];
   
   let hpScale = 1 + round*0.14;
   let speedScale = 1 + round*0.02;
+
+  if(gameMode === 'plaag') {
+    hpScale *= 1.35;
+    speedScale *= 1.12;
+  }
 
   if(round > 8){
     hpScale *= 1 + 0.08*(round-8);
@@ -270,41 +613,117 @@ function spawnEnemy(){
     ...base,
     hp: Math.floor(base.hp*hpScale),
     speed: base.speed*speedScale,
-    reward: Math.floor(base.reward*(1+round*0.15))
+    reward: Math.floor(base.reward*(1+round*0.15)),
+    infected: gameMode === 'plaag'
   }));
 }
 
 function makeEnemy(t){ 
-  return {x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,size:t.size,reward:t.reward,name:t.name,type:t.type,boss:t.boss}; 
+  return {
+    x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,
+    baseSpeed:t.speed,size:t.size,reward:t.reward,name:t.name,
+    type:t.type,boss:t.boss,infected:t.infected||false,
+    slowEndTime:0
+  }; 
 }
 
 // ===== WIN & LOSS =====
 function winGame(){
   gameWon=true;
-  document.getElementById('roundMsg').textContent = '🏆 GEFELICITEERD! JE HEBT DE PLAAG IN TSJAAD OVERLEEFD! JE BENT TSJAADTASTISCH!';
+  if(currentTheme) currentTheme.pause();
+  document.getElementById('finalRound').textContent = round;
+  document.getElementById('finalMoney').textContent = totalMoneyEarned;
+  document.getElementById('victoryScreen').style.display = 'flex';
 }
 
 function loseGame(){
   gameWon=true;
-  document.getElementById('roundMsg').textContent = '💀 je hebt helaas verloren LOOOOSER';
+  if(currentTheme) currentTheme.pause();
+  
+  if(gameMode === 'plaag') {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>JE OVERLEEFDE ${round} RONDES!</strong><br>DE PLAAG WAS TE STERK...`;
+    document.getElementById('deathStats').innerHTML = 
+      `💀 VERBRIJZELD OP RONDE: <strong>${round}</strong><br>` +
+      `💰 TOTAAL VERDIEND: <strong>€${totalMoneyEarned}</strong>`;
+    document.getElementById('leaderboard').style.display = 'block';
+    saveAndShowLeaderboard(round);
+  } else {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>DE DIEREN HEBBEN GEWONNEN...</strong><br>JE BEREIKTE RONDE ${round}`;
+    document.getElementById('deathStats').innerHTML = 
+      `⚔️ PLAAG OVERLEEFD TOT RONDE: <strong>${round}</strong><br>` +
+      `💰 TOTAAL VERDIEND: <strong>€${totalMoneyEarned}</strong>`;
+  }
+  
+  document.getElementById('deathScreen').style.display = 'flex';
+}
+
+// ===== LEADERBOARD =====
+function saveAndShowLeaderboard(score) {
+  let leaderboard = JSON.parse(localStorage.getItem('tsjaadTD_leaderboard') || '[]');
+  
+  const newEntry = {
+    score: score,
+    date: new Date().toLocaleDateString('nl-NL'),
+    time: new Date().toLocaleTimeString('nl-NL'),
+    id: Date.now()
+  };
+  
+  leaderboard.push(newEntry);
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 10);
+  
+  localStorage.setItem('tsjaadTD_leaderboard', JSON.stringify(leaderboard));
+  
+  const listEl = document.getElementById('leaderboardList');
+  listEl.innerHTML = '';
+  
+  leaderboard.forEach((entry, index) => {
+    const isPlayer = entry.id === newEntry.id;
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'leaderboard-entry' + (isPlayer ? ' player' : '');
+    entryDiv.innerHTML = `
+      <span><strong>#${index + 1}</strong> - Ronde ${entry.score}</span>
+      <span style="opacity:0.7">${entry.date}</span>
+    `;
+    listEl.appendChild(entryDiv);
+  });
 }
 
 // ===== UPDATE =====
 function update(){
   if(spawning){
     spawnTimer--;
-    if(spawnTimer<=0 && spawnLeft>0){ spawnEnemy(); spawnLeft--; spawnTimer=60-Math.min(40,round); }
+    if(spawnTimer<=0 && spawnLeft>0){ 
+      spawnEnemy(); 
+      spawnLeft--; 
+      spawnTimer=60-Math.min(40,round); 
+    }
     if(spawnLeft===0 && enemies.length===0){ 
       spawning=false; 
-      if(round<30) round=Math.min(30,round+1); 
+      if(gameMode === 'standard' && round < 30) {
+        round++;
+      } else if(gameMode === 'plaag') {
+        round++;
+      }
     }
   }
 
   for(const e of enemies){
-    const p=path[e.i+1]; if(!p) continue;
+    if(e.slowEndTime > 0) {
+      e.slowEndTime--;
+      if(e.slowEndTime <= 0) {
+        e.speed = e.baseSpeed;
+      }
+    }
+    
+    const p=path[e.i+1]; 
+    if(!p) continue;
     const dx=p.x-e.x, dy=p.y-e.y;
     const d=Math.hypot(dx,dy);
-    if(d<e.speed){ e.i++; } else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
+    if(d<e.speed){ e.i++; } 
+    else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
 
     if(e.boss && e.i>=path.length-1){ lives=0; loseGame(); }
   }
@@ -312,27 +731,46 @@ function update(){
   for(const t of towers){
     if(t.upText>0) t.upText--;
     if(t.farm) continue;
-    t.cool--; if(t.cool>0) continue;
+    t.cool--; 
+    if(t.cool>0) continue;
+    
     const cfg=towerTypes[t.key];
     const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
     if(!target) continue;
+    
     projectiles.push({
       x:t.x,y:t.y,tx:target.x,ty:target.y,target,
       speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,
       gold:t.ultimate,
-      towerKey:t.key
+      towerKey:t.key,
+      tower:t
     });
     t.cool=t.rate;
+    
+    if(t.key === 'sniper') playSound('sniper');
   }
 
   for(const p of projectiles){
     const dx=p.tx-p.x, dy=p.ty-p.y;
     const d=Math.hypot(dx,dy);
     if(d<p.speed){ 
-      p.target.hp-=p.dmg; 
-      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold}); 
+      p.target.hp-=p.dmg;
+      
+      if(p.towerKey === 'plaagdokter') {
+        const tower = p.tower;
+        if(p.target.slowEndTime <= 0 || tower.ultimate) {
+          const slowAmount = tower.slowAmount;
+          p.target.speed = p.target.baseSpeed * (1 - slowAmount);
+          p.target.slowEndTime = tower.slowDuration;
+        }
+      }
+      
+      if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});
       p.dead=true; 
-    } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
+    } else { 
+      p.x+=dx/d*p.speed; 
+      p.y+=dy/d*p.speed; 
+    }
   }
 
   for(const ex of explosions){ ex.r+=2.5; ex.t--; }
@@ -342,6 +780,7 @@ function update(){
     if(e.hp<=0){ 
       if(e.boss){ winGame(); } 
       money+=e.reward;
+      totalMoneyEarned += e.reward;
       playSound('kill');
       return false;
     } 
@@ -352,6 +791,7 @@ function update(){
     } 
     return true; 
   });
+  
   projectiles=projectiles.filter(p=>!p.dead);
 
   document.getElementById('money').textContent=money;
@@ -360,148 +800,148 @@ function update(){
 
 // ===== DRAW =====
 function drawPath(){ 
-  // Gras achtergrond
-  ctx.fillStyle = '#7ab86d';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if(gameMode === 'plaag') {
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#5a2d0c');
+    gradient.addColorStop(0.5, '#8b4513');
+    gradient.addColorStop(1, '#654321');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#ff4500';
+    ctx.lineWidth = 28;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = '#ff0000';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    
+    ctx.strokeStyle = '#ff6347';
+    ctx.lineWidth = 22;
+    ctx.globalAlpha = 0.6;
+    ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.fillStyle = '#7ab86d';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Weg/pad
-  ctx.strokeStyle = '#c2b280';
-  ctx.lineWidth = 26;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
-  for (const p of path) {
-    ctx.lineTo(p.x, p.y);
-  }
-  ctx.stroke();
+    ctx.strokeStyle = '#c2b280';
+    ctx.lineWidth = 26;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
 
-  // Weg rand (donkerder)
-  ctx.strokeStyle = '#a89968';
-  ctx.lineWidth = 28;
-  ctx.lineCap = 'round';
-  ctx.globalAlpha = 0.3;
-  ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
-  for (const p of path) {
-    ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = '#a89968';
+    ctx.lineWidth = 28;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   }
-  ctx.stroke();
-  ctx.globalAlpha = 1;
 }
 
 function drawEnemy(e){
   ctx.save(); 
   ctx.translate(e.x,e.y);
   
+  if(e.infected) {
+    ctx.globalAlpha = 0.95;
+  }
+  
+  const baseColor = e.infected ? '#4a5a2a' : null;
+  
   if(e.type==='olifant'){
-    // Realistische olifant
-    ctx.fillStyle='#8b8b8b';
-    // Lichaam
+    ctx.fillStyle=baseColor||'#8b8b8b';
     ctx.beginPath();
     ctx.ellipse(0,0,16,12,0,0,Math.PI*2);
     ctx.fill();
-    // Hoofd
     ctx.beginPath();
     ctx.ellipse(14,-2,8,7,0,0,Math.PI*2);
     ctx.fill();
-    // Slurf
-    ctx.strokeStyle='#8b8b8b';
+    ctx.strokeStyle=baseColor||'#8b8b8b';
     ctx.lineWidth=4;
     ctx.beginPath();
     ctx.moveTo(20,-2);
     ctx.quadraticCurveTo(26,4,24,10);
     ctx.stroke();
-    // Oren
-    ctx.fillStyle='#7a7a7a';
+    ctx.fillStyle=e.infected?'#3a4a1a':'#7a7a7a';
     ctx.beginPath();
     ctx.ellipse(12,-8,5,6,0,0,Math.PI*2);
     ctx.fill();
-    // Poten
     ctx.fillRect(-12,8,4,6);
     ctx.fillRect(-4,8,4,6);
     ctx.fillRect(4,8,4,6);
     ctx.fillRect(12,8,4,6);
   }
   else if(e.type==='neushoorn'){
-    // Realistische neushoorn
-    ctx.fillStyle='#6b6b6b';
-    // Lichaam
+    ctx.fillStyle=baseColor||'#6b6b6b';
     ctx.fillRect(-14,-10,28,18);
-    // Hoofd
     ctx.fillRect(10,-8,10,14);
-    // Hoorn
     ctx.fillStyle='#d4d4d4';
     ctx.beginPath();
     ctx.moveTo(20,-4);
     ctx.lineTo(28,-6);
     ctx.lineTo(20,-2);
     ctx.fill();
-    // Poten
-    ctx.fillStyle='#5a5a5a';
+    ctx.fillStyle=e.infected?'#3a4a1a':'#5a5a5a';
     ctx.fillRect(-12,8,5,8);
     ctx.fillRect(-2,8,5,8);
     ctx.fillRect(8,8,5,8);
   }
   else if(e.type==='giraffe'){
-    // Realistische giraffe
-    ctx.fillStyle='#daa520';
-    // Lichaam
+    ctx.fillStyle=e.infected?'#6b6b00':'#daa520';
     ctx.fillRect(-12,-8,20,14);
-    // Nek
     ctx.fillRect(6,-20,5,12);
-    // Hoofd
     ctx.beginPath();
     ctx.ellipse(8.5,-22,4,3,0,0,Math.PI*2);
     ctx.fill();
-    // Vlekken
-    ctx.fillStyle='#8b4513';
+    ctx.fillStyle=e.infected?'#4a5a00':'#8b4513';
     ctx.fillRect(-8,-4,3,3);
     ctx.fillRect(-2,-6,3,3);
     ctx.fillRect(2,0,3,3);
-    // Poten
-    ctx.fillStyle='#b8860b';
+    ctx.fillStyle=e.infected?'#5a5a00':'#b8860b';
     ctx.fillRect(-10,6,3,10);
     ctx.fillRect(-2,6,3,10);
     ctx.fillRect(4,6,3,10);
   }
   else if(e.type==='leeuw'){
-    // Realistische leeuw
-    ctx.fillStyle='#cd853f';
-    // Lichaam
+    ctx.fillStyle=e.infected?'#6b5a00':'#cd853f';
     ctx.fillRect(-12,-8,22,14);
-    // Hoofd met manen
-    ctx.fillStyle='#8b6914';
+    ctx.fillStyle=e.infected?'#5a4a00':'#8b6914';
     ctx.beginPath();
     ctx.arc(12,-2,8,0,Math.PI*2);
     ctx.fill();
-    // Gezicht
-    ctx.fillStyle='#cd853f';
+    ctx.fillStyle=e.infected?'#6b5a00':'#cd853f';
     ctx.beginPath();
     ctx.arc(12,-2,5,0,Math.PI*2);
     ctx.fill();
-    // Staart
-    ctx.strokeStyle='#cd853f';
+    ctx.strokeStyle=e.infected?'#6b5a00':'#cd853f';
     ctx.lineWidth=3;
     ctx.beginPath();
     ctx.moveTo(-12,0);
     ctx.lineTo(-20,2);
     ctx.stroke();
-    // Poten
     ctx.fillRect(-8,6,3,8);
     ctx.fillRect(0,6,3,8);
     ctx.fillRect(8,6,3,8);
   }
   else if(e.type==='cheetah'){
-    // Realistische cheetah
-    ctx.fillStyle='#daa520';
-    // Lichaam (slanker dan leeuw)
+    ctx.fillStyle=e.infected?'#6b6b00':'#daa520';
     ctx.fillRect(-10,-6,20,11);
-    // Hoofd
-    ctx.fillStyle='#daa520';
     ctx.beginPath();
     ctx.arc(12,-1,6,0,Math.PI*2);
     ctx.fill();
-    // Zwarte traan strepen
     ctx.strokeStyle='#000';
     ctx.lineWidth=1.5;
     ctx.beginPath();
@@ -512,43 +952,35 @@ function drawEnemy(e){
     ctx.moveTo(10,-4);
     ctx.lineTo(10,2);
     ctx.stroke();
-    // Vlekken
-    ctx.fillStyle='#8b4513';
+    ctx.fillStyle=e.infected?'#4a5a00':'#8b4513';
     ctx.fillRect(-6,-3,2,2);
     ctx.fillRect(-2,-5,2,2);
     ctx.fillRect(2,-2,2,2);
     ctx.fillRect(6,-4,2,2);
-    // Staart (lang en dun)
-    ctx.strokeStyle='#daa520';
+    ctx.strokeStyle=e.infected?'#6b6b00':'#daa520';
     ctx.lineWidth=2;
     ctx.beginPath();
     ctx.moveTo(-10,0);
     ctx.lineTo(-18,4);
     ctx.stroke();
-    // Poten (lang en dun voor snelheid)
     ctx.fillRect(-7,5,2,9);
     ctx.fillRect(-1,5,2,9);
     ctx.fillRect(7,5,2,9);
   }
   else if(e.type==='nijlpaard'){
-    // Realistische nijlpaard
-    ctx.fillStyle='#5a5a5a';
-    // Groot rond lichaam
+    ctx.fillStyle=e.infected?'#3a4a2a':'#5a5a5a';
     ctx.beginPath();
     ctx.ellipse(0,0,18,14,0,0,Math.PI*2);
     ctx.fill();
-    // Hoofd (groot en vierkant)
-    ctx.fillStyle='#4a4a4a';
+    ctx.fillStyle=e.infected?'#2a3a1a':'#4a4a4a';
     ctx.fillRect(12,-10,14,16);
-    // Oren (klein)
-    ctx.fillStyle='#5a5a5a';
+    ctx.fillStyle=e.infected?'#3a4a2a':'#5a5a5a';
     ctx.beginPath();
     ctx.ellipse(14,-9,3,2,0,0,Math.PI*2);
     ctx.fill();
     ctx.beginPath();
     ctx.ellipse(24,-9,3,2,0,0,Math.PI*2);
     ctx.fill();
-    // Ogen
     ctx.fillStyle='#2a2a2a';
     ctx.beginPath();
     ctx.arc(16,-6,2,0,Math.PI*2);
@@ -556,29 +988,23 @@ function drawEnemy(e){
     ctx.beginPath();
     ctx.arc(22,-6,2,0,Math.PI*2);
     ctx.fill();
-    // Grote bek
-    ctx.fillStyle='#ff69b4';
+    ctx.fillStyle=e.infected?'#6b0000':'#ff69b4';
     ctx.fillRect(14,2,12,4);
-    // Tanden
     ctx.fillStyle='#fff';
     ctx.fillRect(16,2,2,3);
     ctx.fillRect(20,2,2,3);
     ctx.fillRect(24,2,2,3);
-    // Korte, dikke poten
-    ctx.fillStyle='#4a4a4a';
+    ctx.fillStyle=e.infected?'#2a3a1a':'#4a4a4a';
     ctx.fillRect(-14,8,6,10);
     ctx.fillRect(-4,8,6,10);
     ctx.fillRect(6,8,6,10);
     ctx.fillRect(16,8,6,10);
   }
   else if(e.type==='mug'){
-    // Realistische malaria mug
     ctx.fillStyle='#1a1a1a';
-    // Lichaam
     ctx.beginPath();
     ctx.ellipse(0,0,12,5,0,0,Math.PI*2);
     ctx.fill();
-    // Vleugels
     ctx.fillStyle='rgba(200,200,255,0.3)';
     ctx.beginPath();
     ctx.ellipse(-8,-4,10,6,-0.3,0,Math.PI*2);
@@ -586,7 +1012,6 @@ function drawEnemy(e){
     ctx.beginPath();
     ctx.ellipse(8,-4,10,6,0.3,0,Math.PI*2);
     ctx.fill();
-    // Poten
     ctx.strokeStyle='#2a2a2a';
     ctx.lineWidth=1.5;
     for(let i=-1;i<=1;i++){
@@ -595,7 +1020,6 @@ function drawEnemy(e){
       ctx.lineTo(i*8,12);
       ctx.stroke();
     }
-    // Steeksnuit
     ctx.strokeStyle='#3a3a3a';
     ctx.lineWidth=2;
     ctx.beginPath();
@@ -604,13 +1028,24 @@ function drawEnemy(e){
     ctx.stroke();
   }
 
-  // Health bar
+  ctx.globalAlpha = 1;
+  
+  if(e.slowEndTime > 0) {
+    ctx.strokeStyle = '#9333ea';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, e.size + 3, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
   ctx.fillStyle='red'; 
   ctx.fillRect(-20,-24,40,5);
   ctx.fillStyle='lime'; 
   ctx.fillRect(-20,-24,40*(e.hp/e.max),5);
   ctx.fillStyle='white'; 
-  ctx.font='10px sans-serif'; 
+  ctx.font='10px Arial'; 
   ctx.textAlign='center'; 
   ctx.fillText(e.name,0,-28);
   ctx.restore();
@@ -624,27 +1059,24 @@ function drawTower(t){
   ctx.translate(t.x, t.y);
   ctx.scale(scale, scale);
 
-  // ---------------- SPEER ----------------
+  // SPEER
   if(t.key === 'speer'){
     ctx.fillStyle = t.ultimate ? '#9b59b6' : '#3f8f4a';
     ctx.beginPath();
     ctx.arc(0,0,9,0,Math.PI*2);
     ctx.fill();
-
     ctx.strokeStyle = t.ultimate ? '#8e44ad' : '#e0e0e0';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(-12,0);
     ctx.lineTo(12,0);
     ctx.stroke();
-
     ctx.fillStyle = t.ultimate ? '#dcd6f7' : '#ccc';
     ctx.beginPath();
     ctx.moveTo(12,0);
     ctx.lineTo(6,-4);
     ctx.lineTo(6,4);
     ctx.fill();
-
     if(t.level >= 2){
       ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 2;
@@ -652,7 +1084,6 @@ function drawTower(t){
       ctx.moveTo(-8,-6);
       ctx.lineTo(8,-6);
       ctx.stroke();
-
       ctx.fillStyle = '#ccc';
       ctx.beginPath();
       ctx.moveTo(8,-6);
@@ -660,7 +1091,6 @@ function drawTower(t){
       ctx.lineTo(4,-3);
       ctx.fill();
     }
-
     if(t.level >= 3){
       ctx.strokeStyle = '#e0e0e0';
       ctx.lineWidth = 2;
@@ -668,7 +1098,6 @@ function drawTower(t){
       ctx.moveTo(-8,6);
       ctx.lineTo(8,6);
       ctx.stroke();
-
       ctx.fillStyle = '#ccc';
       ctx.beginPath();
       ctx.moveTo(8,6);
@@ -677,25 +1106,22 @@ function drawTower(t){
       ctx.fill();
     }
   }
-
-  // ---------------- BOOG ----------------
+  
+  // BOOG
   else if(t.key === 'boog'){
     ctx.strokeStyle = t.ultimate ? '#3498db' : '#c68642';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(0,0,10,-Math.PI/2,Math.PI/2);
     ctx.stroke();
-
     ctx.strokeStyle = t.ultimate ? '#5dade2' : '#fff';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0,-10);
     ctx.lineTo(0,10);
     ctx.stroke();
-
     ctx.fillStyle = t.ultimate ? '#21618c' : '#8b5a2b';
     ctx.fillRect(-3,-3,6,6);
-
     if(t.level >= 2){
       ctx.strokeStyle = '#c68642';
       ctx.lineWidth = 3;
@@ -703,7 +1129,6 @@ function drawTower(t){
       ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2);
       ctx.stroke();
     }
-
     if(t.level >= 3){
       ctx.strokeStyle = '#c68642';
       ctx.lineWidth = 3;
@@ -712,24 +1137,70 @@ function drawTower(t){
       ctx.stroke();
     }
   }
-
-  // ---------------- GEWEER ----------------
+  
+  // PLAAG DOKTER
+  else if(t.key === 'plaagdokter'){
+    ctx.fillStyle = t.ultimate ? '#ffd700' : '#e91e63';
+    ctx.beginPath();
+    ctx.arc(0,0,10,0,Math.PI*2);
+    ctx.fill();
+    
+    ctx.fillStyle = t.ultimate ? '#fff' : '#fff';
+    ctx.fillRect(-2,-7,4,14);
+    ctx.fillRect(-7,-2,14,4);
+    
+    if(t.level >= 2){
+      ctx.strokeStyle = t.ultimate ? '#ffd700' : '#c2185b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(8,-8);
+      ctx.lineTo(11,-11);
+      ctx.stroke();
+      ctx.fillStyle = t.ultimate ? '#ffd700' : '#fff';
+      ctx.fillRect(10,-12,2,2);
+    }
+    
+    if(t.level >= 3){
+      ctx.strokeStyle = t.ultimate ? '#ffd700' : '#c2185b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-8,-8);
+      ctx.lineTo(-11,-11);
+      ctx.stroke();
+      ctx.fillStyle = t.ultimate ? '#ffd700' : '#fff';
+      ctx.fillRect(-12,-12,2,2);
+      
+      ctx.beginPath();
+      ctx.moveTo(8,8);
+      ctx.lineTo(11,11);
+      ctx.stroke();
+      ctx.fillRect(10,10,2,2);
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle = '#ffed4e';
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.arc(0,0,13,0,Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+  
+  // GEWEER
   else if(t.key === 'geweer'){
     ctx.fillStyle = t.ultimate ? '#2c3e50' : '#444';
     ctx.fillRect(-8,-6,16,12);
-
     ctx.fillStyle = t.ultimate ? '#2980b9' : '#777';
     ctx.fillRect(8,-2,10,4);
-
     ctx.fillStyle = t.ultimate ? '#ecf0f1' : '#999';
     ctx.fillRect(-4,-14,8,6);
-
     if(t.level >= 2){
       ctx.fillStyle = '#777';
       ctx.fillRect(-7,3,2,8);
       ctx.fillRect(5,3,2,8);
     }
-
     if(t.level >= 3){
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 2;
@@ -738,19 +1209,51 @@ function drawTower(t){
       ctx.stroke();
     }
   }
-
-  // ---------------- ATOOM ----------------
+  
+  // SNIPER
+  else if(t.key === 'sniper'){
+    ctx.fillStyle = t.ultimate ? '#01579b' : '#0d47a1';
+    ctx.fillRect(-7,-6,14,12);
+    
+    ctx.fillStyle = t.ultimate ? '#263238' : '#37474f';
+    ctx.fillRect(7,-2,18,4);
+    
+    ctx.fillStyle = t.ultimate ? '#ffd700' : '#546e7a';
+    ctx.beginPath();
+    ctx.arc(-2,-9,4,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillRect(-4,-10,4,2);
+    
+    if(t.level >= 2){
+      ctx.fillStyle = t.ultimate ? '#01579b' : '#1565c0';
+      ctx.fillRect(20,-1,5,2);
+    }
+    
+    if(t.level >= 3){
+      ctx.fillStyle = t.ultimate ? '#ffd700' : '#78909c';
+      ctx.fillRect(-7,6,3,6);
+      ctx.fillRect(4,6,3,6);
+    }
+    
+    if(t.ultimate){
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.7;
+      ctx.strokeRect(-8,-7,16,14);
+      ctx.globalAlpha = 1;
+    }
+  }
+  
+  // ATOOM
   else if(t.key === 'atoom'){
     ctx.fillStyle = t.ultimate ? '#e74c3c' : '#4caf50';
     ctx.beginPath();
     ctx.arc(0,0,10,0,Math.PI*2);
     ctx.fill();
-
     ctx.fillStyle = t.ultimate ? '#e67e22' : '#b2ffb2';
     ctx.beginPath();
     ctx.arc(0,0,5,0,Math.PI*2);
     ctx.fill();
-
     const symbols = t.level >= 3 ? 4 : 3;
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 2;
@@ -763,7 +1266,6 @@ function drawTower(t){
       ctx.stroke();
       ctx.restore();
     }
-
     if(t.level >= 3){
       ctx.fillStyle = '#76ff03';
       ctx.beginPath();
@@ -771,17 +1273,15 @@ function drawTower(t){
       ctx.fill();
     }
   }
-
-  // ---------------- KATOEN ----------------
+  
+  // KATOEN
   else if(t.key === 'katoen'){
     ctx.fillStyle = t.ultimate ? '#27ae60' : '#e8e2b8';
     ctx.fillRect(-12,-12,24,24);
-
     ctx.fillStyle = t.ultimate ? '#2ecc71' : '#fff';
     ctx.beginPath();
     ctx.arc(0,0,7,0,Math.PI*2);
     ctx.fill();
-
     const bollen = [[0,0],[-4,-4],[4,-4],[4,4],[-4,4]];
     for(let i=1; i<=t.level && i<bollen.length; i++){
       ctx.beginPath();
@@ -789,23 +1289,21 @@ function drawTower(t){
       ctx.fill();
     }
   }
-
-  // ---------------- TSJAADINATOR ----------------
+  
+  // TSJAADINATOR
   else if(t.key === 'tsjaadinator'){
     ctx.fillStyle = t.ultimate ? '#00ffff' : '#00bcd4';
     ctx.beginPath();
     ctx.arc(0,0,11,0,Math.PI*2);
     ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-10,-10);
-
     ctx.strokeStyle = t.ultimate ? '#003366' : '#00363a';
     ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-10,-10);
     ctx.lineTo(10,10);
     ctx.moveTo(10,-10);
     ctx.lineTo(-10,10);
     ctx.stroke();
-
     if(t.level >= 2){
       ctx.strokeStyle = '#00bcd4';
       ctx.lineWidth = 2;
@@ -813,7 +1311,6 @@ function drawTower(t){
       ctx.arc(0,0,8,0,Math.PI*2);
       ctx.stroke();
     }
-
     if(t.level >= 3){
       ctx.strokeStyle = '#00bcd4';
       ctx.lineWidth = 2;
@@ -824,63 +1321,102 @@ function drawTower(t){
   }
 
   ctx.fillStyle='white'; 
-  ctx.font='10px sans-serif'; 
+  ctx.font='9px Arial'; 
   ctx.textAlign='center';
   
-  // Verschillende upgrade kosten per tower
   let nextCost;
   if(t.level < 3){
     if(t.key === 'speer') nextCost = 50;
     else if(t.key === 'boog') nextCost = 100;
+    else if(t.key === 'plaagdokter') nextCost = 250;
     else if(t.key === 'geweer') nextCost = 350;
     else if(t.key === 'atoom') nextCost = 500;
-    else if(t.key === 'tsjaadinator') nextCost = 2000;
+    else if(t.key === 'sniper') nextCost = 2500;
+    else if(t.key === 'tsjaadinator') nextCost = 800;
     else if(t.key === 'katoen') nextCost = 200;
     else nextCost = 200;
   } else {
     nextCost = t.ultimate ? 0 : cfg.ultCost;
   }
   
-  const label = t.level<3 ? `${t.level}/4 (€${nextCost})` : (t.ultimate? 'ULTIMATE' : `ULTIMATE (€${cfg.ultCost})`);
-  ctx.fillText(label,0,24/scale);
+  const label = t.level<3 ? `Lvl ${t.level} (€${nextCost})` : (t.ultimate? 'ULTIMATE' : `ULT (€${cfg.ultCost})`);
+  ctx.fillText(label,0,22/scale);
 
   if(t.upText>0){ 
     ctx.fillStyle='yellow'; 
-    ctx.fillText('UPGRADED',0,-18/scale); 
+    ctx.font='bold 10px Arial';
+    ctx.fillText('UPGRADED!',0,-16/scale); 
   }
   ctx.restore();
 }
 
-// ===== DRAW PROJECTILES & EXPLOSIONS =====
 function drawProjectiles(){
   for(const p of projectiles){
     ctx.save();
     ctx.translate(p.x, p.y);
     
-    // Bereken hoek naar doel
     const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
     ctx.rotate(angle);
     
-    if(p.towerKey === 'atoom'){
-      // Groene bom voor atoombommenwerper
+    if(p.towerKey === 'plaagdokter'){
       if(p.gold){
-        // Gouden bom voor ultimate
+        ctx.strokeStyle='#ffd700';
+        ctx.fillStyle='#ffd700';
+      } else {
+        ctx.strokeStyle='#e91e63';
+        ctx.fillStyle='#f8bbd0';
+      }
+      
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(-6,0);
+      ctx.lineTo(6,0);
+      ctx.stroke();
+      
+      ctx.fillStyle = p.gold ? '#ffd700' : '#e91e63';
+      ctx.beginPath();
+      ctx.moveTo(6,0);
+      ctx.lineTo(9,-2);
+      ctx.lineTo(9,2);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.fillRect(-8,-1,3,2);
+    }
+    else if(p.towerKey === 'sniper'){
+      ctx.fillStyle = p.gold ? '#ffd700' : '#ffeb3b';
+      ctx.beginPath();
+      ctx.ellipse(0,0,4,1.5,0,0,Math.PI*2);
+      ctx.fill();
+      
+      if(p.gold){
+        ctx.strokeStyle='#ffed4e';
+        ctx.lineWidth=1.5;
+        ctx.stroke();
+      }
+      
+      ctx.strokeStyle = p.gold ? '#ff6b35' : '#ff9800';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(-5,0);
+      ctx.lineTo(-8,0);
+      ctx.stroke();
+    }
+    else if(p.towerKey === 'atoom'){
+      if(p.gold){
         ctx.fillStyle='#ffd700';
         ctx.strokeStyle='#ffed4e';
       } else {
-        // Normale groene bom
         ctx.fillStyle='#2d5016';
         ctx.strokeStyle='#4caf50';
       }
       
-      // Bom lichaam (kleiner)
       ctx.beginPath();
       ctx.arc(0,0,5,0,Math.PI*2);
       ctx.fill();
       ctx.lineWidth=1.5;
       ctx.stroke();
       
-      // Lont
       ctx.strokeStyle = p.gold ? '#ff6b35' : '#ff4444';
       ctx.lineWidth=1.5;
       ctx.beginPath();
@@ -888,14 +1424,12 @@ function drawProjectiles(){
       ctx.lineTo(-2,-9);
       ctx.stroke();
       
-      // Vonk
       ctx.fillStyle = p.gold ? '#ffaa00' : '#ff6b35';
       ctx.beginPath();
       ctx.arc(-2,-9,1.5,0,Math.PI*2);
       ctx.fill();
     } 
     else if(p.towerKey === 'speer'){
-      // Speer voor speerwerper (kleiner)
       if(p.gold){
         ctx.strokeStyle='#ffd700';
         ctx.fillStyle='#ffd700';
@@ -904,14 +1438,12 @@ function drawProjectiles(){
         ctx.fillStyle='#c0c0c0';
       }
       
-      // Speer schacht
       ctx.lineWidth=2;
       ctx.beginPath();
       ctx.moveTo(-9,0);
       ctx.lineTo(6,0);
       ctx.stroke();
       
-      // Speer punt
       ctx.beginPath();
       ctx.moveTo(6,0);
       ctx.lineTo(11,-3);
@@ -926,7 +1458,6 @@ function drawProjectiles(){
       }
     }
     else if(p.towerKey === 'boog'){
-      // Pijl voor boogschutter (kleiner)
       if(p.gold){
         ctx.strokeStyle='#ffd700';
         ctx.fillStyle='#ffd700';
@@ -935,14 +1466,12 @@ function drawProjectiles(){
         ctx.fillStyle='#a0522d';
       }
       
-      // Pijl schacht
       ctx.lineWidth=1.5;
       ctx.beginPath();
       ctx.moveTo(-8,0);
       ctx.lineTo(8,0);
       ctx.stroke();
       
-      // Pijl punt
       ctx.fillStyle = p.gold ? '#ffd700' : '#696969';
       ctx.beginPath();
       ctx.moveTo(8,0);
@@ -951,7 +1480,6 @@ function drawProjectiles(){
       ctx.closePath();
       ctx.fill();
       
-      // Veren
       ctx.fillStyle = p.gold ? '#ffed4e' : '#f5f5dc';
       ctx.beginPath();
       ctx.moveTo(-8,-2.5);
@@ -967,7 +1495,6 @@ function drawProjectiles(){
       ctx.fill();
     }
     else if(p.towerKey === 'tsjaadinator'){
-      // Blauwe speer voor tsjaadinator (kleiner)
       if(p.gold){
         ctx.strokeStyle='#ffd700';
         ctx.fillStyle='#00ffff';
@@ -976,14 +1503,12 @@ function drawProjectiles(){
         ctx.fillStyle='#00e5ff';
       }
       
-      // Speer schacht (blauw)
       ctx.lineWidth=2;
       ctx.beginPath();
       ctx.moveTo(-9,0);
       ctx.lineTo(7,0);
       ctx.stroke();
       
-      // Speer punt (cyan)
       ctx.beginPath();
       ctx.moveTo(7,0);
       ctx.lineTo(12,-3);
@@ -991,7 +1516,6 @@ function drawProjectiles(){
       ctx.closePath();
       ctx.fill();
       
-      // Glow effect
       if(p.gold){
         ctx.strokeStyle='#ffed4e';
       } else {
@@ -1001,7 +1525,6 @@ function drawProjectiles(){
       ctx.stroke();
     }
     else if(p.towerKey === 'geweer'){
-      // Gele kogel voor soldaat (kleiner)
       ctx.fillStyle = p.gold ? '#ffd700' : '#ffeb3b';
       ctx.beginPath();
       ctx.ellipse(0,0,3.5,1.5,0,0,Math.PI*2);
@@ -1014,7 +1537,6 @@ function drawProjectiles(){
       }
     }
     else {
-      // Fallback voor andere towers
       ctx.fillStyle = p.gold ? '#ffd700' : 'black';
       ctx.beginPath();
       ctx.arc(0,0,2.5,0,Math.PI*2);
@@ -1030,14 +1552,12 @@ function drawExplosions(){
     ctx.globalAlpha = ex.t / 22;
     
     if(ex.gold){
-      // Gouden explosie
       const gradient = ctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, ex.r);
       gradient.addColorStop(0, '#ffd700');
       gradient.addColorStop(0.5, '#ffed4e');
       gradient.addColorStop(1, 'rgba(255,215,0,0)');
       ctx.fillStyle = gradient;
     } else {
-      // Groene explosie
       const gradient = ctx.createRadialGradient(ex.x, ex.y, 0, ex.x, ex.y, ex.r);
       gradient.addColorStop(0, '#4caf50');
       gradient.addColorStop(0.5, '#8bc34a');
@@ -1053,7 +1573,6 @@ function drawExplosions(){
   }
 }
 
-// ===== MAIN DRAW =====
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPath();
@@ -1063,13 +1582,11 @@ function draw(){
   drawExplosions();
 }
 
-// ===== LOOP =====
 function loop(){ 
   update(); 
   draw(); 
   if(!gameWon) requestAnimationFrame(loop); 
 }
-loop();
 </script>
 </body>
 </html>

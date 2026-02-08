@@ -135,8 +135,8 @@
   .modeBtn {
     width: 500px;
     padding: 35px;
-    margin: 25px;
-    font-size: 32px;
+    margin: 20px;
+    font-size: 28px;
     font-weight: bold;
     border: 5px solid #8b4513;
     border-radius: 20px;
@@ -161,6 +161,13 @@
     animation: plaagPulse 2s ease-in-out infinite;
   }
   
+  .modeBtn.hard {
+    background: linear-gradient(135deg, #2c003e 0%, #6a0572 50%, #c70039 100%);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7), 0 0 10px #ff0080;
+    animation: hardPulse 1.5s ease-in-out infinite;
+  }
+  
   @keyframes plaagPulse {
     0%, 100% { 
       box-shadow: 0 10px 30px rgba(139,0,0,0.5); 
@@ -169,6 +176,17 @@
     50% { 
       box-shadow: 0 10px 50px rgba(255,69,0,0.8), 0 0 40px rgba(255,69,0,0.6); 
       transform: scale(1.02);
+    }
+  }
+  
+  @keyframes hardPulse {
+    0%, 100% { 
+      box-shadow: 0 10px 30px rgba(106,5,114,0.5); 
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 10px 50px rgba(199,0,57,0.8), 0 0 40px rgba(255,0,128,0.6); 
+      transform: scale(1.03);
     }
   }
   
@@ -307,8 +325,9 @@
 <div id="titleScreen">
   <h1>🏜️ TSJAAD TD 🐪</h1>
   <div class="subtitle">⚔️ VECHT VOOR TSJAAD!!! ⚔️</div>
-  <button class="modeBtn standard" onclick="startGame('standard')"> 🦟 STANDAARD MODUS</button>
+  <button class="modeBtn standard" onclick="startGame('standard')">🦟 STANDAARD MODUS</button>
   <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
+  <button class="modeBtn hard" onclick="startGame('hard')">💀 HARD MODUS ⚡</button>
 </div>
 
 <!-- Victory Screen -->
@@ -347,6 +366,7 @@
     <div>🌊 Ronde: <strong><span id="round">1</span><span id="roundMax">/30</span></strong></div>
   </div>
   <div id="roundMsg" class="small"></div>
+  <div id="autoRoundMsg" class="small" style="color:#ff6b35; font-weight:bold;"></div>
   <hr style="margin:10px 0; border-color:#444;">
 
   <button onclick="selectTower('speer')">⚔️ Speer Werper (€80)</button>
@@ -359,7 +379,7 @@
   <button onclick="selectTower('sniper')">🎯 Sniper (€3000)</button>
 
   <hr style="margin:10px 0; border-color:#444;">
-  <button onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
+  <button id="startRoundBtn" onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
   <p class="small">💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)</p>
 </div>
 
@@ -373,6 +393,8 @@ const ctx = canvas.getContext('2d');
 
 // Game mode
 let gameMode = null;
+let autoStartRounds = false;
+let autoRoundCountdown = 0;
 
 // Paths
 const standardPath = [
@@ -384,6 +406,12 @@ const volcanoPath = [
   {x:-20,y:130},{x:200,y:130},{x:200,y:400},{x:470,y:400},
   {x:470,y:200},{x:730,y:200},{x:730,y:530},{x:1000,y:530},
   {x:1000,y:270},{x:1220,y:270}
+];
+
+const hardPath = [
+  {x:-20,y:350},{x:180,y:350},{x:180,y:180},{x:400,y:180},
+  {x:400,y:520},{x:650,y:520},{x:650,y:280},{x:900,y:280},
+  {x:900,y:480},{x:1220,y:480}
 ];
 
 let path = standardPath;
@@ -398,6 +426,7 @@ let totalMoneyEarned = 0;
 const sounds = {
   mainTheme: new Audio('Audio/MainTheme.mp3'),
   volcanoTheme: new Audio('Audio/VolcanoTheme.mp3'),
+  hardTheme: new Audio('Audio/HardTheme.mp3'),
   round: new Audio('Audio/Round.mp3'),
   kill: new Audio('Audio/Kill.mp3'),
   upgrade: new Audio('Audio/Upgrade.mp3'),
@@ -409,6 +438,8 @@ sounds.mainTheme.loop = true;
 sounds.mainTheme.volume = 0.5;
 sounds.volcanoTheme.loop = true;
 sounds.volcanoTheme.volume = 0.5;
+sounds.hardTheme.loop = true;
+sounds.hardTheme.volume = 0.5;
 
 let musicPlaying = false;
 let currentTheme = null;
@@ -446,11 +477,24 @@ function startGame(mode) {
     document.getElementById('roundMax').textContent = '';
     lives = 15;
     money = 600;
+    autoStartRounds = false;
     currentTheme = sounds.volcanoTheme;
+  } else if(mode === 'hard') {
+    path = hardPath;
+    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#c70039">HARD MODUS</span> ⚡';
+    document.getElementById('roundMax').textContent = '/50';
+    lives = 20;
+    money = 300;
+    autoStartRounds = true;
+    autoRoundCountdown = 300; // 5 seconden (60 fps * 5)
+    document.getElementById('startRoundBtn').style.display = 'none';
+    document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START ACTIEF!';
+    currentTheme = sounds.hardTheme;
   } else {
     path = standardPath;
     document.getElementById('gameTitle').textContent = '🛡️ Tsjaad TD';
     document.getElementById('roundMax').textContent = '/30';
+    autoStartRounds = false;
     currentTheme = sounds.mainTheme;
   }
   
@@ -486,6 +530,7 @@ const animalTypes=[
 ];
 
 const bossType = {name:'Malaria Mug',hp:23000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
+const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:50000,speed:0.85,size:95,reward:2500,boss:true,type:'mutatedmug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ selectedTower=t; }
@@ -593,20 +638,33 @@ function startRound(){
   }
   showRoundMsg(farmCash>0 ? `🌾 Plantages: €${farmCash}` : `▶️ Ronde ${round}`);
 
+  // Boss spawning logic
   if(gameMode === 'standard' && round === 30){ 
     spawnLeft = 1;
     spawning = true; 
     return; 
   }
+  
+  if(gameMode === 'hard' && round === 50){
+    spawnLeft = 1;
+    spawning = true;
+    return;
+  }
 
   let baseEnemies = Math.floor(5 + round*1.8);
   if(gameMode === 'plaag') {
     baseEnemies = Math.floor(8 + round*2.2);
+  } else if(gameMode === 'hard') {
+    baseEnemies = Math.floor(7 + round*2.5);
   }
   
   spawnLeft = baseEnemies;
   spawning = true;
   spawnTimer = 0;
+  
+  if(autoStartRounds) {
+    autoRoundCountdown = 300; // Reset countdown
+  }
 }
 
 function showRoundMsg(txt){ 
@@ -621,6 +679,11 @@ function spawnEnemy(){
     enemies.push(makeEnemy({...bossType}));
     return;
   }
+  
+  if(gameMode === 'hard' && round === 50){
+    enemies.push(makeEnemy({...mutatedBossType}));
+    return;
+  }
 
   const availableAnimals = animalTypes.filter(a => !a.minRound || round >= a.minRound);
   let base = availableAnimals[Math.floor(Math.random()*availableAnimals.length)];
@@ -631,6 +694,9 @@ function spawnEnemy(){
   if(gameMode === 'plaag') {
     hpScale *= 1.35;
     speedScale *= 1.12;
+  } else if(gameMode === 'hard') {
+    hpScale *= 1.5;
+    speedScale *= 1.15;
   }
 
   if(round > 8){
@@ -682,6 +748,14 @@ function loseGame(){
       `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
     document.getElementById('leaderboard').style.display = 'block';
     saveAndShowLeaderboard(round);
+  } else if(gameMode === 'hard') {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>JE OVERLEEFDE ${round} RONDES IN HARD MODUS!</strong><br>DE UITDAGING WAS TE GROOT...`;
+    document.getElementById('deathStats').innerHTML = 
+      `💀 Gevallen op Ronde: <strong>${round}</strong><br>` +
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
+    document.getElementById('leaderboard').style.display = 'block';
+    saveAndShowLeaderboard(round, 'hard');
   } else {
     document.getElementById('deathMessage').innerHTML = 
       `<strong>DE DIEREN HEBBEN GEWONNEN...</strong><br>JE BEREIKTE RONDE ${round}`;
@@ -694,8 +768,9 @@ function loseGame(){
 }
 
 // ===== LEADERBOARD =====
-function saveAndShowLeaderboard(score) {
-  let leaderboard = JSON.parse(localStorage.getItem('tsjaadTD_leaderboard') || '[]');
+function saveAndShowLeaderboard(score, mode = 'plaag') {
+  const leaderboardKey = mode === 'hard' ? 'tsjaadTD_leaderboard_hard' : 'tsjaadTD_leaderboard';
+  let leaderboard = JSON.parse(localStorage.getItem(leaderboardKey) || '[]');
   
   const newEntry = {
     score: score,
@@ -708,7 +783,7 @@ function saveAndShowLeaderboard(score) {
   leaderboard.sort((a, b) => b.score - a.score);
   leaderboard = leaderboard.slice(0, 10);
   
-  localStorage.setItem('tsjaadTD_leaderboard', JSON.stringify(leaderboard));
+  localStorage.setItem(leaderboardKey, JSON.stringify(leaderboard));
   
   const listEl = document.getElementById('leaderboardList');
   listEl.innerHTML = '';
@@ -727,6 +802,17 @@ function saveAndShowLeaderboard(score) {
 
 // ===== UPDATE =====
 function update(){
+  // Auto-start rounds in Hard Mode
+  if(autoStartRounds && !spawning && !gameWon && enemies.length === 0) {
+    autoRoundCountdown--;
+    if(autoRoundCountdown <= 0) {
+      startRound();
+    } else {
+      const secondsLeft = Math.ceil(autoRoundCountdown / 60);
+      document.getElementById('autoRoundMsg').textContent = `⚡ VOLGENDE RONDE IN ${secondsLeft}s`;
+    }
+  }
+  
   if(spawning){
     spawnTimer--;
     if(spawnTimer<=0 && spawnLeft>0){ 
@@ -739,6 +825,8 @@ function update(){
       if(gameMode === 'standard' && round < 30) {
         round++;
       } else if(gameMode === 'plaag') {
+        round++;
+      } else if(gameMode === 'hard' && round < 50) {
         round++;
       }
     }
@@ -856,6 +944,34 @@ function drawPath(){
     ctx.lineWidth = 22;
     ctx.globalAlpha = 0.6;
     ctx.shadowBlur = 15;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  } else if(gameMode === 'hard') {
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#1a0033');
+    gradient.addColorStop(0.5, '#2c003e');
+    gradient.addColorStop(1, '#1a0033');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = '#c70039';
+    ctx.lineWidth = 26;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ff0080';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    
+    ctx.strokeStyle = '#ff0080';
+    ctx.lineWidth = 20;
+    ctx.globalAlpha = 0.7;
+    ctx.shadowBlur = 20;
     ctx.beginPath();
     ctx.moveTo(path[0].x, path[0].y);
     for (const p of path) ctx.lineTo(p.x, p.y);
@@ -1060,6 +1176,92 @@ function drawEnemy(e){
     ctx.moveTo(12,0);
     ctx.lineTo(20,0);
     ctx.stroke();
+  }
+  else if(e.type==='mutatedmug'){
+    // Gemuteerde Malaria Mug - grotere, gevaarlijkere versie
+    ctx.save();
+    
+    // Pulserende glow effect
+    const pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+    ctx.scale(pulseScale, pulseScale);
+    
+    // Rode gloed
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = '#ff0080';
+    
+    // Lichaam - donkerder en griezeliger
+    ctx.fillStyle='#0a0a0a';
+    ctx.beginPath();
+    ctx.ellipse(0,0,15,7,0,0,Math.PI*2);
+    ctx.fill();
+    
+    // Giftige groene accenten
+    ctx.fillStyle='rgba(0,255,0,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-5,0,4,2,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(5,0,4,2,0,0,Math.PI*2);
+    ctx.fill();
+    
+    // Vleugels - groter en dreigender met paarse gloed
+    ctx.fillStyle='rgba(138,43,226,0.4)';
+    ctx.shadowColor='#8a2be2';
+    ctx.shadowBlur=20;
+    ctx.beginPath();
+    ctx.ellipse(-12,-6,14,8,-0.3,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(12,-6,14,8,0.3,0,Math.PI*2);
+    ctx.fill();
+    
+    // Vleugel aders
+    ctx.strokeStyle='rgba(255,0,128,0.6)';
+    ctx.lineWidth=1;
+    ctx.shadowBlur=10;
+    for(let i=-1; i<=1; i++){
+      ctx.beginPath();
+      ctx.moveTo(-12,-6);
+      ctx.lineTo(-18 + i*2,-10 + i*2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(12,-6);
+      ctx.lineTo(18 + i*2,-10 + i*2);
+      ctx.stroke();
+    }
+    
+    ctx.shadowBlur=0;
+    
+    // Poten - meer en langer
+    ctx.strokeStyle='#2a0a0a';
+    ctx.lineWidth=2.5;
+    for(let i=-2;i<=2;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*6,5);
+      ctx.lineTo(i*8,15);
+      ctx.stroke();
+    }
+    
+    // Giftige angel
+    ctx.strokeStyle='#c70039';
+    ctx.lineWidth=3;
+    ctx.shadowBlur=15;
+    ctx.shadowColor='#ff0080';
+    ctx.beginPath();
+    ctx.moveTo(15,0);
+    ctx.lineTo(28,-2);
+    ctx.stroke();
+    
+    // Puntige angel tip
+    ctx.fillStyle='#ff0080';
+    ctx.beginPath();
+    ctx.moveTo(28,-2);
+    ctx.lineTo(32,-3);
+    ctx.lineTo(30,0);
+    ctx.fill();
+    
+    ctx.shadowBlur=0;
+    ctx.restore();
   }
 
   ctx.globalAlpha = 1;

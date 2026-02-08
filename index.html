@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<title>Tsjaad TD UPDATE 3.0</title>
+<title>Tsjaad TD – Ultimate Edition</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { 
@@ -14,9 +14,9 @@
     height:100vh;
   }
   #ui { 
-    width:280px; 
-    padding:12px; 
-    background:#ac8d10; 
+    width:320px; 
+    padding:15px; 
+    background:#2b2b2b; 
     overflow-y:auto;
     max-height:100vh;
     border-right:3px solid #111;
@@ -61,46 +61,69 @@
     top: 0; left: 0;
     width: 100vw;
     height: 100vh;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+    background: linear-gradient(180deg, #87ceeb 0%, #f4a460 50%, #daa520 100%);
     background-size: 400% 400%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    animation: bgShift 15s ease infinite;
+    animation: desertShift 20s ease infinite;
+    position: relative;
+    overflow: hidden;
   }
   
-  @keyframes bgShift {
+  #titleScreen::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: 15%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, #ffeb3b 0%, #ff9800 50%, #ff5722 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 60px #ff9800, 0 0 100px #ff5722;
+    animation: sunPulse 4s ease-in-out infinite;
+  }
+  
+  @keyframes sunPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  
+  @keyframes desertShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
   
   #titleScreen h1 {
-    font-size: 80px;
+    font-size: 90px;
     margin: 30px;
-    text-shadow: 0 0 20px #fff, 0 0 40px #ff00de, 0 0 60px #ff00de, 0 0 80px #ff00de;
-    animation: glow 2s ease-in-out infinite, float 3s ease-in-out infinite;
-    letter-spacing: 8px;
-  }
-  
-  @keyframes glow {
-    0%, 100% { text-shadow: 0 0 20px #fff, 0 0 40px #ff00de, 0 0 60px #ff00de; }
-    50% { text-shadow: 0 0 30px #fff, 0 0 60px #00ff00, 0 0 80px #00ff00, 0 0 100px #00ff00; }
+    color: #8b4513;
+    text-shadow: 
+      3px 3px 0px #daa520,
+      6px 6px 0px #cd853f,
+      0 0 30px rgba(255,215,0,0.5);
+    animation: float 3s ease-in-out infinite;
+    letter-spacing: 10px;
+    z-index: 10;
   }
   
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+    50% { transform: translateY(-25px) rotate(2deg); }
   }
   
   #titleScreen .subtitle {
-    font-size: 28px;
-    margin-bottom: 50px;
-    opacity: 0.9;
+    font-size: 32px;
+    margin-bottom: 60px;
+    opacity: 0.95;
+    color: #654321;
+    text-shadow: 2px 2px 4px rgba(255,215,0,0.3);
     animation: pulse 3s ease-in-out infinite;
-    letter-spacing: 4px;
+    letter-spacing: 6px;
+    z-index: 10;
   }
   
   @keyframes pulse {
@@ -109,39 +132,48 @@
   }
   
   .modeBtn {
-    width: 350px;
-    padding: 25px;
-    margin: 18px;
-    font-size: 26px;
+    width: 400px;
+    padding: 30px;
+    margin: 20px;
+    font-size: 28px;
     font-weight: bold;
-    border: 4px solid #fff;
-    border-radius: 15px;
+    border: 5px solid #8b4513;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    letter-spacing: 3px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 10;
   }
   
   .modeBtn.standard {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: linear-gradient(135deg, #daa520 0%, #cd853f 50%, #d2691e 100%);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
   }
   
   .modeBtn.plaag {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
+    background: linear-gradient(135deg, #8b0000 0%, #dc143c 50%, #ff4500 100%);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
     animation: plaagPulse 2s ease-in-out infinite;
   }
   
   @keyframes plaagPulse {
-    0%, 100% { box-shadow: 0 8px 20px rgba(245,87,108,0.4); }
-    50% { box-shadow: 0 8px 40px rgba(245,87,108,0.8), 0 0 30px rgba(245,87,108,0.6); }
+    0%, 100% { 
+      box-shadow: 0 10px 30px rgba(139,0,0,0.5); 
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 10px 50px rgba(255,69,0,0.8), 0 0 40px rgba(255,69,0,0.6); 
+      transform: scale(1.02);
+    }
   }
   
   .modeBtn:hover {
-    transform: scale(1.1) rotate(2deg);
-    box-shadow: 0 12px 40px rgba(255,255,255,0.3);
+    transform: scale(1.15) rotate(1deg);
+    box-shadow: 0 15px 50px rgba(139,69,19,0.6);
   }
   
   /* End Screens */
@@ -266,19 +298,19 @@
 
 <!-- Title Screen -->
 <div id="titleScreen">
-  <h1>🛡️ TSJAAD TD 🛡️</h1>
-  <div class="subtitle">⚔️ ULTIMATE TOWER DEFENSE ⚔️</div>
-  <button class="modeBtn standard" onclick="startGame('standard')">STANDAARD MODUS</button>
-  <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS</button>
+  <h1>🏜️ TSJAAD TD 🐪</h1>
+  <div class="subtitle">⚔️ VERDEDIG DE WOESTIJN ⚔️</div>
+  <button class="modeBtn standard" onclick="startGame('standard')">🏰 STANDAARD MODUS</button>
+  <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
 </div>
 
 <!-- Victory Screen -->
 <div id="victoryScreen" class="endScreen">
-  <h1>🏆 JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!!🏆</h1>
+  <h1>🏆 OVERWINNING! 🏆</h1>
   <div class="message">
     <strong>JE HEBT DE MALARIA MUG VERSLAGEN!</strong><br>
     TSJAAD IS VEILIG DANKZIJ JOU!<br>
-    <em>JE BENT TSJAADTASTISCH!</em>
+    <em>JE BENT EEN WARE TSJAADKAMPIOEN!</em>
   </div>
   <div class="stats">
     ⚔️ Rondes Overleefd: <strong><span id="finalRound"></span></strong><br>
@@ -321,12 +353,11 @@
 
   <hr style="margin:10px 0; border-color:#444;">
   <button onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
-  <button id="musicBtn" onclick="toggleMusic()">🔇 Muziek Aan</button>
   <p class="small">💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)</p>
 </div>
 
 <div id="gameWrap">
-  <canvas id="game" width="900" height="520"></canvas>
+  <canvas id="game" width="1200" height="700"></canvas>
 </div>
 
 <script>
@@ -338,14 +369,14 @@ let gameMode = null;
 
 // Paths
 const standardPath = [
-  {x:-20,y:260},{x:180,y:260},{x:180,y:120},{x:420,y:120},
-  {x:420,y:380},{x:700,y:380},{x:700,y:220},{x:920,y:220}
+  {x:-20,y:350},{x:240,y:350},{x:240,y:160},{x:560,y:160},
+  {x:560,y:510},{x:930,y:510},{x:930,y:290},{x:1220,y:290}
 ];
 
 const volcanoPath = [
-  {x:-20,y:100},{x:150,y:100},{x:150,y:300},{x:350,y:300},
-  {x:350,y:150},{x:550,y:150},{x:550,y:400},{x:750,y:400},
-  {x:750,y:200},{x:920,y:200}
+  {x:-20,y:130},{x:200,y:130},{x:200,y:400},{x:470,y:400},
+  {x:470,y:200},{x:730,y:200},{x:730,y:530},{x:1000,y:530},
+  {x:1000,y:270},{x:1220,y:270}
 ];
 
 let path = standardPath;
@@ -360,6 +391,7 @@ let totalMoneyEarned = 0;
 const sounds = {
   mainTheme: new Audio('Audio/MainTheme.mp3'),
   volcanoTheme: new Audio('Audio/VolcanoTheme.mp3'),
+  round: new Audio('Audio/Round.mp3'),
   kill: new Audio('Audio/Kill.mp3'),
   upgrade: new Audio('Audio/Upgrade.mp3'),
   placement: new Audio('Audio/Placement.mp3'),
@@ -374,27 +406,16 @@ sounds.volcanoTheme.volume = 0.5;
 let musicPlaying = false;
 let currentTheme = null;
 
-function toggleMusic() {
-  const btn = document.getElementById('musicBtn');
-  
-  if(musicPlaying) {
-    if(currentTheme) currentTheme.pause();
-    musicPlaying = false;
-    btn.textContent = '🔇 Muziek Aan';
-    btn.classList.remove('playing');
-  } else {
-    if(currentTheme) {
-      currentTheme.play()
-        .then(() => {
-          musicPlaying = true;
-          btn.textContent = '🔊 Muziek Uit';
-          btn.classList.add('playing');
-        })
-        .catch(e => {
-          console.error('Music play error:', e);
-          btn.textContent = '🔇 Muziek Aan';
-        });
-    }
+function playMusic() {
+  if(currentTheme && !musicPlaying) {
+    currentTheme.play()
+      .then(() => {
+        musicPlaying = true;
+        console.log('Music started');
+      })
+      .catch(e => {
+        console.error('Music play error:', e);
+      });
   }
 }
 
@@ -426,6 +447,9 @@ function startGame(mode) {
     currentTheme = sounds.mainTheme;
   }
   
+  // Start muziek automatisch
+  playMusic();
+  
   document.getElementById('lives').textContent = lives;
   document.getElementById('money').textContent = money;
   loop();
@@ -437,7 +461,7 @@ const towerTypes={
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1000},
   plaagdokter:{range:140,rate:90,dmg:5,speed:3.5,cost:300,ultCost:2000,slow:true},
   geweer:{range:240,rate:12,dmg:2,speed:7,cost:550,ultCost:3000},
-  sniper:{range:99999999999,rate:300,dmg:300,speed:10,cost:3000,ultCost:20000},
+  sniper:{range:350,rate:300,dmg:300,speed:10,cost:3000,ultCost:8000},
   tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000},
   atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000}
@@ -547,6 +571,9 @@ function handleUpgrade(t){
 function startRound(){
   if(spawning || gameWon) return;
   
+  // Speel Round.mp3 af
+  playSound('round');
+  
   document.getElementById('round').textContent=round;
 
   let farmCash=0;
@@ -644,16 +671,16 @@ function loseGame(){
     document.getElementById('deathMessage').innerHTML = 
       `<strong>JE OVERLEEFDE ${round} RONDES!</strong><br>DE PLAAG WAS TE STERK...`;
     document.getElementById('deathStats').innerHTML = 
-      `💀 VERBRIJZELD OP RONDE: <strong>${round}</strong><br>` +
-      `💰 TOTAAL VERDIEND: <strong>€${totalMoneyEarned}</strong>`;
+      `💀 Gevallen op Ronde: <strong>${round}</strong><br>` +
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
     document.getElementById('leaderboard').style.display = 'block';
     saveAndShowLeaderboard(round);
   } else {
     document.getElementById('deathMessage').innerHTML = 
       `<strong>DE DIEREN HEBBEN GEWONNEN...</strong><br>JE BEREIKTE RONDE ${round}`;
     document.getElementById('deathStats').innerHTML = 
-      `⚔️ PLAAG OVERLEEFD TOT RONDE: <strong>${round}</strong><br>` +
-      `💰 TOTAAL VERDIEND: <strong>€${totalMoneyEarned}</strong>`;
+      `⚔️ Laatste Ronde: <strong>${round}</strong><br>` +
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
   }
   
   document.getElementById('deathScreen').style.display = 'flex';

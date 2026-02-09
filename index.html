@@ -475,8 +475,8 @@ function startGame(mode) {
     path = volcanoPath;
     document.getElementById('gameTitle').innerHTML = '🌋 <span style="color:#ff6b35">PLAAG MODUS</span> 🦠';
     document.getElementById('roundMax').textContent = '';
-    lives = 15;
-    money = 600;
+    lives = 12;
+    money = 700;
     autoStartRounds = false;
     currentTheme = sounds.volcanoTheme;
   } else if(mode === 'hard') {
@@ -486,9 +486,9 @@ function startGame(mode) {
     lives = 20;
     money = 300;
     autoStartRounds = true;
-    autoRoundCountdown = 300; // 5 seconden (60 fps * 5)
+    autoRoundCountdown = 0; // Instant autostart!
     document.getElementById('startRoundBtn').style.display = 'none';
-    document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START ACTIEF!';
+    document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START INSTANT!';
     currentTheme = sounds.hardTheme;
   } else {
     path = standardPath;
@@ -653,7 +653,7 @@ function startRound(){
 
   let baseEnemies = Math.floor(5 + round*1.8);
   if(gameMode === 'plaag') {
-    baseEnemies = Math.floor(8 + round*2.2);
+    baseEnemies = Math.floor(10 + round*2.5);
   } else if(gameMode === 'hard') {
     baseEnemies = Math.floor(7 + round*2.5);
   }
@@ -663,7 +663,7 @@ function startRound(){
   spawnTimer = 0;
   
   if(autoStartRounds) {
-    autoRoundCountdown = 300; // Reset countdown
+    autoRoundCountdown = 0; // Reset naar instant
   }
 }
 
@@ -692,8 +692,8 @@ function spawnEnemy(){
   let speedScale = 1 + round*0.02;
 
   if(gameMode === 'plaag') {
-    hpScale *= 1.35;
-    speedScale *= 1.12;
+    hpScale *= 1.60; // Verhoogd van 1.35 naar 1.60
+    speedScale *= 1.20; // Verhoogd van 1.12 naar 1.20
   } else if(gameMode === 'hard') {
     hpScale *= 1.5;
     speedScale *= 1.15;
@@ -707,6 +707,17 @@ function spawnEnemy(){
   if(round > 20){
     hpScale *= 1.70;
     speedScale *= 1.3;
+  }
+  
+  // NIEUWE SCALING: Elke 5 rondes na ronde 30: +40% HP, +1% speed
+  if(round > 30) {
+    const roundsAfter30 = round - 30;
+    const increments = Math.floor(roundsAfter30 / 5);
+    
+    if(increments > 0) {
+      hpScale *= Math.pow(1.40, increments); // 40% HP boost per increment
+      speedScale *= (1 + (0.01 * increments)); // 1% speed boost per increment
+    }
   }
 
   enemies.push(makeEnemy({
@@ -802,15 +813,10 @@ function saveAndShowLeaderboard(score, mode = 'plaag') {
 
 // ===== UPDATE =====
 function update(){
-  // Auto-start rounds in Hard Mode
+  // Auto-start rounds in Hard Mode - INSTANT!
   if(autoStartRounds && !spawning && !gameWon && enemies.length === 0) {
-    autoRoundCountdown--;
-    if(autoRoundCountdown <= 0) {
-      startRound();
-    } else {
-      const secondsLeft = Math.ceil(autoRoundCountdown / 60);
-      document.getElementById('autoRoundMsg').textContent = `⚡ VOLGENDE RONDE IN ${secondsLeft}s`;
-    }
+    startRound();
+    document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START INSTANT!';
   }
   
   if(spawning){

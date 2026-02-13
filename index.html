@@ -198,7 +198,7 @@
   
   #titleScreen .subtitle {
     font-size: 32px;
-    margin-bottom: 60px;
+    margin-bottom: 40px;
     opacity: 0.95;
     color: #654321;
     text-shadow: 2px 2px 4px rgba(255,215,0,0.3);
@@ -212,28 +212,50 @@
     50% { opacity: 1; transform: scale(1.05); }
   }
   
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    z-index: 10;
+  }
+  
   .modeBtn {
-    width: 500px;
-    padding: 35px;
-    margin: 20px;
-    font-size: 28px;
+    width: 100%;
+    min-width: 280px;
+    padding: 35px 15px;
+    font-size: 22px;
     font-weight: bold;
     border: 5px solid #8b4513;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     z-index: 10;
   }
   
+  @media (max-width: 1200px) {
+    .mode-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+  }
+  
   @media (max-width: 768px) {
+    .mode-grid {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 10px;
+    }
     .modeBtn {
-      width: 90% !important;
+      min-width: unset;
+      width: 100%;
       padding: 20px !important;
       font-size: 18px !important;
-      margin: 10px !important;
+      margin: 0 !important;
     }
   }
   
@@ -465,12 +487,14 @@
 <div id="titleScreen">
   <h1>🏜️ TSJAAD TD 🐪</h1>
   <div class="subtitle">⚔️ VECHT VOOR TSJAAD!!! ⚔️</div>
-  <button class="modeBtn standard" onclick="startGame('standard')">🦟 STANDAARD MODUS</button>
-  <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
-  <button class="modeBtn hard" onclick="startGame('hard')">💀 HARD MODUS ⚡</button>
-  <button class="modeBtn speed" onclick="startGame('speed')">⚡ DUBBEL SNELHEID MODUS 🏎️</button>
-  <button class="modeBtn armoede" onclick="startGame('armoede')">💀 ARMOEDE MODUS 💀</button>
-  <button class="modeBtn boss" onclick="startGame('boss')">👹 BOSS BATTLE 👹</button>
+  <div class="mode-grid">
+    <button class="modeBtn standard" onclick="startGame('standard')">🦟 STANDAARD MODUS</button>
+    <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
+    <button class="modeBtn hard" onclick="startGame('hard')">💀 HARD MODUS ⚡</button>
+    <button class="modeBtn speed" onclick="startGame('speed')">⚡ DUBBEL SNELHEID 🏎️</button>
+    <button class="modeBtn armoede" onclick="startGame('armoede')">💀 ARMOEDE MODUS 💀</button>
+    <button class="modeBtn boss" onclick="startGame('boss')">👹 BOSS BATTLE 👹</button>
+  </div>
 </div>
 
 <!-- Victory Screen -->
@@ -512,16 +536,17 @@
   <div id="autoRoundMsg" class="small" style="color:#ff6b35; font-weight:bold;"></div>
   <hr style="margin:10px 0; border-color:#444;">
 
+  <!-- WIJZIGING 2: Towers gesorteerd op kosten -->
   <button onclick="selectTower('speer')">⚔️ Speer Werper (€80)</button>
   <button onclick="selectTower('boog')">🏹 Boog Schutter (€125)</button>
+  <button onclick="selectTower('fakkel')">🔥 Fakkel Drager (€150)</button>
   <button onclick="selectTower('plaagdokter')">💉 Plaag Dokter (€300)</button>
+  <button onclick="selectTower('aap')">🐵 Wilde Aap (€400)</button>
   <button onclick="selectTower('geweer')">🔫 Soldaat (€550)</button>
   <button onclick="selectTower('atoom')">💣 Atoombommenwerper (€600)</button>
   <button id="katoenBtn" onclick="selectTower('katoen')">🌾 Katoen Plantage (€950)</button>
   <button onclick="selectTower('tsjaadinator')">⚡ Tsjaadinator (€2500)</button>
   <button onclick="selectTower('sniper')">🎯 Sniper (€3000)</button>
-  <button onclick="selectTower('aap')">🐵 Wilde Aap (€400)</button>
-  <button onclick="selectTower('fakkel')">🔥 Fakkel Drager (€150)</button>
 
   <hr style="margin:10px 0; border-color:#444;">
   <button id="startRoundBtn" onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
@@ -566,6 +591,13 @@ const racePath = [
   {x:-20,y:350},{x:150,y:350},{x:200,y:300},{x:250,y:250},{x:300,y:200},
   {x:400,y:180},{x:500,y:190},{x:600,y:220},{x:700,y:270},{x:800,y:280},
   {x:900,y:260},{x:1000,y:230},{x:1100,y:220},{x:1220,y:220}
+];
+
+// WIJZIGING 3: Langere unieke map voor boss mode
+const bossPath = [
+  {x:-20,y:350},{x:150,y:350},{x:150,y:180},{x:350,y:180},
+  {x:350,y:520},{x:550,y:520},{x:550,y:150},{x:750,y:150},
+  {x:750,y:550},{x:950,y:550},{x:950,y:250},{x:1220,y:250}
 ];
 
 let path = standardPath;
@@ -661,7 +693,8 @@ function startGame(mode) {
     document.getElementById('gameTitle').innerHTML = '⚡ <span style="color:#00ffff">DUBBEL SNELHEID</span> 🏎️';
     document.getElementById('roundMax').textContent = '/30';
     lives = 20;
-    money = 5000;
+    // WIJZIGING 1: Start met €2000 in plaats van €5000
+    money = 2000;
     autoStartRounds = false;
     currentTheme = sounds.doubleSpeed;
   } else if(mode === 'armoede') {
@@ -677,7 +710,8 @@ function startGame(mode) {
     katoenBtn.disabled = true;
     katoenBtn.classList.add('crossed-out');
   } else if(mode === 'boss') {
-    path = standardPath;
+    // WIJZIGING 3: Boss mode gebruikt langere unieke map
+    path = bossPath;
     document.getElementById('gameTitle').innerHTML = '👹 <span style="color:#ff0000">BOSS BATTLE</span> 👹';
     document.getElementById('roundMax').textContent = '/1';
     lives = 20;
@@ -726,7 +760,8 @@ const animalTypes=[
 
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
 const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:1000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
-const slowBossType = {name:'Malaria Mug',hp:50000,speed:0.4,size:80,reward:1000,boss:true,type:'mug'};
+// WIJZIGING 3: Boss 50% langzamer en 50% groter
+const slowBossType = {name:'Malaria Mug',hp:50000,speed:0.35,size:120,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ 
@@ -977,6 +1012,7 @@ function spawnEnemy(){
   }
   
   if(gameMode === 'boss' && round === 1){
+    // WIJZIGING 3: Boss in boss mode is langzamer en groter
     enemies.push(makeEnemy({...slowBossType}));
     return;
   }
@@ -1301,9 +1337,9 @@ function update(){
     if(d<p.speed){ 
       p.target.hp-=p.dmg;
       
-      // Boss Battle: Give money on hit
+      // WIJZIGING 3: Boss Battle - geld geven per damage
       if(gameMode === 'boss' && p.target.boss) {
-        const moneyGain = Math.floor(p.dmg / 10);
+        const moneyGain = Math.floor(p.dmg);
         money += moneyGain;
         totalMoneyEarned += moneyGain;
       }
@@ -1491,6 +1527,35 @@ function drawPath(){
     for (const p of path) ctx.lineTo(p.x, p.y);
     ctx.stroke();
     ctx.globalAlpha = 1;
+  } else if(gameMode === 'boss') {
+    // WIJZIGING 3: Unieke boss mode achtergrond
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#2a0a0a');
+    gradient.addColorStop(0.5, '#440000');
+    gradient.addColorStop(1, '#2a0a0a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#8b0000';
+    ctx.lineWidth = 32;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#ff0000';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 26;
+    ctx.globalAlpha = 0.6;
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
   } else {
     ctx.fillStyle = '#7ab86d';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1664,6 +1729,7 @@ function drawEnemy(e){
     ctx.fillRect(16,8,6,10);
   }
   else if(e.type==='mug'){
+    // WIJZIGING 3: Boss groter gemaakt (size wordt al via enemy object geregeld)
     ctx.fillStyle='#1a1a1a';
     ctx.beginPath();
     ctx.ellipse(0,0,12,5,0,0,Math.PI*2);
@@ -2532,6 +2598,12 @@ function loop(){
   draw(); 
   if(!gameWon) requestAnimationFrame(loop); 
 }
+
+console.log('🏜️ Tsjaad TD - Ultimate Edition UPDATED! 🐪');
+console.log('📋 WIJZIGINGEN TOEGEPAST:');
+console.log('1. ⚡ Double speed start: €2000 (was €5000)');
+console.log('2. 📊 Towers gesorteerd op kosten in UI');
+console.log('3. 👹 Boss mode: +€1 per damage, 50% langzamer, 50% groter, unieke langere map');
 </script>
 </body>
 </html>

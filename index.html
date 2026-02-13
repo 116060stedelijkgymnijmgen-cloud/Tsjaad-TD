@@ -762,9 +762,9 @@ const animalTypes=[
 ];
 
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
-const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:1000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
+const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:5000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
 // WIJZIGING 3: Boss 50% langzamer en groter
-const slowBossType = {name:'Malaria Mug',hp:100000,speed:0.15,size:120,reward:1000,boss:true,type:'mug'};
+const slowBossType = {name:'Malaria Mug',hp:10000000,speed:0.15,size:120,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
 function selectTower(t){ 
@@ -855,7 +855,7 @@ function handleUpgrade(t){
   else if(t.key === 'plaagdokter') upgradeCost = 250;
   else if(t.key === 'geweer') upgradeCost = 350;
   else if(t.key === 'atoom') upgradeCost = 500;
-  else if(t.key === 'sniper') upgradeCost = 2500;
+  else if(t.key === 'sniper') upgradeCost = 1500;
   else if(t.key === 'tsjaadinator') upgradeCost = 800;
   else if(t.key === 'katoen') upgradeCost = 200;
   else if(t.key === 'aap') upgradeCost = 300;
@@ -1232,7 +1232,7 @@ function update(){
     
     if(t.monkey && t.ultimate) {
       t.monkeyTimer++;
-      if(t.monkeyTimer >= 500) { // 30 seconds at 60 FPS
+      if(t.monkeyTimer >= 1500) { // 30 seconds at 60 FPS
         t.monkeyTimer = 0;
         playSound('monkey');
         
@@ -1242,7 +1242,7 @@ function update(){
           const dist = Math.hypot(other.x - t.x, other.y - t.y);
           if(dist <= towerTypes.aap.range) {
             other.boosted = true;
-            other.boostEndTime = 300; // 5 seconds
+            other.boostEndTime = 500; // 5 seconds
           }
         }
         t.boosted = true;

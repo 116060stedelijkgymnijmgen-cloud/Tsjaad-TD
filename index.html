@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Tsjaad TD – Ultimate Edition</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -14,6 +15,50 @@
     height:100vh;
     width:100vw;
   }
+  
+  /* Mobile optimization */
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+    }
+    #ui {
+      width: 100% !important;
+      max-height: 40vh !important;
+      padding: 8px !important;
+      border-right: none !important;
+      border-bottom: 3px solid #111;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    #gameWrap {
+      flex: 1;
+      height: 60vh;
+    }
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto !important;
+      height: auto !important;
+    }
+    button {
+      padding: 8px !important;
+      font-size: 11px !important;
+      margin: 3px 0 !important;
+    }
+    .modeBtn {
+      width: 90% !important;
+      padding: 20px !important;
+      font-size: 18px !important;
+      margin: 10px !important;
+    }
+    #titleScreen h1 {
+      font-size: 48px !important;
+    }
+    #titleScreen .subtitle {
+      font-size: 20px !important;
+    }
+  }
+  
   #ui { 
     width:320px; 
     padding:15px; 
@@ -32,6 +77,7 @@
   canvas { 
     border:4px solid #111; 
     box-shadow:0 0 30px rgba(0,0,0,0.8);
+    cursor: pointer;
   }
   button { 
     width:100%; 
@@ -46,6 +92,11 @@
     transition:all 0.2s;
   }
   button:hover { background:#444; transform:scale(1.02); }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
   .small { font-size:11px; opacity:.85; margin:8px 0; }
   #musicBtn { 
     background:#4CAF50; 
@@ -54,6 +105,34 @@
   #musicBtn.playing { 
     background:#ff9800; 
     border-color:#e68900; 
+  }
+  
+  /* Crossed out button for Armoede Modus */
+  .crossed-out {
+    position: relative;
+    opacity: 0.4;
+  }
+  .crossed-out::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: red;
+    transform: translateY(-50%) rotate(-15deg);
+    z-index: 10;
+  }
+  .crossed-out::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: red;
+    transform: translateY(-50%) rotate(15deg);
+    z-index: 10;
   }
   
   /* Title Screen */
@@ -71,7 +150,8 @@
     align-items: center;
     z-index: 1000;
     animation: desertShift 20s ease infinite;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   #titleScreen::before {
@@ -148,6 +228,15 @@
     z-index: 10;
   }
   
+  @media (max-width: 768px) {
+    .modeBtn {
+      width: 90% !important;
+      padding: 20px !important;
+      font-size: 18px !important;
+      margin: 10px !important;
+    }
+  }
+  
   .modeBtn.standard {
     background: linear-gradient(135deg, #daa520 0%, #cd853f 50%, #d2691e 100%);
     color: #fff;
@@ -166,6 +255,27 @@
     color: #fff;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.7), 0 0 10px #ff0080;
     animation: hardPulse 1.5s ease-in-out infinite;
+  }
+  
+  .modeBtn.speed {
+    background: linear-gradient(135deg, #0066cc 0%, #00aaff 50%, #00ffff 100%);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7), 0 0 10px #00ffff;
+    animation: speedPulse 1s ease-in-out infinite;
+  }
+  
+  .modeBtn.armoede {
+    background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%);
+    color: #aaa;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+    border-color: #666;
+  }
+  
+  .modeBtn.boss {
+    background: linear-gradient(135deg, #ff0000 0%, #8b0000 50%, #4a0000 100%);
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7), 0 0 20px #ff0000;
+    animation: bossPulse 2s ease-in-out infinite;
   }
   
   @keyframes plaagPulse {
@@ -190,6 +300,28 @@
     }
   }
   
+  @keyframes speedPulse {
+    0%, 100% { 
+      box-shadow: 0 10px 30px rgba(0,102,204,0.5); 
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 10px 50px rgba(0,255,255,0.8), 0 0 40px rgba(0,255,255,0.6); 
+      transform: scale(1.03);
+    }
+  }
+  
+  @keyframes bossPulse {
+    0%, 100% { 
+      box-shadow: 0 10px 30px rgba(255,0,0,0.5); 
+      transform: scale(1);
+    }
+    50% { 
+      box-shadow: 0 10px 50px rgba(255,0,0,0.9), 0 0 60px rgba(255,0,0,0.7); 
+      transform: scale(1.04);
+    }
+  }
+  
   .modeBtn:hover {
     transform: scale(1.15) rotate(1deg);
     box-shadow: 0 15px 50px rgba(139,69,19,0.6);
@@ -208,6 +340,7 @@
     z-index: 999;
     text-align: center;
     animation: fadeIn 0.5s ease-in;
+    overflow-y: auto;
   }
   
   @keyframes fadeIn {
@@ -270,6 +403,13 @@
     border: 4px solid #ffd700;
   }
   
+  @media (max-width: 768px) {
+    #leaderboard {
+      min-width: 90%;
+      padding: 20px;
+    }
+  }
+  
   #leaderboard h2 {
     font-size: 36px;
     margin-bottom: 25px;
@@ -328,6 +468,9 @@
   <button class="modeBtn standard" onclick="startGame('standard')">🦟 STANDAARD MODUS</button>
   <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
   <button class="modeBtn hard" onclick="startGame('hard')">💀 HARD MODUS ⚡</button>
+  <button class="modeBtn speed" onclick="startGame('speed')">⚡ DUBBEL SNELHEID MODUS 🏎️</button>
+  <button class="modeBtn armoede" onclick="startGame('armoede')">💀 ARMOEDE MODUS 💀</button>
+  <button class="modeBtn boss" onclick="startGame('boss')">👹 BOSS BATTLE 👹</button>
 </div>
 
 <!-- Victory Screen -->
@@ -374,9 +517,11 @@
   <button onclick="selectTower('plaagdokter')">💉 Plaag Dokter (€300)</button>
   <button onclick="selectTower('geweer')">🔫 Soldaat (€550)</button>
   <button onclick="selectTower('atoom')">💣 Atoombommenwerper (€600)</button>
-  <button onclick="selectTower('katoen')">🌾 Katoen Plantage (€950)</button>
+  <button id="katoenBtn" onclick="selectTower('katoen')">🌾 Katoen Plantage (€950)</button>
   <button onclick="selectTower('tsjaadinator')">⚡ Tsjaadinator (€2500)</button>
   <button onclick="selectTower('sniper')">🎯 Sniper (€3000)</button>
+  <button onclick="selectTower('aap')">🐵 Wilde Aap (€400)</button>
+  <button onclick="selectTower('fakkel')">🔥 Fakkel Drager (€150)</button>
 
   <hr style="margin:10px 0; border-color:#444;">
   <button id="startRoundBtn" onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
@@ -390,6 +535,9 @@
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+
+// Detect mobile
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
 // Game mode
 let gameMode = null;
@@ -414,24 +562,38 @@ const hardPath = [
   {x:900,y:480},{x:1220,y:480}
 ];
 
+const racePath = [
+  {x:-20,y:350},{x:150,y:350},{x:200,y:300},{x:250,y:250},{x:300,y:200},
+  {x:400,y:180},{x:500,y:190},{x:600,y:220},{x:700,y:270},{x:800,y:280},
+  {x:900,y:260},{x:1000,y:230},{x:1100,y:220},{x:1220,y:220}
+];
+
 let path = standardPath;
 let money=500, lives=20, round=1;
 let selectedTower=null;
-let enemies=[], towers=[], projectiles=[], explosions=[];
+let enemies=[], towers=[], projectiles=[], explosions=[], bananas=[];
 let spawning=false, spawnLeft=0, spawnTimer=0;
 let gameWon=false;
 let totalMoneyEarned = 0;
+let hoveredTower = null;
+let mouseX = 0, mouseY = 0;
+
+// Monkey boost tracking
+let monkeyBoosts = [];
 
 // ===== AUDIO =====
 const sounds = {
   mainTheme: new Audio('Audio/MainTheme.mp3'),
   volcanoTheme: new Audio('Audio/VolcanoTheme.mp3'),
   hardTheme: new Audio('Audio/HardTheme.mp3'),
+  doubleSpeed: new Audio('Audio/DoubleSpeedMode.mp3'),
+  armoede: new Audio('Audio/ArmoedeModus.mp3'),
   round: new Audio('Audio/Round.mp3'),
   kill: new Audio('Audio/Kill.mp3'),
   upgrade: new Audio('Audio/Upgrade.mp3'),
   placement: new Audio('Audio/Placement.mp3'),
-  sniper: new Audio('Audio/Sniper.mp3')
+  sniper: new Audio('Audio/Sniper.mp3'),
+  monkey: new Audio('Audio/Monkey.mp3')
 };
 
 sounds.mainTheme.loop = true;
@@ -440,6 +602,10 @@ sounds.volcanoTheme.loop = true;
 sounds.volcanoTheme.volume = 0.5;
 sounds.hardTheme.loop = true;
 sounds.hardTheme.volume = 0.5;
+sounds.doubleSpeed.loop = true;
+sounds.doubleSpeed.volume = 0.5;
+sounds.armoede.loop = true;
+sounds.armoede.volume = 0.5;
 
 let musicPlaying = false;
 let currentTheme = null;
@@ -460,7 +626,7 @@ function playMusic() {
 function playSound(soundName) {
   if(sounds[soundName]) {
     const sound = sounds[soundName].cloneNode();
-    sound.volume = soundName === 'sniper' ? 0.4 : 0.5;
+    sound.volume = soundName === 'sniper' ? 0.4 : (soundName === 'monkey' ? 0.6 : 0.5);
     sound.play().catch(e => console.log('Sound play failed:', e));
   }
 }
@@ -486,10 +652,38 @@ function startGame(mode) {
     lives = 20;
     money = 300;
     autoStartRounds = true;
-    autoRoundCountdown = 0; // Instant autostart!
+    autoRoundCountdown = 0;
     document.getElementById('startRoundBtn').style.display = 'none';
     document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START INSTANT!';
     currentTheme = sounds.hardTheme;
+  } else if(mode === 'speed') {
+    path = racePath;
+    document.getElementById('gameTitle').innerHTML = '⚡ <span style="color:#00ffff">DUBBEL SNELHEID</span> 🏎️';
+    document.getElementById('roundMax').textContent = '/30';
+    lives = 20;
+    money = 5000;
+    autoStartRounds = false;
+    currentTheme = sounds.doubleSpeed;
+  } else if(mode === 'armoede') {
+    path = standardPath;
+    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#888">ARMOEDE MODUS</span> 💀';
+    document.getElementById('roundMax').textContent = '/30';
+    lives = 1;
+    money = 500;
+    autoStartRounds = false;
+    currentTheme = sounds.armoede;
+    // Disable katoen button
+    const katoenBtn = document.getElementById('katoenBtn');
+    katoenBtn.disabled = true;
+    katoenBtn.classList.add('crossed-out');
+  } else if(mode === 'boss') {
+    path = standardPath;
+    document.getElementById('gameTitle').innerHTML = '👹 <span style="color:#ff0000">BOSS BATTLE</span> 👹';
+    document.getElementById('roundMax').textContent = '/1';
+    lives = 20;
+    money = 1000;
+    autoStartRounds = false;
+    currentTheme = sounds.mainTheme;
   } else {
     path = standardPath;
     document.getElementById('gameTitle').textContent = '🛡️ Tsjaad TD';
@@ -501,7 +695,6 @@ function startGame(mode) {
   document.getElementById('lives').textContent = lives;
   document.getElementById('money').textContent = money;
   
-  // Start muziek na user interaction
   playMusic();
   
   loop();
@@ -516,7 +709,9 @@ const towerTypes={
   sniper:{range:350,rate:300,dmg:300,speed:10,cost:3000,ultCost:28000},
   tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000},
   atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,bomb:true,ultCost:3500},
-  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000}
+  katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
+  aap:{range:120,rate:180,dmg:8,speed:0,cost:400,ultCost:2500,monkey:true},
+  fakkel:{range:95,rate:45,dmg:4,speed:3,cost:150,ultCost:4000,fire:true}
 };
 
 // ===== ENEMIES =====
@@ -531,9 +726,33 @@ const animalTypes=[
 
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
 const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:1000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
+const slowBossType = {name:'Malaria Mug',hp:50000,speed:0.4,size:80,reward:1000,boss:true,type:'mug'};
 
 // ===== TOWER SELECTION =====
-function selectTower(t){ selectedTower=t; }
+function selectTower(t){ 
+  if(gameMode === 'armoede' && t === 'katoen') return;
+  selectedTower=t; 
+}
+
+// ===== MOUSE TRACKING =====
+canvas.onmousemove = e => {
+  const r = canvas.getBoundingClientRect();
+  mouseX = e.clientX - r.left;
+  mouseY = e.clientY - r.top;
+  
+  hoveredTower = null;
+  for(const tw of towers) {
+    const towerSize = 18 * (1 + tw.level * 0.05);
+    if(Math.hypot(tw.x - mouseX, tw.y - mouseY) < towerSize) {
+      hoveredTower = tw;
+      break;
+    }
+  }
+};
+
+canvas.onmouseleave = () => {
+  hoveredTower = null;
+};
 
 // ===== CLICK =====
 canvas.onclick=e=>{
@@ -549,11 +768,24 @@ canvas.onclick=e=>{
   if(!selectedTower) return;
   const cfg=towerTypes[selectedTower];
   if(money<cfg.cost) return;
+  
+  // Check if on path for non-monkey towers
+  if(selectedTower !== 'aap') {
+    for(let i = 0; i < path.length - 1; i++) {
+      const p1 = path[i];
+      const p2 = path[i+1];
+      const dist = distanceToLineSegment(x, y, p1.x, p1.y, p2.x, p2.y);
+      if(dist < 30) return; // Too close to path
+    }
+  }
+  
   money-=cfg.cost;
 
   const newTower = {
     x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,
-    ultimate:false,upText:0,farm:cfg.farm||false,slow:cfg.slow||false
+    ultimate:false,upText:0,farm:cfg.farm||false,slow:cfg.slow||false,
+    monkey:cfg.monkey||false,fire:cfg.fire||false,
+    monkeyTimer:0,boosted:false,boostEndTime:0
   };
   
   if(selectedTower === 'plaagdokter') {
@@ -561,9 +793,22 @@ canvas.onclick=e=>{
     newTower.slowDuration = 180;
   }
   
+  if(selectedTower === 'fakkel') {
+    newTower.fireChance = 0.20;
+  }
+  
   towers.push(newTower);
   playSound('placement');
 };
+
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+  const projX = x1 + t * dx;
+  const projY = y1 + t * dy;
+  return Math.hypot(px - projX, py - projY);
+}
 
 function handleUpgrade(t){
   let upgradeCost;
@@ -575,6 +820,8 @@ function handleUpgrade(t){
   else if(t.key === 'sniper') upgradeCost = 2500;
   else if(t.key === 'tsjaadinator') upgradeCost = 800;
   else if(t.key === 'katoen') upgradeCost = 200;
+  else if(t.key === 'aap') upgradeCost = 300;
+  else if(t.key === 'fakkel') upgradeCost = 125;
   else upgradeCost = 200;
 
   if(t.level<3){
@@ -588,6 +835,11 @@ function handleUpgrade(t){
       t.dmg *= 1.25;
       t.rate *= 0.85;
       t.slowAmount += 0.05;
+    } else if(t.key === 'aap') {
+      t.dmg *= 1.5;
+    } else if(t.key === 'fakkel') {
+      t.dmg *= 1.25;
+      t.rate *= 0.85;
     } else if(!t.farm) {
       t.dmg *= 1.25;
       t.rate *= 0.85;
@@ -614,6 +866,13 @@ function handleUpgrade(t){
   else if(t.key==='plaagdokter'){ 
     t.dmg*=2; 
     t.slowDuration = 999999;
+  }
+  else if(t.key==='aap'){ 
+    t.dmg*=2;
+  }
+  else if(t.key==='fakkel'){ 
+    t.dmg*=5; 
+    t.fireChance = 1.0;
   }
   
   t.upText=140;
@@ -650,12 +909,34 @@ function startRound(){
     spawning = true;
     return;
   }
+  
+  if(gameMode === 'speed' && round === 30){
+    spawnLeft = 1;
+    spawning = true;
+    return;
+  }
+  
+  if(gameMode === 'armoede' && round === 30){
+    spawnLeft = 1;
+    spawning = true;
+    return;
+  }
+  
+  if(gameMode === 'boss' && round === 1){
+    spawnLeft = 1;
+    spawning = true;
+    return;
+  }
 
   let baseEnemies = Math.floor(5 + round*1.8);
   if(gameMode === 'plaag') {
     baseEnemies = Math.floor(10 + round*2.5);
   } else if(gameMode === 'hard') {
     baseEnemies = Math.floor(7 + round*2.5);
+  } else if(gameMode === 'speed') {
+    baseEnemies = Math.floor(5 + round*1.8);
+  } else if(gameMode === 'armoede') {
+    baseEnemies = Math.floor(5 + round*1.8);
   }
   
   spawnLeft = baseEnemies;
@@ -663,7 +944,7 @@ function startRound(){
   spawnTimer = 0;
   
   if(autoStartRounds) {
-    autoRoundCountdown = 0; // Reset naar instant
+    autoRoundCountdown = 0;
   }
 }
 
@@ -684,6 +965,21 @@ function spawnEnemy(){
     enemies.push(makeEnemy({...mutatedBossType}));
     return;
   }
+  
+  if(gameMode === 'speed' && round === 30){
+    enemies.push(makeEnemy({...bossType}));
+    return;
+  }
+  
+  if(gameMode === 'armoede' && round === 30){
+    enemies.push(makeEnemy({...bossType}));
+    return;
+  }
+  
+  if(gameMode === 'boss' && round === 1){
+    enemies.push(makeEnemy({...slowBossType}));
+    return;
+  }
 
   const availableAnimals = animalTypes.filter(a => !a.minRound || round >= a.minRound);
   let base = availableAnimals[Math.floor(Math.random()*availableAnimals.length)];
@@ -692,11 +988,16 @@ function spawnEnemy(){
   let speedScale = 1 + round*0.02;
 
   if(gameMode === 'plaag') {
-    hpScale *= 1.60; // Verhoogd van 1.35 naar 1.60
-    speedScale *= 1.20; // Verhoogd van 1.12 naar 1.20
+    hpScale *= 1.60;
+    speedScale *= 1.20;
   } else if(gameMode === 'hard') {
     hpScale *= 1.5;
     speedScale *= 1.15;
+  } else if(gameMode === 'speed') {
+    speedScale *= 2.0; // Double speed!
+  } else if(gameMode === 'armoede') {
+    hpScale *= 1.0;
+    speedScale *= 1.0;
   }
 
   if(round > 8){
@@ -709,14 +1010,13 @@ function spawnEnemy(){
     speedScale *= 1.3;
   }
   
-  // NIEUWE SCALING: Elke 5 rondes na ronde 30: +40% HP, +1% speed
   if(round > 30) {
     const roundsAfter30 = round - 30;
     const increments = Math.floor(roundsAfter30 / 5);
     
     if(increments > 0) {
-      hpScale *= Math.pow(1.40, increments); // 40% HP boost per increment
-      speedScale *= (1 + (0.01 * increments)); // 1% speed boost per increment
+      hpScale *= Math.pow(1.40, increments);
+      speedScale *= (1 + (0.01 * increments));
     }
   }
 
@@ -734,7 +1034,7 @@ function makeEnemy(t){
     x:path[0].x,y:path[0].y,i:0,hp:t.hp,max:t.hp,speed:t.speed,
     baseSpeed:t.speed,size:t.size,reward:t.reward,name:t.name,
     type:t.type,boss:t.boss,infected:t.infected||false,
-    slowEndTime:0
+    slowEndTime:0,burning:false,burnDamage:12,burnDuration:0
   }; 
 }
 
@@ -767,6 +1067,23 @@ function loseGame(){
       `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
     document.getElementById('leaderboard').style.display = 'block';
     saveAndShowLeaderboard(round, 'hard');
+  } else if(gameMode === 'speed') {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>JE OVERLEEFDE ${round} RONDES IN DUBBEL SNELHEID!</strong><br>TE SNEL VOOR JE...`;
+    document.getElementById('deathStats').innerHTML = 
+      `💀 Gevallen op Ronde: <strong>${round}</strong><br>` +
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
+  } else if(gameMode === 'armoede') {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>JE OVERLEEFDE ${round} RONDES IN ARMOEDE MODUS!</strong><br>DE ARMOEDE WAS TE GROOT...`;
+    document.getElementById('deathStats').innerHTML = 
+      `💀 Gevallen op Ronde: <strong>${round}</strong><br>` +
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
+  } else if(gameMode === 'boss') {
+    document.getElementById('deathMessage').innerHTML = 
+      `<strong>DE BOSS WAS TE STERK!</strong><br>PROBEER HET OPNIEUW...`;
+    document.getElementById('deathStats').innerHTML = 
+      `💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
   } else {
     document.getElementById('deathMessage').innerHTML = 
       `<strong>DE DIEREN HEBBEN GEWONNEN...</strong><br>JE BEREIKTE RONDE ${round}`;
@@ -813,7 +1130,7 @@ function saveAndShowLeaderboard(score, mode = 'plaag') {
 
 // ===== UPDATE =====
 function update(){
-  // Auto-start rounds in Hard Mode - INSTANT!
+  // Auto-start rounds in Hard Mode
   if(autoStartRounds && !spawning && !gameWon && enemies.length === 0) {
     startRound();
     document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START INSTANT!';
@@ -834,6 +1151,10 @@ function update(){
         round++;
       } else if(gameMode === 'hard' && round < 50) {
         round++;
+      } else if(gameMode === 'speed' && round < 30) {
+        round++;
+      } else if(gameMode === 'armoede' && round < 30) {
+        round++;
       }
     }
   }
@@ -843,6 +1164,16 @@ function update(){
       e.slowEndTime--;
       if(e.slowEndTime <= 0) {
         e.speed = e.baseSpeed;
+      }
+    }
+    
+    if(e.burning && e.burnDuration > 0) {
+      e.burnDuration--;
+      if(e.burnDuration % 60 === 0) {
+        e.hp -= e.burnDamage;
+      }
+      if(e.burnDuration <= 0) {
+        e.burning = false;
       }
     }
     
@@ -856,13 +1187,97 @@ function update(){
     if(e.boss && e.i>=path.length-1){ lives=0; loseGame(); }
   }
 
+  // Update monkey towers
   for(const t of towers){
     if(t.upText>0) t.upText--;
+    
+    if(t.monkey && t.ultimate) {
+      t.monkeyTimer++;
+      if(t.monkeyTimer >= 1800) { // 30 seconds at 60 FPS
+        t.monkeyTimer = 0;
+        playSound('monkey');
+        
+        // Apply boost to all towers in range
+        for(const other of towers) {
+          if(other === t || other.boosted) continue;
+          const dist = Math.hypot(other.x - t.x, other.y - t.y);
+          if(dist <= towerTypes.aap.range) {
+            other.boosted = true;
+            other.boostEndTime = 300; // 5 seconds
+          }
+        }
+        t.boosted = true;
+        t.boostEndTime = 300;
+      }
+    }
+    
+    if(t.boosted && t.boostEndTime > 0) {
+      t.boostEndTime--;
+      if(t.boostEndTime <= 0) {
+        t.boosted = false;
+      }
+    }
+  }
+  
+  // Update bananas
+  for(const banana of bananas) {
+    banana.lifetime--;
+    
+    // Check collision with enemies
+    for(const e of enemies) {
+      const dist = Math.hypot(e.x - banana.x, e.y - banana.y);
+      if(dist < e.size + 10) {
+        e.hp -= banana.dmg;
+        banana.dead = true;
+        break;
+      }
+    }
+  }
+  
+  bananas = bananas.filter(b => !b.dead && b.lifetime > 0);
+
+  for(const t of towers){
     if(t.farm) continue;
+    
+    const rateMultiplier = t.boosted ? 0.7 : 1.0;
+    
     t.cool--; 
     if(t.cool>0) continue;
     
     const cfg=towerTypes[t.key];
+    
+    if(t.monkey) {
+      // Find closest path point
+      let closestDist = Infinity;
+      let closestPoint = null;
+      for(let i = 0; i < path.length - 1; i++) {
+        const p1 = path[i];
+        const p2 = path[i+1];
+        for(let t2 = 0; t2 <= 1; t2 += 0.1) {
+          const px = p1.x + (p2.x - p1.x) * t2;
+          const py = p1.y + (p2.y - p1.y) * t2;
+          const dist = Math.hypot(px - t.x, py - t.y);
+          if(dist < closestDist && dist < cfg.range) {
+            closestDist = dist;
+            closestPoint = {x: px, y: py};
+          }
+        }
+      }
+      
+      if(closestPoint) {
+        const bananaDmg = t.dmg * (bananas.length + 1);
+        bananas.push({
+          x: closestPoint.x,
+          y: closestPoint.y,
+          dmg: bananaDmg,
+          lifetime: 1800, // 30 seconds
+          dead: false
+        });
+        t.cool = t.rate * rateMultiplier;
+      }
+      continue;
+    }
+    
     const target=enemies.find(e=>Math.hypot(e.x-t.x,e.y-t.y)<cfg.range);
     if(!target) continue;
     
@@ -871,9 +1286,11 @@ function update(){
       speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,
       gold:t.ultimate,
       towerKey:t.key,
-      tower:t
+      tower:t,
+      fire:t.fire,
+      fireChance:t.fireChance||0
     });
-    t.cool=t.rate;
+    t.cool=t.rate * rateMultiplier;
     
     if(t.key === 'sniper') playSound('sniper');
   }
@@ -884,6 +1301,13 @@ function update(){
     if(d<p.speed){ 
       p.target.hp-=p.dmg;
       
+      // Boss Battle: Give money on hit
+      if(gameMode === 'boss' && p.target.boss) {
+        const moneyGain = Math.floor(p.dmg / 10);
+        money += moneyGain;
+        totalMoneyEarned += moneyGain;
+      }
+      
       if(p.towerKey === 'plaagdokter') {
         const tower = p.tower;
         if(p.target.slowEndTime <= 0 || tower.ultimate) {
@@ -891,6 +1315,11 @@ function update(){
           p.target.speed = p.target.baseSpeed * (1 - slowAmount);
           p.target.slowEndTime = tower.slowDuration;
         }
+      }
+      
+      if(p.fire && Math.random() < p.fireChance) {
+        p.target.burning = true;
+        p.target.burnDuration = 300; // 5 seconds
       }
       
       if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});
@@ -984,6 +1413,84 @@ function drawPath(){
     ctx.stroke();
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
+  } else if(gameMode === 'speed') {
+    // Race track background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#2c3e50');
+    gradient.addColorStop(0.5, '#34495e');
+    gradient.addColorStop(1, '#2c3e50');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Race track with stripes
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 35;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    
+    // Yellow center line (dashed)
+    ctx.strokeStyle = '#ffeb3b';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([15, 10]);
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // White edge lines
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.5;
+    
+    // Draw offset paths for edges
+    for(let offset of [-16, 16]) {
+      ctx.beginPath();
+      for(let i = 0; i < path.length - 1; i++) {
+        const p1 = path[i];
+        const p2 = path[i+1];
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const len = Math.hypot(dx, dy);
+        const perpX = -dy / len * offset;
+        const perpY = dx / len * offset;
+        
+        if(i === 0) {
+          ctx.moveTo(p1.x + perpX, p1.y + perpY);
+        }
+        ctx.lineTo(p2.x + perpX, p2.y + perpY);
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  } else if(gameMode === 'armoede') {
+    // Dark, grim background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#3a3a3a');
+    gradient.addColorStop(0.5, '#2a2a2a');
+    gradient.addColorStop(1, '#1a1a1a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 26;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 28;
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (const p of path) ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
   } else {
     ctx.fillStyle = '#7ab86d';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1184,24 +1691,19 @@ function drawEnemy(e){
     ctx.stroke();
   }
   else if(e.type==='mutatedmug'){
-    // Gemuteerde Malaria Mug - grotere, gevaarlijkere versie
     ctx.save();
     
-    // Pulserende glow effect
     const pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
     ctx.scale(pulseScale, pulseScale);
     
-    // Rode gloed
     ctx.shadowBlur = 25;
     ctx.shadowColor = '#ff0080';
     
-    // Lichaam - donkerder en griezeliger
     ctx.fillStyle='#0a0a0a';
     ctx.beginPath();
     ctx.ellipse(0,0,15,7,0,0,Math.PI*2);
     ctx.fill();
     
-    // Giftige groene accenten
     ctx.fillStyle='rgba(0,255,0,0.3)';
     ctx.beginPath();
     ctx.ellipse(-5,0,4,2,0,0,Math.PI*2);
@@ -1210,7 +1712,6 @@ function drawEnemy(e){
     ctx.ellipse(5,0,4,2,0,0,Math.PI*2);
     ctx.fill();
     
-    // Vleugels - groter en dreigender met paarse gloed
     ctx.fillStyle='rgba(138,43,226,0.4)';
     ctx.shadowColor='#8a2be2';
     ctx.shadowBlur=20;
@@ -1221,7 +1722,6 @@ function drawEnemy(e){
     ctx.ellipse(12,-6,14,8,0.3,0,Math.PI*2);
     ctx.fill();
     
-    // Vleugel aders
     ctx.strokeStyle='rgba(255,0,128,0.6)';
     ctx.lineWidth=1;
     ctx.shadowBlur=10;
@@ -1238,7 +1738,6 @@ function drawEnemy(e){
     
     ctx.shadowBlur=0;
     
-    // Poten - meer en langer
     ctx.strokeStyle='#2a0a0a';
     ctx.lineWidth=2.5;
     for(let i=-2;i<=2;i++){
@@ -1248,7 +1747,6 @@ function drawEnemy(e){
       ctx.stroke();
     }
     
-    // Giftige angel
     ctx.strokeStyle='#c70039';
     ctx.lineWidth=3;
     ctx.shadowBlur=15;
@@ -1258,7 +1756,6 @@ function drawEnemy(e){
     ctx.lineTo(28,-2);
     ctx.stroke();
     
-    // Puntige angel tip
     ctx.fillStyle='#ff0080';
     ctx.beginPath();
     ctx.moveTo(28,-2);
@@ -1281,6 +1778,21 @@ function drawEnemy(e){
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
+  
+  if(e.burning) {
+    ctx.fillStyle = 'rgba(255,100,0,0.7)';
+    ctx.globalAlpha = 0.6 + Math.sin(Date.now() * 0.01) * 0.2;
+    ctx.beginPath();
+    ctx.arc(0, -e.size/2, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(e.size/3, -e.size/2.5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-e.size/3, -e.size/2.5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
 
   ctx.fillStyle='red'; 
   ctx.fillRect(-20,-24,40,5);
@@ -1293,6 +1805,34 @@ function drawEnemy(e){
   ctx.restore();
 }
 
+// Convert uploaded images to base64 for use in drawing
+const monkeyImages = {
+  base: null,
+  level1: null,
+  level2: null,
+  level3: null,
+  ultimate: null
+};
+
+// Load monkey images
+const img1 = new Image();
+img1.onload = () => monkeyImages.base = img1;
+img1.src = '/mnt/user-data/uploads/1770977536302_image.png';
+
+const img2 = new Image();
+img2.onload = () => monkeyImages.level1 = img2;
+img2.src = '/mnt/user-data/uploads/1770977621192_image.png';
+
+const img3 = new Image();
+img3.onload = () => monkeyImages.level2 = img3;
+img3.src = '/mnt/user-data/uploads/1770977728589_image.png';
+
+const img4 = new Image();
+img4.onload = () => monkeyImages.ultimate = img4;
+img4.src = '/mnt/user-data/uploads/1770977937071_image.png';
+
+monkeyImages.level3 = img4; // Use same for level 3
+
 function drawTower(t){
   const cfg = towerTypes[t.key];
   const scale = 1 + t.level * 0.05;
@@ -1300,9 +1840,101 @@ function drawTower(t){
   ctx.save();
   ctx.translate(t.x, t.y);
   ctx.scale(scale, scale);
+  
+  // Boosted effect
+  if(t.boosted) {
+    ctx.strokeStyle = 'rgba(255,215,0,0.6)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.fillStyle = 'rgba(255,215,0,0.1)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.fill();
+  }
 
+  // MONKEY (AAP)
+  if(t.key === 'aap') {
+    let img = monkeyImages.base;
+    if(t.ultimate && monkeyImages.ultimate) img = monkeyImages.ultimate;
+    else if(t.level >= 3 && monkeyImages.level3) img = monkeyImages.level3;
+    else if(t.level === 2 && monkeyImages.level2) img = monkeyImages.level2;
+    else if(t.level === 1 && monkeyImages.level1) img = monkeyImages.level1;
+    
+    if(img) {
+      ctx.drawImage(img, -18, -18, 36, 36);
+    } else {
+      // Fallback if images not loaded
+      ctx.fillStyle = t.ultimate ? '#ffd700' : '#8b4513';
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#f0e68c';
+      ctx.fillText('🐵', 0, 5);
+    }
+  }
+  
+  // FAKKEL DRAGER
+  else if(t.key === 'fakkel') {
+    // Torch bearer
+    ctx.fillStyle = t.ultimate ? '#ff6b35' : '#8b4513';
+    ctx.fillRect(-8, -10, 16, 20);
+    
+    // Head
+    ctx.fillStyle = '#d2b48c';
+    ctx.beginPath();
+    ctx.arc(0, -12, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Torch
+    ctx.fillStyle = t.ultimate ? '#ff4500' : '#8b7355';
+    ctx.fillRect(8, -8, 3, 12);
+    
+    // Flame
+    const flameColor = t.ultimate ? '#ff0000' : '#ff8800';
+    ctx.fillStyle = flameColor;
+    ctx.beginPath();
+    ctx.moveTo(9.5, -10);
+    ctx.lineTo(7, -16);
+    ctx.lineTo(9.5, -14);
+    ctx.lineTo(12, -16);
+    ctx.closePath();
+    ctx.fill();
+    
+    if(t.level >= 2) {
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(9.5, -13, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    if(t.level >= 3) {
+      // Bigger flame
+      ctx.fillStyle = '#ff4500';
+      ctx.beginPath();
+      ctx.moveTo(9.5, -16);
+      ctx.lineTo(6, -22);
+      ctx.lineTo(9.5, -19);
+      ctx.lineTo(13, -22);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    if(t.ultimate) {
+      ctx.strokeStyle = '#ff0000';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+  
   // SPEER
-  if(t.key === 'speer'){
+  else if(t.key === 'speer'){
     ctx.fillStyle = t.ultimate ? '#9b59b6' : '#3f8f4a';
     ctx.beginPath();
     ctx.arc(0,0,9,0,Math.PI*2);
@@ -1576,6 +2208,8 @@ function drawTower(t){
     else if(t.key === 'sniper') nextCost = 2500;
     else if(t.key === 'tsjaadinator') nextCost = 800;
     else if(t.key === 'katoen') nextCost = 200;
+    else if(t.key === 'aap') nextCost = 300;
+    else if(t.key === 'fakkel') nextCost = 125;
     else nextCost = 200;
   } else {
     nextCost = t.ultimate ? 0 : cfg.ultCost;
@@ -1592,6 +2226,32 @@ function drawTower(t){
   ctx.restore();
 }
 
+function drawBananas() {
+  for(const banana of bananas) {
+    ctx.save();
+    ctx.translate(banana.x, banana.y);
+    
+    // Banana
+    ctx.fillStyle = '#ffeb3b';
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.fillStyle = '#fdd835';
+    ctx.beginPath();
+    ctx.arc(-2, -1, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.strokeStyle = '#f9a825';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, 6, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+}
+
 function drawProjectiles(){
   for(const p of projectiles){
     ctx.save();
@@ -1600,7 +2260,31 @@ function drawProjectiles(){
     const angle = Math.atan2(p.ty - p.y, p.tx - p.x);
     ctx.rotate(angle);
     
-    if(p.towerKey === 'plaagdokter'){
+    if(p.towerKey === 'fakkel') {
+      // Torch projectile
+      ctx.fillStyle = p.gold ? '#ff0000' : '#ff8800';
+      ctx.strokeStyle = p.gold ? '#ff4500' : '#ff6b35';
+      ctx.lineWidth = 2;
+      
+      // Flame shape
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(8, -3);
+      ctx.lineTo(10, 0);
+      ctx.lineTo(8, 3);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      
+      // Glow
+      if(p.gold) {
+        ctx.fillStyle = 'rgba(255,100,0,0.5)';
+        ctx.beginPath();
+        ctx.arc(5, 0, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    else if(p.towerKey === 'plaagdokter'){
       if(p.gold){
         ctx.strokeStyle='#ffd700';
         ctx.fillStyle='#ffd700';
@@ -1815,10 +2499,29 @@ function drawExplosions(){
   }
 }
 
+function drawRangeCircle() {
+  if(!hoveredTower) return;
+  
+  const cfg = towerTypes[hoveredTower.key];
+  if(!cfg || cfg.range === 0) return;
+  
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.arc(hoveredTower.x, hoveredTower.y, cfg.range, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPath();
+  drawRangeCircle();
   towers.forEach(drawTower);
+  drawBananas();
   enemies.forEach(drawEnemy);
   drawProjectiles();
   drawExplosions();

@@ -1348,7 +1348,7 @@ function update(){
       
       // WIJZIGING 3: Boss Battle - 20 geld geven per damage
       if(gameMode === 'boss' && p.target.boss) {
-        const moneyGain = Math.floor(p.dmg * 3);
+        const moneyGain = Math.floor(p.dmg * 1);
         money += moneyGain;
         totalMoneyEarned += moneyGain;
       }

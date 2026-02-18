@@ -139,7 +139,164 @@
   @keyframes tsjaadPulse { 0%, 100% { box-shadow: 0 10px 30px rgba(255,111,0,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 60px rgba(255,152,0,0.9), 0 0 60px rgba(255,152,0,0.8); transform: scale(1.05); } }
   
   .modeBtn:hover { transform: scale(1.15) rotate(1deg) !important; box-shadow: 0 15px 50px rgba(139,69,19,0.6); }
-  
+
+  /* Settings Button on Title Screen */
+  #settingsBtn {
+    position: fixed; top: 20px; right: 20px;
+    width: 60px; height: 60px;
+    background: rgba(0,0,0,0.5);
+    border: 3px solid #8b4513;
+    border-radius: 50%;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 1100;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    animation: settingsPulse 4s ease-in-out infinite;
+  }
+  #settingsBtn:hover { transform: rotate(45deg) scale(1.15); background: rgba(139,69,19,0.7); }
+  @keyframes settingsPulse { 0%,100%{box-shadow:0 4px 15px rgba(0,0,0,0.4);} 50%{box-shadow:0 4px 25px rgba(218,165,32,0.5);} }
+
+  /* Settings Overlay */
+  #settingsOverlay {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.75);
+    z-index: 2000;
+    display: none;
+    justify-content: center; align-items: center;
+    backdrop-filter: blur(6px);
+    animation: fadeIn 0.25s ease;
+  }
+  #settingsOverlay.open { display: flex; }
+
+  #settingsPanel {
+    background: linear-gradient(160deg, #2a1a00 0%, #3d2800 40%, #1a0d00 100%);
+    border: 4px solid #8b4513;
+    border-radius: 24px;
+    padding: 40px 45px;
+    min-width: 460px;
+    max-width: 95vw;
+    box-shadow: 0 0 60px rgba(218,165,32,0.3), 0 20px 60px rgba(0,0,0,0.8);
+    position: relative;
+  }
+
+  #settingsPanel h2 {
+    font-size: 36px;
+    color: #daa520;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 0 0 20px rgba(218,165,32,0.6);
+    letter-spacing: 4px;
+  }
+
+  .settings-section {
+    margin-bottom: 28px;
+  }
+
+  .settings-label {
+    font-size: 14px;
+    color: #cd853f;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .settings-label .vol-value {
+    color: #daa520;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* Custom Slider */
+  .vol-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #daa520 0%, #daa520 50%, #3a2a0a 50%, #3a2a0a 100%);
+    outline: none;
+    cursor: pointer;
+    border: 2px solid #5a3a00;
+  }
+  .vol-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe082, #daa520 60%, #8b6000);
+    border: 3px solid #fff8dc;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    transition: transform 0.15s;
+  }
+  .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .vol-slider::-moz-range-thumb {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe082, #daa520 60%, #8b6000);
+    border: 3px solid #fff8dc;
+    cursor: pointer;
+  }
+
+  .settings-divider {
+    border: none;
+    border-top: 2px solid #5a3a00;
+    margin: 24px 0;
+  }
+
+  /* Language picker */
+  .lang-grid {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .lang-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border: 3px solid #5a3a00;
+    border-radius: 12px;
+    background: #1a0d00;
+    color: #cd853f;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    letter-spacing: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: auto;
+    margin: 0;
+  }
+
+  .lang-btn .flag { font-size: 26px; }
+  .lang-btn:hover { background: #3a2000; border-color: #cd853f; color: #daa520; transform: translateY(-2px); }
+  .lang-btn.active {
+    background: linear-gradient(135deg, #3d2000, #5a3000);
+    border-color: #daa520;
+    color: #ffe082;
+    box-shadow: 0 0 15px rgba(218,165,32,0.4);
+  }
+
+  #closeSettings {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none;
+    color: #cd853f; font-size: 28px;
+    cursor: pointer; width: auto; margin: 0; padding: 0;
+    line-height: 1;
+    transition: all 0.2s;
+  }
+  #closeSettings:hover { color: #daa520; transform: scale(1.2) rotate(90deg); }
+
   /* End Screens */
   .endScreen {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -170,74 +327,123 @@
 </head>
 <body>
 
+<!-- Settings Button -->
+<button id="settingsBtn" onclick="openSettings()" title="Instellingen / Settings / Einstellungen">⚙️</button>
+
+<!-- Settings Overlay -->
+<div id="settingsOverlay" onclick="handleOverlayClick(event)">
+  <div id="settingsPanel">
+    <button id="closeSettings" onclick="closeSettings()">✕</button>
+    <h2 id="stg-title">⚙️ INSTELLINGEN</h2>
+
+    <div class="settings-section">
+      <div class="settings-label">
+        <span id="stg-music-label">🎵 MUZIEK VOLUME</span>
+        <span class="vol-value" id="musicVolDisplay">50%</span>
+      </div>
+      <input type="range" class="vol-slider" id="musicVol" min="0" max="100" value="50"
+        oninput="updateMusicVol(this.value)">
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">
+        <span id="stg-sfx-label">🔊 GELUIDSEFFECTEN</span>
+        <span class="vol-value" id="sfxVolDisplay">50%</span>
+      </div>
+      <input type="range" class="vol-slider" id="sfxVol" min="0" max="100" value="50"
+        oninput="updateSfxVol(this.value)">
+    </div>
+
+    <hr class="settings-divider">
+
+    <div class="settings-section">
+      <div class="settings-label" id="stg-lang-label">🌍 TAAL / LANGUAGE / SPRACHE</div>
+      <div class="lang-grid">
+        <button class="lang-btn active" id="lang-nl" onclick="setLang('nl')">
+          <span class="flag">🇳🇱</span>
+          <span>Nederlands</span>
+        </button>
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')">
+          <span class="flag">🇬🇧</span>
+          <span>English</span>
+        </button>
+        <button class="lang-btn" id="lang-de" onclick="setLang('de')">
+          <span class="flag">🇩🇪</span>
+          <span>Deutsch</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Title Screen -->
 <div id="titleScreen">
   <h1>🏜️ TSJAAD TD 🐪</h1>
-  <div class="subtitle">⚔️ VECHT VOOR TSJAAD!!! ⚔️</div>
+  <div class="subtitle" id="title-subtitle">⚔️ VECHT VOOR TSJAAD!!! ⚔️</div>
   <div class="mode-grid">
-    <button class="modeBtn standard" onclick="startGame('standard')">🦟 STANDAARD MODUS</button>
-    <button class="modeBtn plaag" onclick="startGame('plaag')">🌋 PLAAG MODUS 🦠</button>
-    <button class="modeBtn hard" onclick="startGame('hard')">💀 HARD MODUS ⚡</button>
-    <button class="modeBtn speed" onclick="startGame('speed')">⚡ DUBBEL SNELHEID 🏎️</button>
-    <button class="modeBtn armoede" onclick="startGame('armoede')">💀 ARMOEDE MODUS 💀</button>
-    <button class="modeBtn boss" onclick="startGame('boss')">👹 BOSS BATTLE 👹</button>
-    <button class="modeBtn mutatie" onclick="startGame('mutatie')">🧬 MUTATIE MODUS 🧬</button>
-    <button class="modeBtn dubbelhealth" onclick="startGame('dubbelhealth')">💙 DUBBEL HEALTH 💙</button>
-    <button class="modeBtn tsjaad" onclick="startGame('tsjaadmodus')">🔥 TSJAAD MODUS 🔥</button>
+    <button class="modeBtn standard" onclick="startGame('standard')" id="btn-standard">🦟 STANDAARD MODUS</button>
+    <button class="modeBtn plaag" onclick="startGame('plaag')" id="btn-plaag">🌋 PLAAG MODUS 🦠</button>
+    <button class="modeBtn hard" onclick="startGame('hard')" id="btn-hard">💀 HARD MODUS ⚡</button>
+    <button class="modeBtn speed" onclick="startGame('speed')" id="btn-speed">⚡ DUBBEL SNELHEID 🏎️</button>
+    <button class="modeBtn armoede" onclick="startGame('armoede')" id="btn-armoede">💀 ARMOEDE MODUS 💀</button>
+    <button class="modeBtn boss" onclick="startGame('boss')" id="btn-boss">👹 BOSS BATTLE 👹</button>
+    <button class="modeBtn mutatie" onclick="startGame('mutatie')" id="btn-mutatie">🧬 MUTATIE MODUS 🧬</button>
+    <button class="modeBtn dubbelhealth" onclick="startGame('dubbelhealth')" id="btn-dubbelhealth">💙 DUBBEL HEALTH 💙</button>
+    <button class="modeBtn tsjaad" onclick="startGame('tsjaadmodus')" id="btn-tsjaad">🔥 TSJAAD MODUS 🔥</button>
   </div>
 </div>
 
 <!-- Victory Screen -->
 <div id="victoryScreen" class="endScreen">
-  <h1>🏆 OVERWINNING! 🏆</h1>
+  <h1 id="vs-title">🏆 OVERWINNING! 🏆</h1>
   <div class="message">
-    <strong>JE HEBT DE MALARIA MUG VERSLAGEN!</strong><br>
-    JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!<br>
-    <em>JE BENT TSJAADTASTISCH!!!</em>
+    <strong id="vs-line1">JE HEBT DE MALARIA MUG VERSLAGEN!</strong><br>
+    <span id="vs-line2">JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!</span><br>
+    <em id="vs-line3">JE BENT TSJAADTASTISCH!!!</em>
   </div>
   <div class="stats">
-    ⚔️ Rondes Overleefd: <strong><span id="finalRound"></span></strong><br>
-    💰 Totaal Verdiend: <strong>€<span id="finalMoney"></span></strong>
+    <span id="vs-rounds-label">⚔️ Rondes Overleefd:</span> <strong><span id="finalRound"></span></strong><br>
+    <span id="vs-money-label">💰 Totaal Verdiend:</span> <strong>€<span id="finalMoney"></span></strong>
   </div>
-  <button class="restartBtn" onclick="location.reload()">🔄 Opnieuw Spelen</button>
+  <button class="restartBtn" onclick="location.reload()" id="vs-restart">🔄 Opnieuw Spelen</button>
 </div>
 
 <!-- Death Screen -->
 <div id="deathScreen" class="endScreen">
-  <h1>💀 GAME OVER LOSER 💀</h1>
+  <h1 id="ds-title">💀 GAME OVER LOSER 💀</h1>
   <div class="message" id="deathMessage"></div>
   <div class="stats" id="deathStats"></div>
   <div id="leaderboard" style="display:none;">
-    <h2>🏆 LEADERBOARD 🏆</h2>
+    <h2 id="lb-title">🏆 LEADERBOARD 🏆</h2>
     <div id="leaderboardList"></div>
   </div>
-  <button class="restartBtn" onclick="location.reload()">🔄 Opnieuw Proberen</button>
+  <button class="restartBtn" onclick="location.reload()" id="ds-restart">🔄 Opnieuw Proberen</button>
 </div>
 
 <!-- Game UI -->
 <div id="ui" style="display:none;">
   <h2 id="gameTitle">🛡️ Tsjaad TD</h2>
   <div style="margin:10px 0; font-size:16px;">
-    <div>💰 Geld: <strong><span id="money">500</span></strong></div>
-    <div>❤️ Levens: <strong><span id="lives">20</span></strong></div>
-    <div>🌊 Ronde: <strong><span id="round">1</span><span id="roundMax">/30</span></strong></div>
+    <div id="ui-money-label">💰 Geld: <strong><span id="money">500</span></strong></div>
+    <div id="ui-lives-label">❤️ Levens: <strong><span id="lives">20</span></strong></div>
+    <div id="ui-round-label">🌊 Ronde: <strong><span id="round">1</span><span id="roundMax">/30</span></strong></div>
   </div>
   <div id="roundMsg" class="small"></div>
   <div id="autoRoundMsg" class="small" style="color:#ff6b35; font-weight:bold;"></div>
   <hr style="margin:10px 0; border-color:#444;">
-  <button onclick="selectTower('speer')">⚔️ Speer Werper (€80)</button>
-  <button onclick="selectTower('boog')">🏹 Boog Schutter (€125)</button>
-  <button onclick="selectTower('fakkel')">🔥 Fakkel Drager (€150)</button>
-  <button onclick="selectTower('plaagdokter')">💉 Plaag Dokter (€300)</button>
-  <button onclick="selectTower('aap')">🐵 Wilde Aap (€400)</button>
-  <button onclick="selectTower('geweer')">🔫 Soldaat (€550)</button>
-  <button onclick="selectTower('atoom')">💣 Atoombommenwerper (€600)</button>
-  <button id="katoenBtn" onclick="selectTower('katoen')">🌾 Katoen Plantage (€950)</button>
-  <button onclick="selectTower('tsjaadinator')">⚡ Tsjaadinator (€2500)</button>
-  <button onclick="selectTower('sniper')">🎯 Sniper (€3000)</button>
+  <button onclick="selectTower('speer')" id="tower-speer">⚔️ Speer Werper (€80)</button>
+  <button onclick="selectTower('boog')" id="tower-boog">🏹 Boog Schutter (€125)</button>
+  <button onclick="selectTower('fakkel')" id="tower-fakkel">🔥 Fakkel Drager (€150)</button>
+  <button onclick="selectTower('plaagdokter')" id="tower-plaag">💉 Plaag Dokter (€300)</button>
+  <button onclick="selectTower('aap')" id="tower-aap">🐵 Wilde Aap (€400)</button>
+  <button onclick="selectTower('geweer')" id="tower-geweer">🔫 Soldaat (€550)</button>
+  <button onclick="selectTower('atoom')" id="tower-atoom">💣 Atoombommenwerper (€600)</button>
+  <button id="katoenBtn" onclick="selectTower('katoen')" id="tower-katoen">🌾 Katoen Plantage (€950)</button>
+  <button onclick="selectTower('tsjaadinator')" id="tower-tsjaad">⚡ Tsjaadinator (€2500)</button>
+  <button onclick="selectTower('sniper')" id="tower-sniper">🎯 Sniper (€3000)</button>
   <hr style="margin:10px 0; border-color:#444;">
-  <button id="startRoundBtn" onclick="startRound()" style="background:#4CAF50; border-color:#45a049;">▶️ Start Ronde</button>
-  <p class="small">💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)</p>
+  <button id="startRoundBtn" onclick="startRound()" style="background:#4CAF50; border-color:#45a049;" id="btn-startround">▶️ Start Ronde</button>
+  <p class="small" id="ui-upgrade-hint">💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)</p>
 </div>
 
 <div id="gameWrap">
@@ -245,6 +451,311 @@
 </div>
 
 <script>
+// ===== LANGUAGE SYSTEM =====
+let currentLang = 'nl';
+
+const STRINGS = {
+  nl: {
+    // Settings
+    'stg-title': '⚙️ INSTELLINGEN',
+    'stg-music-label': '🎵 MUZIEK VOLUME',
+    'stg-sfx-label': '🔊 GELUIDSEFFECTEN',
+    'stg-lang-label': '🌍 TAAL / LANGUAGE / SPRACHE',
+    // Title screen
+    'title-subtitle': '⚔️ VECHT VOOR TSJAAD!!! ⚔️',
+    'btn-standard': '🦟 STANDAARD MODUS',
+    'btn-plaag': '🌋 PLAAG MODUS 🦠',
+    'btn-hard': '💀 HARD MODUS ⚡',
+    'btn-speed': '⚡ DUBBEL SNELHEID 🏎️',
+    'btn-armoede': '💀 ARMOEDE MODUS 💀',
+    'btn-boss': '👹 BOSS BATTLE 👹',
+    'btn-mutatie': '🧬 MUTATIE MODUS 🧬',
+    'btn-dubbelhealth': '💙 DUBBEL HEALTH 💙',
+    'btn-tsjaad': '🔥 TSJAAD MODUS 🔥',
+    // Victory
+    'vs-title': '🏆 OVERWINNING! 🏆',
+    'vs-line1': 'JE HEBT DE MALARIA MUG VERSLAGEN!',
+    'vs-line2': 'JE HEBT DE PLAAG IN TSJAAD OVERLEEFD!',
+    'vs-line3': 'JE BENT TSJAADTASTISCH!!!',
+    'vs-rounds-label': '⚔️ Rondes Overleefd:',
+    'vs-money-label': '💰 Totaal Verdiend:',
+    'vs-restart': '🔄 Opnieuw Spelen',
+    // Death
+    'ds-title': '💀 GAME OVER LOSER 💀',
+    'ds-restart': '🔄 Opnieuw Proberen',
+    'lb-title': '🏆 LEADERBOARD 🏆',
+    // Game UI
+    'ui-money-label': '💰 Geld:',
+    'ui-lives-label': '❤️ Levens:',
+    'ui-round-label': '🌊 Ronde:',
+    'tower-speer': '⚔️ Speer Werper (€80)',
+    'tower-boog': '🏹 Boog Schutter (€125)',
+    'tower-fakkel': '🔥 Fakkel Drager (€150)',
+    'tower-plaag': '💉 Plaag Dokter (€300)',
+    'tower-aap': '🐵 Wilde Aap (€400)',
+    'tower-geweer': '🔫 Soldaat (€550)',
+    'tower-atoom': '💣 Atoombommenwerper (€600)',
+    'tower-katoen': '🌾 Katoen Plantage (€950)',
+    'tower-tsjaad': '⚡ Tsjaadinator (€2500)',
+    'tower-sniper': '🎯 Sniper (€3000)',
+    'btn-startround': '▶️ Start Ronde',
+    'ui-upgrade-hint': '💡 Klik op toren = upgrade (Max lvl 4 - Ultimate)',
+    // Death messages (dynamic)
+    'death-survived': 'JE OVERLEEFDE',
+    'death-rounds': 'RONDES IN',
+    'death-toostrong': 'DE VIJANDEN WAREN TE STERK...',
+    'death-fell': '💀 Gevallen op Ronde:',
+    'death-earned': '💰 Totaal Verdiend:',
+    // Round messages
+    'round-farms': '🌾 Plantages: €',
+    'round-label': '▶️ Ronde ',
+    // Auto start
+    'auto-hard': '⚡ AUTO-START INSTANT!',
+    'auto-tsjaad': '🔥 AUTO-START INSTANT!',
+    // Mode names
+    'mode-standard': 'STANDAARD',
+    'mode-plaag': 'PLAAG MODUS',
+    'mode-hard': 'HARD MODUS',
+    'mode-speed': 'DUBBEL SNELHEID',
+    'mode-armoede': 'ARMOEDE MODUS',
+    'mode-boss': 'BOSS MODE',
+    'mode-mutatie': 'MUTATIE MODUS',
+    'mode-dubbelhealth': 'DUBBEL HEALTH',
+    'mode-tsjaadmodus': 'TSJAAD MODUS',
+  },
+  en: {
+    'stg-title': '⚙️ SETTINGS',
+    'stg-music-label': '🎵 MUSIC VOLUME',
+    'stg-sfx-label': '🔊 SOUND EFFECTS',
+    'stg-lang-label': '🌍 LANGUAGE',
+    'title-subtitle': '⚔️ FIGHT FOR CHAD!!! ⚔️',
+    'btn-standard': '🦟 STANDARD MODE',
+    'btn-plaag': '🌋 PLAGUE MODE 🦠',
+    'btn-hard': '💀 HARD MODE ⚡',
+    'btn-speed': '⚡ DOUBLE SPEED 🏎️',
+    'btn-armoede': '💀 POVERTY MODE 💀',
+    'btn-boss': '👹 BOSS BATTLE 👹',
+    'btn-mutatie': '🧬 MUTATION MODE 🧬',
+    'btn-dubbelhealth': '💙 DOUBLE HEALTH 💙',
+    'btn-tsjaad': '🔥 CHAD MODE 🔥',
+    'vs-title': '🏆 VICTORY! 🏆',
+    'vs-line1': 'YOU DEFEATED THE MALARIA MOSQUITO!',
+    'vs-line2': 'YOU SURVIVED THE PLAGUE IN CHAD!',
+    'vs-line3': 'YOU ARE CHADTASTIC!!!',
+    'vs-rounds-label': '⚔️ Rounds Survived:',
+    'vs-money-label': '💰 Total Earned:',
+    'vs-restart': '🔄 Play Again',
+    'ds-title': '💀 GAME OVER LOSER 💀',
+    'ds-restart': '🔄 Try Again',
+    'lb-title': '🏆 LEADERBOARD 🏆',
+    'ui-money-label': '💰 Money:',
+    'ui-lives-label': '❤️ Lives:',
+    'ui-round-label': '🌊 Round:',
+    'tower-speer': '⚔️ Spear Thrower (€80)',
+    'tower-boog': '🏹 Archer (€125)',
+    'tower-fakkel': '🔥 Torch Bearer (€150)',
+    'tower-plaag': '💉 Plague Doctor (€300)',
+    'tower-aap': '🐵 Wild Monkey (€400)',
+    'tower-geweer': '🔫 Soldier (€550)',
+    'tower-atoom': '💣 Atom Bomber (€600)',
+    'tower-katoen': '🌾 Cotton Plantation (€950)',
+    'tower-tsjaad': '⚡ Chadinator (€2500)',
+    'tower-sniper': '🎯 Sniper (€3000)',
+    'btn-startround': '▶️ Start Round',
+    'ui-upgrade-hint': '💡 Click tower = upgrade (Max lvl 4 - Ultimate)',
+    'death-survived': 'YOU SURVIVED',
+    'death-rounds': 'ROUNDS IN',
+    'death-toostrong': 'THE ENEMIES WERE TOO STRONG...',
+    'death-fell': '💀 Fell at Round:',
+    'death-earned': '💰 Total Earned:',
+    'round-farms': '🌾 Plantations: €',
+    'round-label': '▶️ Round ',
+    'auto-hard': '⚡ AUTO-START INSTANT!',
+    'auto-tsjaad': '🔥 AUTO-START INSTANT!',
+    'mode-standard': 'STANDARD',
+    'mode-plaag': 'PLAGUE MODE',
+    'mode-hard': 'HARD MODE',
+    'mode-speed': 'DOUBLE SPEED',
+    'mode-armoede': 'POVERTY MODE',
+    'mode-boss': 'BOSS MODE',
+    'mode-mutatie': 'MUTATION MODE',
+    'mode-dubbelhealth': 'DOUBLE HEALTH',
+    'mode-tsjaadmodus': 'CHAD MODE',
+  },
+  de: {
+    'stg-title': '⚙️ EINSTELLUNGEN',
+    'stg-music-label': '🎵 MUSIKLAUTSTÄRKE',
+    'stg-sfx-label': '🔊 SOUNDEFFEKTE',
+    'stg-lang-label': '🌍 SPRACHE',
+    'title-subtitle': '⚔️ KÄMPFE FÜR TSCHAD!!! ⚔️',
+    'btn-standard': '🦟 STANDARD-MODUS',
+    'btn-plaag': '🌋 SEUCHEN-MODUS 🦠',
+    'btn-hard': '💀 HARD-MODUS ⚡',
+    'btn-speed': '⚡ DOPPELTE GESCHWINDIGKEIT 🏎️',
+    'btn-armoede': '💀 ARMUTS-MODUS 💀',
+    'btn-boss': '👹 BOSS BATTLE 👹',
+    'btn-mutatie': '🧬 MUTATIONS-MODUS 🧬',
+    'btn-dubbelhealth': '💙 DOPPELTE GESUNDHEIT 💙',
+    'btn-tsjaad': '🔥 TSCHAD-MODUS 🔥',
+    'vs-title': '🏆 SIEG! 🏆',
+    'vs-line1': 'DU HAST DIE MALARIA-MÜCKE BESIEGT!',
+    'vs-line2': 'DU HAST DIE SEUCHE IN TSCHAD ÜBERLEBT!',
+    'vs-line3': 'DU BIST TSCHADTASTISCH!!!',
+    'vs-rounds-label': '⚔️ Überlebte Runden:',
+    'vs-money-label': '💰 Gesamtverdienst:',
+    'vs-restart': '🔄 Nochmal Spielen',
+    'ds-title': '💀 GAME OVER VERLIERER 💀',
+    'ds-restart': '🔄 Nochmal Versuchen',
+    'lb-title': '🏆 BESTENLISTE 🏆',
+    'ui-money-label': '💰 Geld:',
+    'ui-lives-label': '❤️ Leben:',
+    'ui-round-label': '🌊 Runde:',
+    'tower-speer': '⚔️ Speerwerfer (€80)',
+    'tower-boog': '🏹 Bogenschütze (€125)',
+    'tower-fakkel': '🔥 Fackelträger (€150)',
+    'tower-plaag': '💉 Seuchenarzt (€300)',
+    'tower-aap': '🐵 Wilder Affe (€400)',
+    'tower-geweer': '🔫 Soldat (€550)',
+    'tower-atoom': '💣 Atombomber (€600)',
+    'tower-katoen': '🌾 Baumwollplantage (€950)',
+    'tower-tsjaad': '⚡ Tschadinator (€2500)',
+    'tower-sniper': '🎯 Scharfschütze (€3000)',
+    'btn-startround': '▶️ Runde Starten',
+    'ui-upgrade-hint': '💡 Turm klicken = Upgrade (Max Lvl 4 - Ultimate)',
+    'death-survived': 'DU HAST',
+    'death-rounds': 'RUNDEN IN',
+    'death-toostrong': 'DIE FEINDE WAREN ZU STARK...',
+    'death-fell': '💀 Gefallen in Runde:',
+    'death-earned': '💰 Gesamtverdienst:',
+    'round-farms': '🌾 Plantagen: €',
+    'round-label': '▶️ Runde ',
+    'auto-hard': '⚡ AUTO-START SOFORT!',
+    'auto-tsjaad': '🔥 AUTO-START SOFORT!',
+    'mode-standard': 'STANDARD',
+    'mode-plaag': 'SEUCHENMODUS',
+    'mode-hard': 'HARD MODUS',
+    'mode-speed': 'DOPPELTE GESCHWINDIGKEIT',
+    'mode-armoede': 'ARMUTS-MODUS',
+    'mode-boss': 'BOSS MODE',
+    'mode-mutatie': 'MUTATIONS-MODUS',
+    'mode-dubbelhealth': 'DOPPELTE GESUNDHEIT',
+    'mode-tsjaadmodus': 'TSCHAD-MODUS',
+  }
+};
+
+function t(key) {
+  return (STRINGS[currentLang] && STRINGS[currentLang][key]) || (STRINGS['nl'][key]) || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  // Update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('lang-' + lang).classList.add('active');
+  // Apply all translations
+  applyTranslations();
+  // Save preference
+  localStorage.setItem('tsjaadTD_lang', lang);
+}
+
+function applyTranslations() {
+  const ids = [
+    'stg-title','stg-music-label','stg-sfx-label','stg-lang-label',
+    'title-subtitle',
+    'btn-standard','btn-plaag','btn-hard','btn-speed','btn-armoede',
+    'btn-boss','btn-mutatie','btn-dubbelhealth','btn-tsjaad',
+    'vs-title','vs-line1','vs-line2','vs-line3',
+    'vs-rounds-label','vs-money-label','vs-restart',
+    'ds-title','ds-restart','lb-title',
+    'ui-money-label','ui-lives-label','ui-round-label',
+    'tower-speer','tower-boog','tower-fakkel','tower-plaag','tower-aap',
+    'tower-geweer','tower-atoom','tower-katoen','tower-tsjaad','tower-sniper',
+    'btn-startround','ui-upgrade-hint'
+  ];
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t(id);
+  }
+  // Re-add money/lives/round values (spans inside)
+  const moneyEl = document.getElementById('ui-money-label');
+  if (moneyEl) {
+    const val = document.getElementById('money') ? document.getElementById('money').textContent : '500';
+    moneyEl.innerHTML = t('ui-money-label') + ' <strong><span id="money">' + val + '</span></strong>';
+  }
+  const livesEl = document.getElementById('ui-lives-label');
+  if (livesEl) {
+    const val = document.getElementById('lives') ? document.getElementById('lives').textContent : '20';
+    livesEl.innerHTML = t('ui-lives-label') + ' <strong><span id="lives">' + val + '</span></strong>';
+  }
+  const roundEl = document.getElementById('ui-round-label');
+  if (roundEl) {
+    const val = document.getElementById('round') ? document.getElementById('round').textContent : '1';
+    const max = document.getElementById('roundMax') ? document.getElementById('roundMax').textContent : '/30';
+    roundEl.innerHTML = t('ui-round-label') + ' <strong><span id="round">' + val + '</span><span id="roundMax">' + max + '</span></strong>';
+  }
+}
+
+// ===== SETTINGS =====
+let musicVolume = 0.5;
+let sfxVolume = 0.5;
+
+function openSettings() {
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsOverlay').classList.remove('open');
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('settingsOverlay')) closeSettings();
+}
+
+function updateMusicVol(val) {
+  musicVolume = val / 100;
+  document.getElementById('musicVolDisplay').textContent = val + '%';
+  // Update slider gradient
+  const slider = document.getElementById('musicVol');
+  slider.style.background = `linear-gradient(to right, #daa520 0%, #daa520 ${val}%, #3a2a0a ${val}%, #3a2a0a 100%)`;
+  // Apply to all music
+  for (const key of Object.keys(sounds)) {
+    if (['mainTheme','volcanoTheme','hardTheme','doubleSpeed','armoede','bossMode','mutatieModus','dubbelHealthModus','tsjaadModus'].includes(key)) {
+      sounds[key].volume = musicVolume;
+    }
+  }
+  localStorage.setItem('tsjaadTD_musicVol', val);
+}
+
+function updateSfxVol(val) {
+  sfxVolume = val / 100;
+  document.getElementById('sfxVolDisplay').textContent = val + '%';
+  const slider = document.getElementById('sfxVol');
+  slider.style.background = `linear-gradient(to right, #daa520 0%, #daa520 ${val}%, #3a2a0a ${val}%, #3a2a0a 100%)`;
+  localStorage.setItem('tsjaadTD_sfxVol', val);
+}
+
+// Load saved settings
+(function loadSettings() {
+  const savedLang = localStorage.getItem('tsjaadTD_lang');
+  if (savedLang) { currentLang = savedLang; }
+
+  const savedMusic = localStorage.getItem('tsjaadTD_musicVol');
+  if (savedMusic !== null) {
+    document.getElementById('musicVol').value = savedMusic;
+    updateMusicVol(savedMusic);
+  }
+  const savedSfx = localStorage.getItem('tsjaadTD_sfxVol');
+  if (savedSfx !== null) {
+    document.getElementById('sfxVol').value = savedSfx;
+    updateSfxVol(savedSfx);
+  }
+
+  if (savedLang) {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('lang-' + savedLang);
+    if (btn) btn.classList.add('active');
+    applyTranslations();
+  }
+})();
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
@@ -283,7 +794,6 @@ const bossPath = [
   {x:750,y:550},{x:950,y:550},{x:950,y:250},{x:1220,y:250}
 ];
 
-// Nuclear theme map for mutatie modus - complex zigzag
 const mutatiePath = [
   {x:-20,y:100},{x:120,y:100},{x:120,y:600},{x:280,y:600},
   {x:280,y:200},{x:450,y:200},{x:450,y:500},{x:620,y:500},
@@ -291,14 +801,12 @@ const mutatiePath = [
   {x:970,y:280},{x:1220,y:280}
 ];
 
-// Dubbel health - nice spiral map
 const dubbelHealthPath = [
   {x:-20,y:250},{x:200,y:250},{x:200,y:500},{x:450,y:500},
   {x:450,y:150},{x:700,y:150},{x:700,y:400},{x:950,y:400},
   {x:950,y:200},{x:1100,y:200},{x:1100,y:550},{x:1220,y:550}
 ];
 
-// TsjaadModus - very hard winding path
 const tsjaadPath = [
   {x:-20,y:50},{x:100,y:50},{x:100,y:200},{x:250,y:200},
   {x:250,y:80},{x:420,y:80},{x:420,y:350},{x:600,y:350},
@@ -317,11 +825,8 @@ let hoveredTower = null;
 let mouseX = 0, mouseY = 0;
 let monkeyBoosts = [];
 
-// Nuclear explosion effects
 let nuclearExplosions = [];
-// Slowed towers (from radioactive enemies)
 let towersSlowedUntil = new Map();
-// Visual effects
 let visualEffects = [];
 
 // ===== AUDIO =====
@@ -347,7 +852,7 @@ const sounds = {
 for(const key of Object.keys(sounds)){
   if(['mainTheme','volcanoTheme','hardTheme','doubleSpeed','armoede','bossMode','mutatieModus','dubbelHealthModus','tsjaadModus'].includes(key)){
     sounds[key].loop = true;
-    sounds[key].volume = 0.5;
+    sounds[key].volume = musicVolume;
   }
 }
 
@@ -356,6 +861,7 @@ let currentTheme = null;
 
 function playMusic() {
   if(currentTheme && !musicPlaying) {
+    currentTheme.volume = musicVolume;
     currentTheme.play().then(() => { musicPlaying = true; }).catch(e => { console.error('Music error:', e); });
   }
 }
@@ -363,7 +869,8 @@ function playMusic() {
 function playSound(soundName) {
   if(sounds[soundName]) {
     const sound = sounds[soundName].cloneNode();
-    sound.volume = soundName === 'sniper' ? 0.4 : (soundName === 'monkey' ? 0.6 : 0.5);
+    const baseVol = soundName === 'sniper' ? 0.4 : (soundName === 'monkey' ? 0.6 : 0.5);
+    sound.volume = baseVol * sfxVolume * 2; // sfxVolume 0-1, base volume already 0.5
     sound.play().catch(e => {});
   }
 }
@@ -386,22 +893,11 @@ function pickMutation(round, mode) {
 
 function getMutationDisplayName(mutation, baseName) {
   const prefix = {
-    ondode: 'Ondode',
-    snelle: 'Snelle',
-    hydra: 'Hydra',
-    random: 'Random',
-    dodelijke: 'Dodelijke',
-    radioactieve: 'Radioactieve',
-    metalen: 'Metalen',
-    kogelvrije: 'Kogelvrije',
-    beschermde: 'Beschermde',
-    terugkerende: 'Terugkerende',
-    arme: 'Arme',
-    onzichtbare: 'Onzichtbare',
-    verslomende: 'Verslomende',
-    accelererende: 'Accelererende',
-    genezende: 'Genezende',
-    elite: 'ELITE'
+    ondode: 'Ondode', snelle: 'Snelle', hydra: 'Hydra', random: 'Random',
+    dodelijke: 'Dodelijke', radioactieve: 'Radioactieve', metalen: 'Metalen',
+    kogelvrije: 'Kogelvrije', beschermde: 'Beschermde', terugkerende: 'Terugkerende',
+    arme: 'Arme', onzichtbare: 'Onzichtbare', verslomende: 'Verslomende',
+    accelererende: 'Accelererende', genezende: 'Genezende', elite: 'ELITE'
   };
   return (prefix[mutation] || '') + ' ' + baseName;
 }
@@ -410,31 +906,32 @@ function getMutationDisplayName(mutation, baseName) {
 function startGame(mode) {
   gameMode = mode;
   document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('settingsBtn').style.display = 'none';
   document.getElementById('ui').style.display = 'block';
 
   if(mode === 'plaag') {
     path = volcanoPath;
-    document.getElementById('gameTitle').innerHTML = '🌋 <span style="color:#ff6b35">PLAAG MODUS</span> 🦠';
+    document.getElementById('gameTitle').innerHTML = '🌋 <span style="color:#ff6b35">' + t('mode-plaag') + '</span> 🦠';
     document.getElementById('roundMax').textContent = '';
     lives = 12; money = 700; autoStartRounds = false;
     currentTheme = sounds.volcanoTheme;
   } else if(mode === 'hard') {
     path = hardPath;
-    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#c70039">HARD MODUS</span> ⚡';
+    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#c70039">' + t('mode-hard') + '</span> ⚡';
     document.getElementById('roundMax').textContent = '/50';
     lives = 20; money = 300; autoStartRounds = true; autoRoundCountdown = 0;
     document.getElementById('startRoundBtn').style.display = 'none';
-    document.getElementById('autoRoundMsg').textContent = '⚡ AUTO-START INSTANT!';
+    document.getElementById('autoRoundMsg').textContent = t('auto-hard');
     currentTheme = sounds.hardTheme;
   } else if(mode === 'speed') {
     path = racePath;
-    document.getElementById('gameTitle').innerHTML = '⚡ <span style="color:#00ffff">DUBBEL SNELHEID</span> 🏎️';
+    document.getElementById('gameTitle').innerHTML = '⚡ <span style="color:#00ffff">' + t('mode-speed') + '</span> 🏎️';
     document.getElementById('roundMax').textContent = '/30';
     lives = 20; money = 2000; autoStartRounds = false;
     currentTheme = sounds.doubleSpeed;
   } else if(mode === 'armoede') {
     path = standardPath;
-    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#888">ARMOEDE MODUS</span> 💀';
+    document.getElementById('gameTitle').innerHTML = '💀 <span style="color:#888">' + t('mode-armoede') + '</span> 💀';
     document.getElementById('roundMax').textContent = '/30';
     lives = 1; money = 500; autoStartRounds = false;
     currentTheme = sounds.armoede;
@@ -442,29 +939,29 @@ function startGame(mode) {
     document.getElementById('katoenBtn').classList.add('crossed-out');
   } else if(mode === 'boss') {
     path = bossPath;
-    document.getElementById('gameTitle').innerHTML = '👹 <span style="color:#ff0000">BOSS BATTLE</span> 👹';
+    document.getElementById('gameTitle').innerHTML = '👹 <span style="color:#ff0000">' + t('mode-boss') + '</span> 👹';
     document.getElementById('roundMax').textContent = '/1';
     lives = 20; money = 1000; autoStartRounds = false;
     currentTheme = sounds.bossMode;
   } else if(mode === 'mutatie') {
     path = mutatiePath;
-    document.getElementById('gameTitle').innerHTML = '🧬 <span style="color:#00ff44">MUTATIE MODUS</span> 🧬';
+    document.getElementById('gameTitle').innerHTML = '🧬 <span style="color:#00ff44">' + t('mode-mutatie') + '</span> 🧬';
     document.getElementById('roundMax').textContent = '/35';
     lives = 20; money = 600; autoStartRounds = false;
     currentTheme = sounds.mutatieModus;
   } else if(mode === 'dubbelhealth') {
     path = dubbelHealthPath;
-    document.getElementById('gameTitle').innerHTML = '💙 <span style="color:#4fc3f7">DUBBEL HEALTH</span> 💙';
+    document.getElementById('gameTitle').innerHTML = '💙 <span style="color:#4fc3f7">' + t('mode-dubbelhealth') + '</span> 💙';
     document.getElementById('roundMax').textContent = '/30';
     lives = 20; money = 500; autoStartRounds = false;
     currentTheme = sounds.dubbelHealthModus;
   } else if(mode === 'tsjaadmodus') {
     path = tsjaadPath;
-    document.getElementById('gameTitle').innerHTML = '🔥 <span style="color:#ff9800">TSJAAD MODUS</span> 🔥';
+    document.getElementById('gameTitle').innerHTML = '🔥 <span style="color:#ff9800">' + t('mode-tsjaadmodus') + '</span> 🔥';
     document.getElementById('roundMax').textContent = '/50';
     lives = 1; money = 800; autoStartRounds = true; autoRoundCountdown = 0;
     document.getElementById('startRoundBtn').style.display = 'none';
-    document.getElementById('autoRoundMsg').textContent = '🔥 AUTO-START INSTANT!';
+    document.getElementById('autoRoundMsg').textContent = t('auto-tsjaad');
     currentTheme = sounds.tsjaadModus;
   } else {
     path = standardPath;
@@ -564,8 +1061,8 @@ canvas.onclick=e=>{
 
 function distanceToLineSegment(px, py, x1, y1, x2, y2) {
   const dx=x2-x1, dy=y2-y1;
-  const t=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/(dx*dx+dy*dy)));
-  return Math.hypot(px-(x1+t*dx), py-(y1+t*dy));
+  const t2=Math.max(0,Math.min(1,((px-x1)*dx+(py-y1)*dy)/(dx*dx+dy*dy)));
+  return Math.hypot(px-(x1+t2*dx), py-(y1+t2*dy));
 }
 
 function handleUpgrade(t){
@@ -625,13 +1122,12 @@ function startRound(){
       money+=base; farmCash+=base;
     }
   }
-  showRoundMsg(farmCash>0?`🌾 Plantages: €${farmCash}`:`▶️ Ronde ${round}`);
+  showRoundMsg(farmCash>0? t('round-farms')+farmCash : t('round-label')+round);
 
-  // Boss spawning
   const maxRound = getMaxRound();
   if(round === maxRound){
     if(gameMode === 'mutatie'){
-      spawnLeft=3; // 3 hydra boss heads
+      spawnLeft=3;
     } else {
       spawnLeft=1;
     }
@@ -670,7 +1166,6 @@ function showRoundMsg(txt){
 function spawnEnemy(){
   const maxRound=getMaxRound();
   
-  // Boss rounds
   if(round===maxRound){
     if(gameMode==='mutatie'){
       enemies.push(makeEnemy({...hydraHydraBossType}));
@@ -707,7 +1202,6 @@ function spawnEnemy(){
   const baseHp=Math.floor(base.hp*hpScale);
   const baseSpeed=base.speed*speedScale;
 
-  // Mutation chance
   let mutationChance=0;
   if(gameMode==='mutatie') mutationChance=0.20;
   else if(gameMode==='tsjaadmodus') mutationChance=0.02;
@@ -758,18 +1252,18 @@ function applyMutationToEnemy(enemy, mutation, hp, speed, base){
   }
 }
 
-function makeEnemy(t){
+function makeEnemy(t2){
   return {
     x:path[0].x,y:path[0].y,i:0,
-    hp:t.hp,max:t.hp,speed:t.speed,
-    baseSpeed:t.speed,size:t.size,reward:t.reward,
-    name:t.name,type:t.type,boss:t.boss||false,
-    infected:t.infected||false,
+    hp:t2.hp,max:t2.hp,speed:t2.speed,
+    baseSpeed:t2.speed,size:t2.size,reward:t2.reward,
+    name:t2.name,type:t2.type,boss:t2.boss||false,
+    infected:t2.infected||false,
     slowEndTime:0,burning:false,burnDamage:12,burnDuration:0,
     mutation:null,
     beschermdShieldUsed:false,beschermdActive:false,beschermdTimer:0,
     terugkerendeCount:0,
-    accelFactor:0,baseSpeedForAccel:t.speed,
+    accelFactor:0,baseSpeedForAccel:t2.speed,
     healTimer:0,
     kameelBoosted:false,kameelBoostTimer:0,kameelLionsSpawned:false
   };
@@ -788,19 +1282,27 @@ function loseGame(){
   gameWon=true;
   if(currentTheme) currentTheme.pause();
   
-  const modeNames={
-    plaag:'PLAAG MODUS',hard:'HARD MODUS',speed:'DUBBEL SNELHEID',armoede:'ARMOEDE MODUS',
-    boss:'BOSS MODE',mutatie:'MUTATIE MODUS',dubbelhealth:'DUBBEL HEALTH',tsjaadmodus:'TSJAAD MODUS'
-  };
-  const modeName=modeNames[gameMode]||'STANDAARD';
+  const modeKey = 'mode-' + gameMode;
+  const modeName = t(modeKey) || 'STANDAARD';
   
-  document.getElementById('deathMessage').innerHTML=
-    `<strong>JE OVERLEEFDE ${round} RONDES IN ${modeName}!</strong><br>DE VIJANDEN WAREN TE STERK...`;
-  document.getElementById('deathStats').innerHTML=
-    `💀 Gevallen op Ronde: <strong>${round}</strong><br>💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
+  let deathMsg, deathStat;
+  if(currentLang === 'de') {
+    deathMsg = `<strong>DU HAST ${round} RUNDEN IN ${modeName} ÜBERLEBT!</strong><br>DIE FEINDE WAREN ZU STARK...`;
+    deathStat = `💀 Gefallen in Runde: <strong>${round}</strong><br>💰 Gesamtverdienst: <strong>€${totalMoneyEarned}</strong>`;
+  } else if(currentLang === 'en') {
+    deathMsg = `<strong>YOU SURVIVED ${round} ROUNDS IN ${modeName}!</strong><br>THE ENEMIES WERE TOO STRONG...`;
+    deathStat = `💀 Fell at Round: <strong>${round}</strong><br>💰 Total Earned: <strong>€${totalMoneyEarned}</strong>`;
+  } else {
+    deathMsg = `<strong>JE OVERLEEFDE ${round} RONDES IN ${modeName}!</strong><br>DE VIJANDEN WAREN TE STERK...`;
+    deathStat = `💀 Gevallen op Ronde: <strong>${round}</strong><br>💰 Totaal Verdiend: <strong>€${totalMoneyEarned}</strong>`;
+  }
+  
+  document.getElementById('deathMessage').innerHTML = deathMsg;
+  document.getElementById('deathStats').innerHTML = deathStat;
   
   if(gameMode==='plaag'||gameMode==='hard'){
     document.getElementById('leaderboard').style.display='block';
+    document.getElementById('lb-title').textContent = t('lb-title');
     saveAndShowLeaderboard(round, gameMode==='hard'?'hard':'plaag');
   }
   document.getElementById('deathScreen').style.display='flex';
@@ -834,8 +1336,7 @@ function update(){
       spawning=false;
       const maxRound=getMaxRound();
       if(round<maxRound){
-        if(gameMode!=='plaag') round++;
-        else round++;
+        round++;
       }
     }
   }
@@ -843,18 +1344,16 @@ function update(){
   const now=Date.now();
 
   for(const e of enemies){
-    // Beschermde: check if at half HP
     if(e.mutation==='beschermde'&&!e.beschermdShieldUsed&&e.hp<=e.max*0.5){
       e.beschermdShieldUsed=true;
       e.beschermdActive=true;
-      e.beschermdTimer=180; // 3 seconds
+      e.beschermdTimer=180;
     }
     if(e.beschermdActive){
       e.beschermdTimer--;
       if(e.beschermdTimer<=0) e.beschermdActive=false;
     }
 
-    // Genezende: heal 5% HP per second
     if(e.mutation==='genezende'){
       e.healTimer++;
       if(e.healTimer>=60){
@@ -863,26 +1362,22 @@ function update(){
       }
     }
 
-    // Slow effect
     if(e.slowEndTime>0){ e.slowEndTime--; if(e.slowEndTime<=0) e.speed=e.baseSpeed; }
 
-    // Burning
     if(e.burning&&e.burnDuration>0){
       e.burnDuration--;
       if(e.burnDuration%60===0) e.hp-=e.burnDamage;
       if(e.burnDuration<=0) e.burning=false;
     }
 
-    // Accelererende
     if(e.mutation==='accelererende'){
       const progress = e.i / Math.max(1, path.length-1);
       e.speed = e.baseSpeedForAccel * (1 + progress * 3);
     }
 
-    // Kameel boost (double speed at half HP)
     if(e.type==='kameel'&&!e.kameelBoosted&&e.hp<=e.max*0.5){
       e.kameelBoosted=true;
-      e.kameelBoostTimer=60; // 1 second
+      e.kameelBoostTimer=60;
       e.speed*=4;
       e.baseSpeed*=4;
     }
@@ -895,36 +1390,32 @@ function update(){
       }
     }
 
-    // Move
     const p=path[e.i+1];
     if(!p) continue;
     const dx=p.x-e.x, dy=p.y-e.y, d=Math.hypot(dx,dy);
     if(d<e.speed){ e.i++; }
     else { e.x+=dx/d*e.speed; e.y+=dy/d*e.speed; }
 
-    // Reached end
     if(e.boss&&e.i>=path.length-1){ lives=0; loseGame(); }
   }
 
-  // Monkey towers
-  for(const t of towers){
-    if(t.upText>0) t.upText--;
-    if(t.monkey&&t.ultimate){
-      t.monkeyTimer++;
-      if(t.monkeyTimer>=1500){
-        t.monkeyTimer=0;
+  for(const tw of towers){
+    if(tw.upText>0) tw.upText--;
+    if(tw.monkey&&tw.ultimate){
+      tw.monkeyTimer++;
+      if(tw.monkeyTimer>=1500){
+        tw.monkeyTimer=0;
         playSound('monkey');
         for(const other of towers){
-          if(other===t||other.boosted) continue;
-          if(Math.hypot(other.x-t.x,other.y-t.y)<=towerTypes.aap.range){ other.boosted=true; other.boostEndTime=500; }
+          if(other===tw||other.boosted) continue;
+          if(Math.hypot(other.x-tw.x,other.y-tw.y)<=towerTypes.aap.range){ other.boosted=true; other.boostEndTime=500; }
         }
-        t.boosted=true; t.boostEndTime=300;
+        tw.boosted=true; tw.boostEndTime=300;
       }
     }
-    if(t.boosted&&t.boostEndTime>0){ t.boostEndTime--; if(t.boostEndTime<=0) t.boosted=false; }
+    if(tw.boosted&&tw.boostEndTime>0){ tw.boostEndTime--; if(tw.boostEndTime<=0) tw.boosted=false; }
   }
 
-  // Bananas
   for(const banana of bananas){
     banana.lifetime--;
     for(const e of enemies){
@@ -933,73 +1424,62 @@ function update(){
   }
   bananas=bananas.filter(b=>!b.dead&&b.lifetime>0);
 
-  // Nuclear explosions
   for(const ne of nuclearExplosions){
     ne.t--;
     if(ne.t<=0) continue;
-    // Slow towers in range
-    for(const t of towers){
-      if(Math.hypot(t.x-ne.x,t.y-ne.y)<ne.range){
-        t.nuclearSlowUntil=(t.nuclearSlowUntil||0);
-        t.nuclearSlowUntil=Math.max(t.nuclearSlowUntil, Date.now()+2000);
+    for(const tw of towers){
+      if(Math.hypot(tw.x-ne.x,tw.y-ne.y)<ne.range){
+        tw.nuclearSlowUntil=(tw.nuclearSlowUntil||0);
+        tw.nuclearSlowUntil=Math.max(tw.nuclearSlowUntil, Date.now()+2000);
       }
     }
   }
   nuclearExplosions=nuclearExplosions.filter(n=>n.t>0);
 
-  // Tower shooting
-  for(const t of towers){
-    if(t.farm) continue;
-    const isNuclearSlowed=t.nuclearSlowUntil&&Date.now()<t.nuclearSlowUntil;
+  for(const tw of towers){
+    if(tw.farm) continue;
+    const isNuclearSlowed=tw.nuclearSlowUntil&&Date.now()<tw.nuclearSlowUntil;
     if(isNuclearSlowed) continue;
 
-    const rateMultiplier=t.boosted?0.7:1.0;
-    t.cool--;
-    if(t.cool>0) continue;
+    const rateMultiplier=tw.boosted?0.7:1.0;
+    tw.cool--;
+    if(tw.cool>0) continue;
 
-    const cfg=towerTypes[t.key];
+    const cfg=towerTypes[tw.key];
 
-    // Verslomende enemies slow towers in range
-    // (handled in enemy radius check below)
-
-    if(t.monkey){
+    if(tw.monkey){
       let pathPoints=[];
       for(let i=0;i<path.length-1;i++){
         const p1=path[i],p2=path[i+1];
         for(let t2=0;t2<=1;t2+=0.05){
           const px=p1.x+(p2.x-p1.x)*t2, py=p1.y+(p2.y-p1.y)*t2;
-          if(Math.hypot(px-t.x,py-t.y)<cfg.range) pathPoints.push({x:px,y:py});
+          if(Math.hypot(px-tw.x,py-tw.y)<cfg.range) pathPoints.push({x:px,y:py});
         }
       }
       if(pathPoints.length>0){
         const rp=pathPoints[Math.floor(Math.random()*pathPoints.length)];
         bananas.push({x:rp.x+(Math.random()-0.5)*40,y:rp.y+(Math.random()-0.5)*40,
-          dmg:t.dmg*3,lifetime:1800,dead:false});
-        t.cool=t.rate*rateMultiplier;
+          dmg:tw.dmg*3,lifetime:1800,dead:false});
+        tw.cool=tw.rate*rateMultiplier;
       }
       continue;
     }
 
-    // Check verslomende enemies near this tower
     let verslomendeSlow=1.0;
     for(const e of enemies){
-      if(e.mutation==='verslomende'&&Math.hypot(e.x-t.x,e.y-t.y)<120){
+      if(e.mutation==='verslomende'&&Math.hypot(e.x-tw.x,e.y-tw.y)<120){
         verslomendeSlow=0.6; break;
       }
     }
 
-    // Find target - apply mutation immunity
     const target=enemies.find(e=>{
-      if(Math.hypot(e.x-t.x,e.y-t.y)>=cfg.range) return false;
-      // Metalen: only atoom can damage
-      if(e.mutation==='metalen'&&t.key!=='atoom') return false;
-      // Kogelvrije: immune to soldaat and sniper
-      if(e.mutation==='kogelvrije'&&(t.key==='geweer'||t.key==='sniper')) return false;
-      // Onzichtbare: only visible if in any tower range
+      if(Math.hypot(e.x-tw.x,e.y-tw.y)>=cfg.range) return false;
+      if(e.mutation==='metalen'&&tw.key!=='atoom') return false;
+      if(e.mutation==='kogelvrije'&&(tw.key==='geweer'||tw.key==='sniper')) return false;
       if(e.mutation==='onzichtbare'){
         let inRange=false;
-        for(const tw of towers){
-          if(Math.hypot(e.x-tw.x,e.y-tw.y)<towerTypes[tw.key].range){ inRange=true; break; }
+        for(const otw of towers){
+          if(Math.hypot(e.x-otw.x,e.y-otw.y)<towerTypes[otw.key].range){ inRange=true; break; }
         }
         if(!inRange) return false;
       }
@@ -1008,19 +1488,18 @@ function update(){
     if(!target) continue;
 
     projectiles.push({
-      x:t.x,y:t.y,tx:target.x,ty:target.y,target,
-      speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,
-      gold:t.ultimate,towerKey:t.key,tower:t,
-      fire:t.fire,fireChance:t.fireChance||0
+      x:tw.x,y:tw.y,tx:target.x,ty:target.y,target,
+      speed:cfg.speed,dmg:tw.dmg,bomb:cfg.bomb,
+      gold:tw.ultimate,towerKey:tw.key,tower:tw,
+      fire:tw.fire,fireChance:tw.fireChance||0
     });
-    t.cool=t.rate*rateMultiplier*verslomendeSlow;
-    if(t.key==='sniper') playSound('sniper');
+    tw.cool=tw.rate*rateMultiplier*verslomendeSlow;
+    if(tw.key==='sniper') playSound('sniper');
   }
 
   for(const p of projectiles){
     const dx=p.tx-p.x,dy=p.ty-p.y,d=Math.hypot(dx,dy);
     if(d<p.speed){
-      // Check beschermd immunity
       if(p.target.beschermdActive){
         p.dead=true; continue;
       }
@@ -1043,26 +1522,22 @@ function update(){
   for(const ex of explosions){ ex.r+=2.5; ex.t--; }
   explosions=explosions.filter(e=>e.t>0);
 
-  // Process dead/escaped enemies
   const toSpawn=[];
   enemies=enemies.filter(e=>{
     if(e.hp<=0){
       if(e.boss){ winGame(); return false; }
       
-      // Radioactieve: explosion effect
       if(e.mutation==='radioactieve'){
         playSound('explosion');
         nuclearExplosions.push({x:e.x,y:e.y,range:90,t:120,maxT:120});
         visualEffects.push({type:'nuclear',x:e.x,y:e.y,r:5,maxR:90,t:60,maxT:60});
       }
       
-      // Ondode: spawn ghost
       if(e.mutation==='ondode'){
         const ghost=makeGhostEnemy(e);
         toSpawn.push(ghost);
       }
       
-      // Hydra: spawn 4 of same type (spread out)
       if(e.mutation==='hydra'&&!e.isHydraChild){
         const base=animalTypes.find(a=>a.type===e.type)||animalTypes[0];
         for(let h=0;h<4;h++){
@@ -1076,7 +1551,6 @@ function update(){
         }
       }
       
-      // Random: spawn random non-boss enemy
       if(e.mutation==='random'){
         const base=animalTypes[Math.floor(Math.random()*animalTypes.length)];
         const hpScale=1+round*0.14;
@@ -1087,15 +1561,13 @@ function update(){
         toSpawn.push(newE);
       }
       
-      // Terugkerende: send back to start
       if(e.mutation==='terugkerende'&&e.terugkerendeCount>0){
         e.terugkerendeCount--;
         e.i=0; e.x=path[0].x; e.y=path[0].y;
-        e.hp=e.max; // restore full HP
-        return true; // keep enemy
+        e.hp=e.max;
+        return true;
       }
       
-      // Kameel: spawn 4 lions on death
       if(e.type==='kameel'&&!e.kameelLionsSpawned){
         e.kameelLionsSpawned=true;
         const hpScale=1+round*0.14;
@@ -1109,10 +1581,7 @@ function update(){
         }
       }
       
-      // Arme: no reward
-      if(e.mutation==='arme'){
-        // no money
-      } else {
+      if(e.mutation!=='arme'){
         money+=e.reward; totalMoneyEarned+=e.reward;
       }
       
@@ -1120,17 +1589,14 @@ function update(){
       return false;
     }
     
-    // Reached end of path
     if(e.i>=path.length-1){
-      // Dodelijke: take 5 lives
       if(e.mutation==='dodelijke') lives-=5;
       else lives--;
       
-      // Terugkerende: comes back after reaching end
       if(e.mutation==='terugkerende'&&e.terugkerendeCount>0){
         e.terugkerendeCount--;
         e.i=0; e.x=path[0].x; e.y=path[0].y;
-        lives--; // also loses life
+        lives--;
         if(lives<=0){ loseGame(); return false; }
         return true;
       }
@@ -1143,7 +1609,6 @@ function update(){
 
   for(const e of toSpawn) enemies.push(e);
 
-  // Update visual effects
   for(const vf of visualEffects){ vf.t--; vf.r=vf.maxR*(1-(vf.t/vf.maxT)); }
   visualEffects=visualEffects.filter(v=>v.t>0);
 
@@ -1168,14 +1633,12 @@ function makeGhostEnemy(original){
 // ===== DRAW =====
 function drawPath(){
   if(gameMode==='mutatie'){
-    // Nuclear theme - dark green with radioactive glow
     const grad=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
     grad.addColorStop(0,'#0a1a0a');
     grad.addColorStop(0.5,'#0d2b0d');
     grad.addColorStop(1,'#0a1a0a');
     ctx.fillStyle=grad; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // Radioactive grid lines
     ctx.strokeStyle='rgba(0,100,0,0.15)';
     ctx.lineWidth=1;
     for(let x=0;x<canvas.width;x+=40){
@@ -1199,7 +1662,6 @@ function drawPath(){
     for(const p of path) ctx.lineTo(p.x,p.y);
     ctx.stroke(); ctx.globalAlpha=1;
 
-    // Radiation warning symbols
     const warningPositions=[{x:100,y:350},{x:500,y:350},{x:900,y:300}];
     for(const wp of warningPositions){
       drawRadiationSymbol(wp.x,wp.y,25);
@@ -1333,9 +1795,7 @@ function drawRadiationSymbol(x,y,r){
   ctx.globalAlpha=1; ctx.restore();
 }
 
-// ===== DRAW ENEMY =====
 function drawEnemy(e){
-  // Onzichtbare: only draw if in tower range
   if(e.mutation==='onzichtbare'){
     let inRange=false;
     for(const tw of towers){
@@ -1346,13 +1806,11 @@ function drawEnemy(e){
 
   ctx.save(); ctx.translate(e.x,e.y);
 
-  // Ghost effect
   if(e.isGhost){ ctx.globalAlpha=0.6; }
   if(e.infected){ ctx.globalAlpha=0.95; }
 
   const baseColor=e.infected?'#4a5a2a':null;
 
-  // Mutation color tints for metalen
   if(e.mutation==='metalen'){
     drawMetalenEnemy(e);
     drawEnemyHUD(e);
@@ -1372,7 +1830,6 @@ function drawEnemy(e){
 
   ctx.globalAlpha=1;
 
-  // Mutation visual indicators
   drawMutationEffects(e);
   drawEnemyHUD(e);
   ctx.restore();
@@ -1381,7 +1838,6 @@ function drawEnemy(e){
 function drawMutationEffects(e){
   if(!e.mutation) return;
 
-  // Beschermde shield
   if(e.mutation==='beschermde'&&e.beschermdActive){
     ctx.strokeStyle='rgba(255,255,255,0.9)';
     ctx.lineWidth=4;
@@ -1392,13 +1848,11 @@ function drawMutationEffects(e){
     ctx.shadowBlur=0;
   }
 
-  // Slow aura
   if(e.slowEndTime>0){
     ctx.strokeStyle='#9333ea'; ctx.lineWidth=2; ctx.globalAlpha=0.5;
     ctx.beginPath(); ctx.arc(0,0,e.size+3,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1;
   }
 
-  // Burning
   if(e.burning){
     ctx.fillStyle='rgba(255,100,0,0.7)';
     ctx.globalAlpha=0.6+Math.sin(Date.now()*0.01)*0.2;
@@ -1407,14 +1861,12 @@ function drawMutationEffects(e){
     ctx.globalAlpha=1;
   }
 
-  // Ghost tint
   if(e.isGhost){
     ctx.strokeStyle='rgba(180,200,255,0.6)';
     ctx.lineWidth=2;
     ctx.beginPath(); ctx.arc(0,0,e.size+4,0,Math.PI*2); ctx.stroke();
   }
 
-  // Radioactieve glow
   if(e.mutation==='radioactieve'){
     ctx.strokeStyle='rgba(0,255,0,0.4)';
     ctx.lineWidth=2;
@@ -1424,13 +1876,11 @@ function drawMutationEffects(e){
     ctx.globalAlpha=1;
   }
 
-  // Metalen outline (silver)
   if(e.mutation==='metalen'){
     ctx.strokeStyle='#c0c0c0'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(0,0,e.size+4,0,Math.PI*2); ctx.stroke();
   }
 
-  // Elite glow
   if(e.mutation==='elite'){
     ctx.strokeStyle='rgba(255,50,50,0.8)'; ctx.lineWidth=3;
     ctx.shadowBlur=10; ctx.shadowColor='#ff0000';
@@ -1438,7 +1888,6 @@ function drawMutationEffects(e){
     ctx.shadowBlur=0;
   }
 
-  // Genezende healing particles
   if(e.mutation==='genezende'){
     const t3=Date.now()*0.003;
     ctx.fillStyle='rgba(0,255,100,0.7)';
@@ -1447,7 +1896,6 @@ function drawMutationEffects(e){
     ctx.globalAlpha=1;
   }
 
-  // Accelererende speed lines
   if(e.mutation==='accelererende'){
     ctx.strokeStyle='rgba(255,200,0,0.6)'; ctx.lineWidth=1.5;
     ctx.globalAlpha=0.7;
@@ -1460,7 +1908,6 @@ function drawMutationEffects(e){
     ctx.globalAlpha=1;
   }
 
-  // Verslomende aura
   if(e.mutation==='verslomende'){
     ctx.strokeStyle='rgba(100,100,255,0.4)'; ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
@@ -1469,7 +1916,6 @@ function drawMutationEffects(e){
     ctx.setLineDash([]); ctx.globalAlpha=1;
   }
 
-  // Onzichtbare shimmer (when visible)
   if(e.mutation==='onzichtbare'){
     ctx.strokeStyle='rgba(200,200,255,0.5)'; ctx.lineWidth=2;
     ctx.setLineDash([2,4]);
@@ -1477,14 +1923,12 @@ function drawMutationEffects(e){
     ctx.setLineDash([]);
   }
 
-  // Terugkerende indicator
   if(e.mutation==='terugkerende'&&e.terugkerendeCount>0){
     ctx.fillStyle='rgba(255,200,0,0.9)';
     ctx.font='bold 10px Arial'; ctx.textAlign='center';
     ctx.fillText('↩'+e.terugkerendeCount,0,-e.size-12);
   }
 
-  // Kogelvrije armor look
   if(e.mutation==='kogelvrije'){
     ctx.strokeStyle='rgba(200,150,50,0.6)'; ctx.lineWidth=3;
     ctx.setLineDash([4,2]);
@@ -1499,7 +1943,6 @@ function drawEnemyHUD(e){
   ctx.fillStyle='white'; ctx.font='9px Arial'; ctx.textAlign='center';
   ctx.fillText(e.name,0,-28);
   
-  // Mutation label color
   if(e.mutation){
     const mutColors={
       ondode:'#aaaaff',snelle:'#ffff00',hydra:'#ff6600',random:'#ff00ff',
@@ -1515,7 +1958,6 @@ function drawEnemyHUD(e){
   }
 }
 
-// ===== ENEMY SPRITE FUNCTIONS =====
 function drawOlifant(e,baseColor){
   ctx.fillStyle=baseColor||'#8b8b8b';
   ctx.beginPath(); ctx.ellipse(0,0,16,12,0,0,Math.PI*2); ctx.fill();
@@ -1543,14 +1985,14 @@ function drawGiraffe(e,baseColor){
   ctx.fillRect(-10,6,3,10); ctx.fillRect(-2,6,3,10); ctx.fillRect(4,6,3,10);
 }
 function drawLeeuw(e,baseColor){
-  ctx.fillStyle=e.infected?'#cd853f':'#cd853f'; ctx.fillRect(-12,-8,22,14);
-  ctx.fillStyle=e.infected?'#8b6914':'#8b6914';
+  ctx.fillStyle='#cd853f'; ctx.fillRect(-12,-8,22,14);
+  ctx.fillStyle='#8b6914';
   ctx.beginPath(); ctx.arc(12,-2,8,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=e.infected?'#cd853f':'#cd853f';
+  ctx.fillStyle='#cd853f';
   ctx.beginPath(); ctx.arc(12,-2,5,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=e.infected?'#cd853f':'#cd853f'; ctx.lineWidth=3;
+  ctx.strokeStyle='#cd853f'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(-20,2); ctx.stroke();
-  ctx.fillStyle=e.infected?'#cd853f':'#cd853f';
+  ctx.fillStyle='#cd853f';
   ctx.fillRect(-8,6,3,8); ctx.fillRect(0,6,3,8); ctx.fillRect(8,6,3,8);
 }
 function drawCheetah(e,baseColor){
@@ -1581,37 +2023,26 @@ function drawNijlpaard(e,baseColor){
   ctx.fillStyle=e.infected?'#2a3a1a':'#4a4a4a';
   ctx.fillRect(-14,8,6,10); ctx.fillRect(-4,8,6,10); ctx.fillRect(6,8,6,10); ctx.fillRect(16,8,6,10);
 }
-
 function drawKameel(e,baseColor){
   const isRed=e.kameelBoosted;
-  // Body
   ctx.fillStyle=isRed?'#ff4400':(baseColor||'#c8860a');
   ctx.beginPath(); ctx.ellipse(0,2,16,10,0,0,Math.PI*2); ctx.fill();
-  // Humps
   ctx.beginPath(); ctx.ellipse(-5,-8,7,6,0,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(5,-6,6,5,0,0,Math.PI*2); ctx.fill();
-  // Head
   ctx.fillStyle=isRed?'#ff6600':(baseColor||'#d4961a');
   ctx.beginPath(); ctx.arc(18,-2,7,0,Math.PI*2); ctx.fill();
-  // Neck
   ctx.fillRect(10,-4,10,4);
-  // Ears
   ctx.fillStyle=isRed?'#ff4400':'#c8860a';
   ctx.beginPath(); ctx.arc(16,-8,3,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(22,-8,3,0,Math.PI*2); ctx.fill();
-  // Eyes
   ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(20,-2,2,0,Math.PI*2); ctx.fill();
-  // Nose bump (camel lip)
   ctx.fillStyle=isRed?'#ff6600':'#a06a00';
   ctx.fillRect(22,0,5,4);
-  // Legs
   ctx.fillStyle=isRed?'#ff4400':(baseColor||'#c8860a');
   ctx.fillRect(-12,10,4,12); ctx.fillRect(-4,10,4,12);
   ctx.fillRect(4,10,4,12); ctx.fillRect(12,10,4,12);
-  // Tail
   ctx.strokeStyle=isRed?'#ff4400':'#a06a00'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(-16,2); ctx.lineTo(-22,8); ctx.stroke();
-  // Speed effect when boosted
   if(isRed){
     ctx.fillStyle='rgba(255,100,0,0.4)';
     ctx.globalAlpha=0.7;
@@ -1619,23 +2050,16 @@ function drawKameel(e,baseColor){
     ctx.globalAlpha=1;
   }
 }
-
 function drawMetalenEnemy(e){
-  // Silver metallic look for all types
   const silverGrad=ctx.createRadialGradient(-5,-5,2,0,0,e.size*1.5);
   silverGrad.addColorStop(0,'#ffffff');
   silverGrad.addColorStop(0.3,'#c0c0c0');
   silverGrad.addColorStop(0.7,'#808080');
   silverGrad.addColorStop(1,'#404040');
-  
   ctx.fillStyle=silverGrad;
   ctx.beginPath(); ctx.ellipse(0,0,e.size,e.size*0.7,0,0,Math.PI*2); ctx.fill();
-  
-  // Metal plates
   ctx.strokeStyle='#a0a0a0'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.ellipse(0,0,e.size*0.7,e.size*0.5,0,0,Math.PI*2); ctx.stroke();
-  
-  // Bolts
   ctx.fillStyle='#606060';
   const positions=[{x:e.size*0.6,y:0},{x:-e.size*0.6,y:0},{x:0,y:e.size*0.5},{x:0,y:-e.size*0.5}];
   for(const pos of positions){
@@ -1644,12 +2068,9 @@ function drawMetalenEnemy(e){
     ctx.beginPath(); ctx.moveTo(pos.x-2,pos.y); ctx.lineTo(pos.x+2,pos.y); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(pos.x,pos.y-2); ctx.lineTo(pos.x,pos.y+2); ctx.stroke();
   }
-  
-  // Type indicator text
   ctx.fillStyle='#333'; ctx.font='bold 9px Arial'; ctx.textAlign='center';
   ctx.fillText(e.type.toUpperCase().slice(0,3),0,3);
 }
-
 function drawMug(e){
   ctx.fillStyle='#1a1a1a';
   ctx.beginPath(); ctx.ellipse(0,0,12,5,0,0,Math.PI*2); ctx.fill();
@@ -1661,7 +2082,6 @@ function drawMug(e){
   ctx.strokeStyle='#3a3a3a'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(20,0); ctx.stroke();
 }
-
 function drawMutatedMug(e){
   ctx.save();
   const pulseScale=1+Math.sin(Date.now()*0.005)*0.1; ctx.scale(pulseScale,pulseScale);
@@ -1682,35 +2102,26 @@ function drawMutatedMug(e){
   ctx.fillStyle='#ff0080'; ctx.beginPath(); ctx.moveTo(28,-2); ctx.lineTo(32,-3); ctx.lineTo(30,0); ctx.fill();
   ctx.shadowBlur=0; ctx.restore();
 }
-
 function drawHydraMug(e){
   ctx.save();
-  const t=Date.now()*0.003;
-  // Three-headed boss
+  const t2=Date.now()*0.003;
   ctx.fillStyle='#4a0000';
   ctx.beginPath(); ctx.ellipse(0,5,20,10,0,0,Math.PI*2); ctx.fill();
-  
-  // Wings
   ctx.fillStyle='rgba(100,0,150,0.5)';
   ctx.beginPath(); ctx.ellipse(-18,-5,15,8,-0.4,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.ellipse(18,-5,15,8,0.4,0,Math.PI*2); ctx.fill();
-  
-  // Three heads
   const headPositions=[{x:-12,y:-8},{x:0,y:-14},{x:12,y:-8}];
   for(let hi=0;hi<headPositions.length;hi++){
-    const hp=headPositions[hi];
-    const wobble=Math.sin(t+hi*2)*3;
+    const hp2=headPositions[hi];
+    const wobble=Math.sin(t2+hi*2)*3;
     ctx.fillStyle='#8b0000';
-    ctx.beginPath(); ctx.arc(hp.x,hp.y+wobble,7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(hp2.x,hp2.y+wobble,7,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#ff0000';
-    ctx.beginPath(); ctx.arc(hp.x,hp.y+wobble-1,4,0,Math.PI*2); ctx.fill();
-    // Eyes
+    ctx.beginPath(); ctx.arc(hp2.x,hp2.y+wobble-1,4,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#ffff00';
-    ctx.beginPath(); ctx.arc(hp.x-2,hp.y+wobble-1,1.5,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(hp.x+2,hp.y+wobble-1,1.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(hp2.x-2,hp2.y+wobble-1,1.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(hp2.x+2,hp2.y+wobble-1,1.5,0,Math.PI*2); ctx.fill();
   }
-  
-  // Glow
   ctx.strokeStyle='rgba(255,0,0,0.5)'; ctx.lineWidth=3;
   ctx.shadowBlur=20; ctx.shadowColor='#ff0000';
   ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.stroke();
@@ -1718,61 +2129,59 @@ function drawHydraMug(e){
   ctx.restore();
 }
 
-// ===== DRAW TOWERS =====
-function drawTower(t){
-  const cfg=towerTypes[t.key];
-  const scale=1+t.level*0.05;
-  ctx.save(); ctx.translate(t.x,t.y); ctx.scale(scale,scale);
+function drawTower(tw){
+  const cfg=towerTypes[tw.key];
+  const scale=1+tw.level*0.05;
+  ctx.save(); ctx.translate(tw.x,tw.y); ctx.scale(scale,scale);
 
-  // Nuclear slow indicator
-  if(t.nuclearSlowUntil&&Date.now()<t.nuclearSlowUntil){
+  if(tw.nuclearSlowUntil&&Date.now()<tw.nuclearSlowUntil){
     ctx.strokeStyle='rgba(0,255,0,0.6)'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.stroke();
     ctx.fillStyle='rgba(0,255,0,0.1)';
     ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.fill();
   }
 
-  if(t.boosted){
+  if(tw.boosted){
     ctx.strokeStyle='rgba(255,215,0,0.6)'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.stroke();
     ctx.fillStyle='rgba(255,215,0,0.1)';
     ctx.beginPath(); ctx.arc(0,0,20,0,Math.PI*2); ctx.fill();
   }
 
-  if(t.key==='aap') drawAapTower(t);
-  else if(t.key==='fakkel') drawFakkelTower(t);
-  else if(t.key==='speer') drawSpeerTower(t);
-  else if(t.key==='boog') drawBoogTower(t);
-  else if(t.key==='plaagdokter') drawPlaagdokterTower(t);
-  else if(t.key==='geweer') drawGeweerTower(t);
-  else if(t.key==='sniper') drawSniperTower(t);
-  else if(t.key==='atoom') drawAtoomTower(t);
-  else if(t.key==='katoen') drawKatoenTower(t);
-  else if(t.key==='tsjaadinator') drawTsjaadinator(t);
+  if(tw.key==='aap') drawAapTower(tw);
+  else if(tw.key==='fakkel') drawFakkelTower(tw);
+  else if(tw.key==='speer') drawSpeerTower(tw);
+  else if(tw.key==='boog') drawBoogTower(tw);
+  else if(tw.key==='plaagdokter') drawPlaagdokterTower(tw);
+  else if(tw.key==='geweer') drawGeweerTower(tw);
+  else if(tw.key==='sniper') drawSniperTower(tw);
+  else if(tw.key==='atoom') drawAtoomTower(tw);
+  else if(tw.key==='katoen') drawKatoenTower(tw);
+  else if(tw.key==='tsjaadinator') drawTsjaadinator(tw);
 
   ctx.fillStyle='white'; ctx.font='9px Arial'; ctx.textAlign='center';
   let nextCost;
-  if(t.level<3){
-    if(t.key==='speer') nextCost=50;
-    else if(t.key==='boog') nextCost=100;
-    else if(t.key==='plaagdokter') nextCost=250;
-    else if(t.key==='geweer') nextCost=350;
-    else if(t.key==='atoom') nextCost=500;
-    else if(t.key==='sniper') nextCost=2500;
-    else if(t.key==='tsjaadinator') nextCost=800;
-    else if(t.key==='katoen') nextCost=200;
-    else if(t.key==='aap') nextCost=300;
-    else if(t.key==='fakkel') nextCost=125;
+  if(tw.level<3){
+    if(tw.key==='speer') nextCost=50;
+    else if(tw.key==='boog') nextCost=100;
+    else if(tw.key==='plaagdokter') nextCost=250;
+    else if(tw.key==='geweer') nextCost=350;
+    else if(tw.key==='atoom') nextCost=500;
+    else if(tw.key==='sniper') nextCost=2500;
+    else if(tw.key==='tsjaadinator') nextCost=800;
+    else if(tw.key==='katoen') nextCost=200;
+    else if(tw.key==='aap') nextCost=300;
+    else if(tw.key==='fakkel') nextCost=125;
     else nextCost=200;
-  } else { nextCost=t.ultimate?0:cfg.ultCost; }
-  const label=t.level<3?`Lvl ${t.level} (€${nextCost})`:(t.ultimate?'ULTIMATE':`ULT (€${cfg.ultCost})`);
+  } else { nextCost=tw.ultimate?0:cfg.ultCost; }
+  const label=tw.level<3?`Lvl ${tw.level} (€${nextCost})`:(tw.ultimate?'ULTIMATE':`ULT (€${cfg.ultCost})`);
   ctx.fillText(label,0,22/scale);
-  if(t.upText>0){ ctx.fillStyle='yellow'; ctx.font='bold 10px Arial'; ctx.fillText('UPGRADED!',0,-16/scale); }
+  if(tw.upText>0){ ctx.fillStyle='yellow'; ctx.font='bold 10px Arial'; ctx.fillText('UPGRADED!',0,-16/scale); }
   ctx.restore();
 }
 
-function drawAapTower(t){
-  const isUltimate=t.ultimate;
+function drawAapTower(tw){
+  const isUltimate=tw.ultimate;
   const monkeyColor=isUltimate?'#ffd700':'#8b4513';
   const faceColor=isUltimate?'#ffed4e':'#d2691e';
   const eyeColor=isUltimate?'#ff4500':'#000';
@@ -1793,93 +2202,83 @@ function drawAapTower(t){
   ctx.beginPath(); ctx.moveTo(-4,12); ctx.lineTo(-6,18); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(4,12); ctx.lineTo(6,18); ctx.stroke();
   ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(8,8); ctx.quadraticCurveTo(15,5,12,-2); ctx.stroke();
-  for(let i=0;i<=Math.min(t.level-1,2);i++){
+  for(let i=0;i<=Math.min(tw.level-1,2);i++){
     ctx.fillStyle='#ffeb3b'; ctx.beginPath();
     ctx.arc([-2,2,0][i],[2,2,4][i],1.5,0,Math.PI*2); ctx.fill();
   }
   if(isUltimate){ ctx.strokeStyle='rgba(255,215,0,0.7)'; ctx.lineWidth=2; ctx.setLineDash([2,2]); ctx.beginPath(); ctx.arc(0,0,18,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
 }
-
-function drawFakkelTower(t){
-  ctx.fillStyle=t.ultimate?'#ff6b35':'#8b4513'; ctx.fillRect(-8,-10,16,20);
+function drawFakkelTower(tw){
+  ctx.fillStyle=tw.ultimate?'#ff6b35':'#8b4513'; ctx.fillRect(-8,-10,16,20);
   ctx.fillStyle='#d2b48c'; ctx.beginPath(); ctx.arc(0,-12,6,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=t.ultimate?'#ff4500':'#8b7355'; ctx.fillRect(8,-8,3,12);
-  ctx.fillStyle=t.ultimate?'#ff0000':'#ff8800';
+  ctx.fillStyle=tw.ultimate?'#ff4500':'#8b7355'; ctx.fillRect(8,-8,3,12);
+  ctx.fillStyle=tw.ultimate?'#ff0000':'#ff8800';
   ctx.beginPath(); ctx.moveTo(9.5,-10); ctx.lineTo(7,-16); ctx.lineTo(9.5,-14); ctx.lineTo(12,-16); ctx.closePath(); ctx.fill();
-  if(t.level>=2){ ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.arc(9.5,-13,2,0,Math.PI*2); ctx.fill(); }
-  if(t.level>=3){ ctx.fillStyle='#ff4500'; ctx.beginPath(); ctx.moveTo(9.5,-16); ctx.lineTo(6,-22); ctx.lineTo(9.5,-19); ctx.lineTo(13,-22); ctx.closePath(); ctx.fill(); }
-  if(t.ultimate){ ctx.strokeStyle='#ff0000'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
+  if(tw.level>=2){ ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.arc(9.5,-13,2,0,Math.PI*2); ctx.fill(); }
+  if(tw.level>=3){ ctx.fillStyle='#ff4500'; ctx.beginPath(); ctx.moveTo(9.5,-16); ctx.lineTo(6,-22); ctx.lineTo(9.5,-19); ctx.lineTo(13,-22); ctx.closePath(); ctx.fill(); }
+  if(tw.ultimate){ ctx.strokeStyle='#ff0000'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
 }
-
-function drawSpeerTower(t){
-  ctx.fillStyle=t.ultimate?'#9b59b6':'#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=t.ultimate?'#8e44ad':'#e0e0e0'; ctx.lineWidth=3;
+function drawSpeerTower(tw){
+  ctx.fillStyle=tw.ultimate?'#9b59b6':'#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=tw.ultimate?'#8e44ad':'#e0e0e0'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
-  ctx.fillStyle=t.ultimate?'#dcd6f7':'#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill();
-  if(t.level>=2){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-6); ctx.lineTo(8,-6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,-6); ctx.lineTo(4,-9); ctx.lineTo(4,-3); ctx.fill(); }
-  if(t.level>=3){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,6); ctx.lineTo(8,6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(4,3); ctx.lineTo(4,9); ctx.fill(); }
+  ctx.fillStyle=tw.ultimate?'#dcd6f7':'#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill();
+  if(tw.level>=2){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-6); ctx.lineTo(8,-6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,-6); ctx.lineTo(4,-9); ctx.lineTo(4,-3); ctx.fill(); }
+  if(tw.level>=3){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,6); ctx.lineTo(8,6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(4,3); ctx.lineTo(4,9); ctx.fill(); }
 }
-
-function drawBoogTower(t){
-  ctx.strokeStyle=t.ultimate?'#3498db':'#c68642'; ctx.lineWidth=4;
+function drawBoogTower(tw){
+  ctx.strokeStyle=tw.ultimate?'#3498db':'#c68642'; ctx.lineWidth=4;
   ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); ctx.stroke();
-  ctx.strokeStyle=t.ultimate?'#5dade2':'#fff'; ctx.lineWidth=2;
+  ctx.strokeStyle=tw.ultimate?'#5dade2':'#fff'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke();
-  ctx.fillStyle=t.ultimate?'#21618c':'#8b5a2b'; ctx.fillRect(-3,-3,6,6);
-  if(t.level>=2){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); }
-  if(t.level>=3){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); }
+  ctx.fillStyle=tw.ultimate?'#21618c':'#8b5a2b'; ctx.fillRect(-3,-3,6,6);
+  if(tw.level>=2){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); }
+  if(tw.level>=3){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); }
 }
-
-function drawPlaagdokterTower(t){
-  ctx.fillStyle=t.ultimate?'#ffd700':'#e91e63'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
+function drawPlaagdokterTower(tw){
+  ctx.fillStyle=tw.ultimate?'#ffd700':'#e91e63'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#fff'; ctx.fillRect(-2,-7,4,14); ctx.fillRect(-7,-2,14,4);
-  if(t.level>=2){ ctx.strokeStyle=t.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(8,-8); ctx.lineTo(11,-11); ctx.stroke(); ctx.fillStyle=t.ultimate?'#ffd700':'#fff'; ctx.fillRect(10,-12,2,2); }
-  if(t.level>=3){ ctx.strokeStyle=t.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(-11,-11); ctx.stroke(); ctx.fillStyle=t.ultimate?'#ffd700':'#fff'; ctx.fillRect(-12,-12,2,2); ctx.beginPath(); ctx.moveTo(8,8); ctx.lineTo(11,11); ctx.stroke(); ctx.fillRect(10,10,2,2); }
-  if(t.ultimate){ ctx.strokeStyle='#ffed4e'; ctx.lineWidth=3; ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
+  if(tw.level>=2){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(8,-8); ctx.lineTo(11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(10,-12,2,2); }
+  if(tw.level>=3){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(-11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(-12,-12,2,2); ctx.beginPath(); ctx.moveTo(8,8); ctx.lineTo(11,11); ctx.stroke(); ctx.fillRect(10,10,2,2); }
+  if(tw.ultimate){ ctx.strokeStyle='#ffed4e'; ctx.lineWidth=3; ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
 }
-
-function drawGeweerTower(t){
-  ctx.fillStyle=t.ultimate?'#2c3e50':'#444'; ctx.fillRect(-8,-6,16,12);
-  ctx.fillStyle=t.ultimate?'#2980b9':'#777'; ctx.fillRect(8,-2,10,4);
-  ctx.fillStyle=t.ultimate?'#ecf0f1':'#999'; ctx.fillRect(-4,-14,8,6);
-  if(t.level>=2){ ctx.fillStyle='#777'; ctx.fillRect(-7,3,2,8); ctx.fillRect(5,3,2,8); }
-  if(t.level>=3){ ctx.strokeStyle='#888'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI); ctx.stroke(); }
+function drawGeweerTower(tw){
+  ctx.fillStyle=tw.ultimate?'#2c3e50':'#444'; ctx.fillRect(-8,-6,16,12);
+  ctx.fillStyle=tw.ultimate?'#2980b9':'#777'; ctx.fillRect(8,-2,10,4);
+  ctx.fillStyle=tw.ultimate?'#ecf0f1':'#999'; ctx.fillRect(-4,-14,8,6);
+  if(tw.level>=2){ ctx.fillStyle='#777'; ctx.fillRect(-7,3,2,8); ctx.fillRect(5,3,2,8); }
+  if(tw.level>=3){ ctx.strokeStyle='#888'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI); ctx.stroke(); }
 }
-
-function drawSniperTower(t){
-  ctx.fillStyle=t.ultimate?'#01579b':'#0d47a1'; ctx.fillRect(-7,-6,14,12);
-  ctx.fillStyle=t.ultimate?'#263238':'#37474f'; ctx.fillRect(7,-2,18,4);
-  ctx.fillStyle=t.ultimate?'#ffd700':'#546e7a'; ctx.beginPath(); ctx.arc(-2,-9,4,0,Math.PI*2); ctx.fill(); ctx.fillRect(-4,-10,4,2);
-  if(t.level>=2){ ctx.fillStyle=t.ultimate?'#01579b':'#1565c0'; ctx.fillRect(20,-1,5,2); }
-  if(t.level>=3){ ctx.fillStyle=t.ultimate?'#ffd700':'#78909c'; ctx.fillRect(-7,6,3,6); ctx.fillRect(4,6,3,6); }
-  if(t.ultimate){ ctx.strokeStyle='#00e5ff'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.strokeRect(-8,-7,16,14); ctx.globalAlpha=1; }
+function drawSniperTower(tw){
+  ctx.fillStyle=tw.ultimate?'#01579b':'#0d47a1'; ctx.fillRect(-7,-6,14,12);
+  ctx.fillStyle=tw.ultimate?'#263238':'#37474f'; ctx.fillRect(7,-2,18,4);
+  ctx.fillStyle=tw.ultimate?'#ffd700':'#546e7a'; ctx.beginPath(); ctx.arc(-2,-9,4,0,Math.PI*2); ctx.fill(); ctx.fillRect(-4,-10,4,2);
+  if(tw.level>=2){ ctx.fillStyle=tw.ultimate?'#01579b':'#1565c0'; ctx.fillRect(20,-1,5,2); }
+  if(tw.level>=3){ ctx.fillStyle=tw.ultimate?'#ffd700':'#78909c'; ctx.fillRect(-7,6,3,6); ctx.fillRect(4,6,3,6); }
+  if(tw.ultimate){ ctx.strokeStyle='#00e5ff'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.strokeRect(-8,-7,16,14); ctx.globalAlpha=1; }
 }
-
-function drawAtoomTower(t){
-  ctx.fillStyle=t.ultimate?'#e74c3c':'#4caf50'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=t.ultimate?'#e67e22':'#b2ffb2'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
-  const symbols=t.level>=3?4:3;
+function drawAtoomTower(tw){
+  ctx.fillStyle=tw.ultimate?'#e74c3c':'#4caf50'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle=tw.ultimate?'#e67e22':'#b2ffb2'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+  const symbols=tw.level>=3?4:3;
   ctx.strokeStyle='#000'; ctx.lineWidth=2;
   for(let i=0;i<symbols;i++){ ctx.save(); ctx.rotate(i*Math.PI*2/symbols); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-8); ctx.stroke(); ctx.restore(); }
-  if(t.level>=3){ ctx.fillStyle='#76ff03'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill(); }
+  if(tw.level>=3){ ctx.fillStyle='#76ff03'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill(); }
 }
-
-function drawKatoenTower(t){
-  ctx.fillStyle=t.ultimate?'#27ae60':'#e8e2b8'; ctx.fillRect(-12,-12,24,24);
-  ctx.fillStyle=t.ultimate?'#2ecc71':'#fff'; ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
+function drawKatoenTower(tw){
+  ctx.fillStyle=tw.ultimate?'#27ae60':'#e8e2b8'; ctx.fillRect(-12,-12,24,24);
+  ctx.fillStyle=tw.ultimate?'#2ecc71':'#fff'; ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill();
   const bollen=[[0,0],[-4,-4],[4,-4],[4,4],[-4,4]];
-  for(let i=1;i<=t.level&&i<bollen.length;i++){ ctx.beginPath(); ctx.arc(bollen[i][0],bollen[i][1],3,0,Math.PI*2); ctx.fill(); }
+  for(let i=1;i<=tw.level&&i<bollen.length;i++){ ctx.beginPath(); ctx.arc(bollen[i][0],bollen[i][1],3,0,Math.PI*2); ctx.fill(); }
 }
-
-function drawTsjaadinator(t){
-  ctx.fillStyle=t.ultimate?'#00ffff':'#00bcd4'; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle=t.ultimate?'#003366':'#00363a'; ctx.lineWidth=3;
+function drawTsjaadinator(tw){
+  ctx.fillStyle=tw.ultimate?'#00ffff':'#00bcd4'; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=tw.ultimate?'#003366':'#00363a'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(-10,-10); ctx.lineTo(10,10); ctx.moveTo(10,-10); ctx.lineTo(-10,10); ctx.stroke();
-  if(t.level>=2){ ctx.strokeStyle='#00bcd4'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.stroke(); }
-  if(t.level>=3){ ctx.strokeStyle='#00bcd4'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.stroke(); }
+  if(tw.level>=2){ ctx.strokeStyle='#00bcd4'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.stroke(); }
+  if(tw.level>=3){ ctx.strokeStyle='#00bcd4'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.stroke(); }
 }
 
-// ===== DRAW BANANAS =====
 function drawBananas(){
   for(const banana of bananas){
     ctx.save(); ctx.translate(banana.x,banana.y); ctx.rotate(-0.3);
@@ -1892,7 +2291,6 @@ function drawBananas(){
   }
 }
 
-// ===== DRAW PROJECTILES =====
 function drawProjectiles(){
   for(const p of projectiles){
     ctx.save(); ctx.translate(p.x,p.y);
@@ -1940,7 +2338,6 @@ function drawProjectiles(){
   }
 }
 
-// ===== DRAW EXPLOSIONS =====
 function drawExplosions(){
   for(const ex of explosions){
     ctx.globalAlpha=ex.t/22;
@@ -1958,7 +2355,6 @@ function drawExplosions(){
   }
 }
 
-// ===== DRAW NUCLEAR EXPLOSIONS =====
 function drawNuclearExplosions(){
   for(const ne of nuclearExplosions){
     const alpha=(ne.t/ne.maxT)*0.6;
@@ -1978,7 +2374,6 @@ function drawNuclearExplosions(){
   }
 }
 
-// ===== DRAW RANGE CIRCLE =====
 function drawRangeCircle(){
   if(!hoveredTower) return;
   const cfg=towerTypes[hoveredTower.key];
@@ -1989,7 +2384,6 @@ function drawRangeCircle(){
   ctx.setLineDash([]); ctx.restore();
 }
 
-// ===== MAIN DRAW =====
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   drawPath();
@@ -2007,11 +2401,7 @@ function loop(){
   if(!gameWon) requestAnimationFrame(loop);
 }
 
-console.log('🏜️ Tsjaad TD – Ultimate Edition 🐪');
-console.log('✅ 3 nieuwe modi: Mutatie, Dubbel Health, Tsjaad Modus');
-console.log('✅ 16 mutaties geïmplementeerd');
-console.log('✅ Kameel enemy toegevoegd');
-console.log('✅ Hydra boss voor Mutatie modus');
+console.log('🏜️ Tsjaad TD – Ultimate Edition + Settings 🐪');
 </script>
 </body>
 </html>

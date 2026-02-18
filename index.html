@@ -485,12 +485,12 @@ const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1000},
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
-  geweer:{range:240,rate:12,dmg:3,speed:7,cost:550,ultCost:3000},
+  geweer:{range:240,rate:12,dmg:3,speed:7,cost:550,ultCost:6000},
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:3000,ultCost:28000},
   tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000},
   atoom:{range:180,rate:120,dmg:18,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
-  aap:{range:120,rate:70,dmg:3,speed:0,cost:400,ultCost:2500,monkey:true},
+  aap:{range:120,rate:70,dmg:2.1,speed:0,cost:400,ultCost:2500,monkey:true},
   fakkel:{range:95,rate:45,dmg:4,speed:3,cost:150,ultCost:4000,fire:true}
 };
 
@@ -508,7 +508,10 @@ const animalTypes=[
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
 const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:5000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
 const slowBossType = {name:'Malaria Mug',hp:6500000,speed:0.15,size:120,reward:1000,boss:true,type:'mug'};
-const hydraHydraBossType = {name:'Hydra Malaria Mug',hp:80000,speed:0.8,size:100,reward:2000,boss:true,type:'hydramug'};
+const hydraBossType = {name:'Hydra Malaria Mug',hp:120000,speed:0.8,size:100,reward:500,boss:true,type:'hydramug',isHydraBoss:true};
+const hydraMiniMugType = {name:'Mini Hydra Mug',hp:30000,speed:1.0,size:40,reward:250,boss:true,type:'minimug'};
+const megaMalariaMugType = {name:'Mega Malaria Mug',hp:100000,speed:0.65,size:160,reward:2000,boss:true,type:'megamug'};
+const smallHydraMugType = {name:'Klein Hydra Mug',hp:30000,speed:1.0,size:60,reward:500,boss:true,type:'smallhydramug'};
 
 function selectTower(t){ 
   if(gameMode === 'armoede' && t === 'katoen') return;
@@ -554,7 +557,7 @@ canvas.onclick=e=>{
     x,y,key:selectedTower,cool:0,dmg:cfg.dmg,rate:cfg.rate,level:0,
     ultimate:false,upText:0,farm:cfg.farm||false,slow:cfg.slow||false,
     monkey:cfg.monkey||false,fire:cfg.fire||false,
-    monkeyTimer:0,boosted:false,boostEndTime:0
+    monkeyTimer:0,boosted:false,boostEndTime:0,burnDamage:12
   };
   if(selectedTower === 'plaagdokter'){ newTower.slowAmount = 0.20; newTower.slowDuration = 180; }
   if(selectedTower === 'fakkel'){ newTower.fireChance = 0.20; }
@@ -574,7 +577,7 @@ function handleUpgrade(t){
   else if(t.key==='boog') upgradeCost=100;
   else if(t.key==='plaagdokter') upgradeCost=250;
   else if(t.key==='geweer') upgradeCost=350;
-  else if(t.key==='atoom') upgradeCost=500;
+  else if(t.key==='atoom') upgradeCost=200;
   else if(t.key==='sniper') upgradeCost=1500;
   else if(t.key==='tsjaadinator') upgradeCost=800;
   else if(t.key==='katoen') upgradeCost=200;
@@ -608,7 +611,7 @@ function handleUpgrade(t){
   else if(t.key==='sniper'){ t.dmg=5000; }
   else if(t.key==='plaagdokter'){ t.dmg*=2; t.slowDuration=999999; }
   else if(t.key==='aap'){ t.dmg*=2; }
-  else if(t.key==='fakkel'){ t.dmg*=5; t.fireChance=1.0; }
+  else if(t.key==='fakkel'){ t.dmg*=5; t.fireChance=1.0; t.burnDamage=36; }
   t.upText=140; playSound('upgrade');
 }
 
@@ -630,11 +633,7 @@ function startRound(){
   // Boss spawning
   const maxRound = getMaxRound();
   if(round === maxRound){
-    if(gameMode === 'mutatie'){
-      spawnLeft=3; // 3 hydra boss heads
-    } else {
-      spawnLeft=1;
-    }
+    spawnLeft=1; // Just spawn 1 boss
     spawning=true; return;
   }
 
@@ -673,7 +672,7 @@ function spawnEnemy(){
   // Boss rounds
   if(round===maxRound){
     if(gameMode==='mutatie'){
-      enemies.push(makeEnemy({...hydraHydraBossType}));
+      enemies.push(makeEnemy({...hydraBossType}));
       return;
     }
     if(gameMode==='standard'||gameMode==='speed'||gameMode==='armoede'){
@@ -681,7 +680,7 @@ function spawnEnemy(){
     }
     if(gameMode==='hard'){ enemies.push(makeEnemy({...mutatedBossType})); return; }
     if(gameMode==='boss'){ enemies.push(makeEnemy({...slowBossType})); return; }
-    if(gameMode==='dubbelhealth'){ enemies.push(makeEnemy({...bossType})); return; }
+    if(gameMode==='dubbelhealth'){ enemies.push(makeEnemy({...megaMalariaMugType})); return; }
     if(gameMode==='tsjaadmodus'){ enemies.push(makeEnemy({...mutatedBossType})); return; }
   }
 
@@ -707,10 +706,13 @@ function spawnEnemy(){
   const baseHp=Math.floor(base.hp*hpScale);
   const baseSpeed=base.speed*speedScale;
 
-  // Mutation chance
+  // Mutation chance - increases 5% per round in mutatie modus
   let mutationChance=0;
-  if(gameMode==='mutatie') mutationChance=0.20;
-  else if(gameMode==='tsjaadmodus') mutationChance=0.02;
+  if(gameMode==='mutatie'){
+    mutationChance=Math.min(1.0, 0.20 + (round * 0.05));
+  } else if(gameMode==='tsjaadmodus'){
+    mutationChance=0.02;
+  }
 
   let mutation=null;
   if(mutationChance>0 && Math.random()<mutationChance){
@@ -928,6 +930,8 @@ function update(){
   for(const banana of bananas){
     banana.lifetime--;
     for(const e of enemies){
+      // Metalen enemies immune to bananas
+      if(e.mutation==='metalen') continue;
       if(Math.hypot(e.x-banana.x,e.y-banana.y)<e.size+10){ e.hp-=banana.dmg; banana.dead=true; break; }
     }
   }
@@ -963,6 +967,9 @@ function update(){
     // (handled in enemy radius check below)
 
     if(t.monkey){
+      // Don't spawn bananas at round end to prevent stockpiling
+      if(spawning) continue;
+      
       let pathPoints=[];
       for(let i=0;i<path.length-1;i++){
         const p1=path[i],p2=path[i+1];
@@ -973,8 +980,13 @@ function update(){
       }
       if(pathPoints.length>0){
         const rp=pathPoints[Math.floor(Math.random()*pathPoints.length)];
+        
+        // Ultimate: 40% less damage, 3 seconds longer lifetime
+        const bananaDmg=t.ultimate?(t.dmg*1.8):(t.dmg*3);
+        const bananaLife=t.ultimate?2100:1800;
+        
         bananas.push({x:rp.x+(Math.random()-0.5)*40,y:rp.y+(Math.random()-0.5)*40,
-          dmg:t.dmg*3,lifetime:1800,dead:false});
+          dmg:bananaDmg,lifetime:bananaLife,dead:false});
         t.cool=t.rate*rateMultiplier;
       }
       continue;
@@ -984,34 +996,48 @@ function update(){
     let verslomendeSlow=1.0;
     for(const e of enemies){
       if(e.mutation==='verslomende'&&Math.hypot(e.x-t.x,e.y-t.y)<120){
-        verslomendeSlow=0.6; break;
+        verslomendeSlow=1.4; break; // Makes rate 40% slower (takes longer to shoot)
       }
     }
 
     // Find target - apply mutation immunity
-    const target=enemies.find(e=>{
-      if(Math.hypot(e.x-t.x,e.y-t.y)>=cfg.range) return false;
-      // Metalen: only atoom can damage
-      if(e.mutation==='metalen'&&t.key!=='atoom') return false;
-      // Kogelvrije: immune to soldaat and sniper
-      if(e.mutation==='kogelvrije'&&(t.key==='geweer'||t.key==='sniper')) return false;
-      // Onzichtbare: only visible if in any tower range
-      if(e.mutation==='onzichtbare'){
-        let inRange=false;
-        for(const tw of towers){
-          if(Math.hypot(e.x-tw.x,e.y-tw.y)<towerTypes[tw.key].range){ inRange=true; break; }
-        }
-        if(!inRange) return false;
+    let target;
+    
+    // Plaagdokter prioritizes non-slowed enemies
+    if(t.key==='plaagdokter'){
+      target=enemies.find(e=>{
+        if(Math.hypot(e.x-t.x,e.y-t.y)>=cfg.range) return false;
+        if(e.mutation==='metalen') return false;
+        if(e.mutation==='kogelvrije') return false;
+        if(e.mutation==='onzichtbare') return false;
+        return e.slowEndTime<=0; // Prioritize non-slowed
+      });
+      // If no non-slowed enemies, target any enemy
+      if(!target){
+        target=enemies.find(e=>{
+          if(Math.hypot(e.x-t.x,e.y-t.y)>=cfg.range) return false;
+          if(e.mutation==='metalen') return false;
+          if(e.mutation==='kogelvrije') return false;
+          if(e.mutation==='onzichtbare') return false;
+          return true;
+        });
       }
-      return true;
-    });
+    } else {
+      target=enemies.find(e=>{
+        if(Math.hypot(e.x-t.x,e.y-t.y)>=cfg.range) return false;
+        if(e.mutation==='metalen'&&t.key!=='atoom') return false;
+        if(e.mutation==='kogelvrije'&&(t.key==='geweer'||t.key==='sniper')) return false;
+        if(e.mutation==='onzichtbare') return false; // Only bananas can damage onzichtbare
+        return true;
+      });
+    }
     if(!target) continue;
 
     projectiles.push({
       x:t.x,y:t.y,tx:target.x,ty:target.y,target,
       speed:cfg.speed,dmg:t.dmg,bomb:cfg.bomb,
       gold:t.ultimate,towerKey:t.key,tower:t,
-      fire:t.fire,fireChance:t.fireChance||0
+      fire:t.fire,fireChance:t.fireChance||0,burnDamage:t.burnDamage||12
     });
     t.cool=t.rate*rateMultiplier*verslomendeSlow;
     if(t.key==='sniper') playSound('sniper');
@@ -1025,8 +1051,12 @@ function update(){
         p.dead=true; continue;
       }
       
-      p.target.hp-=p.dmg;
-      if(gameMode==='boss'&&p.target.boss){ money+=Math.floor(p.dmg); totalMoneyEarned+=Math.floor(p.dmg); }
+      // Fakkel does 2x damage to bosses
+      let finalDmg=p.dmg;
+      if(p.towerKey==='fakkel'&&p.target.boss) finalDmg*=2;
+      
+      p.target.hp-=finalDmg;
+      if(gameMode==='boss'&&p.target.boss){ money+=Math.floor(finalDmg); totalMoneyEarned+=Math.floor(finalDmg); }
       if(p.towerKey==='plaagdokter'){
         const tw=p.tower;
         if(p.target.slowEndTime<=0||tw.ultimate){
@@ -1034,7 +1064,11 @@ function update(){
           p.target.slowEndTime=tw.slowDuration;
         }
       }
-      if(p.fire&&Math.random()<p.fireChance){ p.target.burning=true; p.target.burnDuration=300; }
+      if(p.fire&&Math.random()<p.fireChance){ 
+        p.target.burning=true; 
+        p.target.burnDuration=300;
+        p.target.burnDamage=p.burnDamage||12;
+      }
       if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});
       p.dead=true;
     } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
@@ -1047,6 +1081,20 @@ function update(){
   const toSpawn=[];
   enemies=enemies.filter(e=>{
     if(e.hp<=0){
+      // Hydra Boss: splits into 4 mini mugs
+      if(e.isHydraBoss){
+        for(let h=0;h<4;h++){
+          const mini=makeEnemy({...hydraMiniMugType});
+          mini.i=Math.max(0,e.i-1);
+          mini.x=path[Math.max(0,e.i-1)].x+(Math.random()-0.5)*80;
+          mini.y=path[Math.max(0,e.i-1)].y+(Math.random()-0.5)*80;
+          toSpawn.push(mini);
+        }
+        money+=e.reward; totalMoneyEarned+=e.reward;
+        playSound('kill');
+        return false;
+      }
+      
       if(e.boss){ winGame(); return false; }
       
       // Radioactieve: explosion effect
@@ -1073,6 +1121,17 @@ function update(){
           child.y=path[Math.max(0,e.i-1)].y+(Math.random()-0.5)*60;
           child.isHydraChild=true;
           toSpawn.push(child);
+        }
+      }
+      
+      // Hydra Boss: splits into 4 smaller hydra mugs
+      if(e.isHydraBoss){
+        for(let h=0;h<4;h++){
+          const smallMug=makeEnemy({...smallHydraMugType});
+          smallMug.i=Math.max(0,e.i-1);
+          smallMug.x=path[Math.max(0,e.i-1)].x+(Math.random()-0.5)*80;
+          smallMug.y=path[Math.max(0,e.i-1)].y+(Math.random()-0.5)*80;
+          toSpawn.push(smallMug);
         }
       }
       
@@ -1369,6 +1428,9 @@ function drawEnemy(e){
   else if(e.type==='mug') drawMug(e);
   else if(e.type==='mutatedmug') drawMutatedMug(e);
   else if(e.type==='hydramug') drawHydraMug(e);
+  else if(e.type==='minimug') drawMiniMug(e);
+  else if(e.type==='megamug') drawMegaMug(e);
+  else if(e.type==='smallhydramug') drawSmallHydraMug(e);
 
   ctx.globalAlpha=1;
 
@@ -1718,6 +1780,45 @@ function drawHydraMug(e){
   ctx.restore();
 }
 
+function drawSmallHydraMug(e){
+  ctx.save();
+  const t=Date.now()*0.005;
+  const wobble=Math.sin(t)*2;
+  
+  // Body
+  ctx.fillStyle='#8b0000';
+  ctx.beginPath(); ctx.ellipse(0,3,12,7,0,0,Math.PI*2); ctx.fill();
+  
+  // Wings (smaller)
+  ctx.fillStyle='rgba(100,0,150,0.4)';
+  ctx.beginPath(); ctx.ellipse(-10,-3,9,5,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(10,-3,9,5,0.3,0,Math.PI*2); ctx.fill();
+  
+  // Single head
+  ctx.fillStyle='#a00000';
+  ctx.beginPath(); ctx.arc(0,-8+wobble,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#ff0000';
+  ctx.beginPath(); ctx.arc(0,-8+wobble,3,0,Math.PI*2); ctx.fill();
+  
+  // Eyes
+  ctx.fillStyle='#ffff00';
+  ctx.beginPath(); ctx.arc(-1.5,-8+wobble,1,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5,-8+wobble,1,0,Math.PI*2); ctx.fill();
+  
+  // Stinger
+  ctx.strokeStyle='#6b0000'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,8); ctx.lineTo(0,14); ctx.stroke();
+  ctx.fillStyle='#ff0000';
+  ctx.beginPath(); ctx.moveTo(0,14); ctx.lineTo(-2,12); ctx.lineTo(2,12); ctx.fill();
+  
+  // Glow
+  ctx.strokeStyle='rgba(255,0,0,0.4)'; ctx.lineWidth=2;
+  ctx.shadowBlur=10; ctx.shadowColor='#ff0000';
+  ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.restore();
+}
+
 // ===== DRAW TOWERS =====
 function drawTower(t){
   const cfg=towerTypes[t.key];
@@ -1757,7 +1858,7 @@ function drawTower(t){
     else if(t.key==='boog') nextCost=100;
     else if(t.key==='plaagdokter') nextCost=250;
     else if(t.key==='geweer') nextCost=350;
-    else if(t.key==='atoom') nextCost=500;
+    else if(t.key==='atoom') nextCost=200;
     else if(t.key==='sniper') nextCost=2500;
     else if(t.key==='tsjaadinator') nextCost=800;
     else if(t.key==='katoen') nextCost=200;
@@ -2015,3 +2116,95 @@ console.log('✅ Hydra boss voor Mutatie modus');
 </script>
 </body>
 </html>
+
+function drawMiniMug(e){
+  ctx.save();
+  // Smaller single-headed mug
+  ctx.fillStyle='#3a0000';
+  ctx.beginPath(); ctx.ellipse(0,2,8,4,0,0,Math.PI*2); ctx.fill();
+  
+  // Small wings
+  ctx.fillStyle='rgba(100,0,150,0.4)';
+  ctx.beginPath(); ctx.ellipse(-6,-2,7,4,-0.3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6,-2,7,4,0.3,0,Math.PI*2); ctx.fill();
+  
+  // Head
+  const wobble=Math.sin(Date.now()*0.005)*2;
+  ctx.fillStyle='#8b0000';
+  ctx.beginPath(); ctx.arc(0,-4+wobble,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#ff0000';
+  ctx.beginPath(); ctx.arc(0,-4+wobble,3,0,Math.PI*2); ctx.fill();
+  
+  // Eyes
+  ctx.fillStyle='#ffff00';
+  ctx.beginPath(); ctx.arc(-1,-4+wobble,1,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1,-4+wobble,1,0,Math.PI*2); ctx.fill();
+  
+  // Legs
+  ctx.strokeStyle='#2a0000'; ctx.lineWidth=1.5;
+  for(let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(i*4,3); ctx.lineTo(i*5,8); ctx.stroke(); }
+  
+  ctx.restore();
+}
+
+function drawMegaMug(e){
+  ctx.save();
+  const pulseScale=1+Math.sin(Date.now()*0.004)*0.08;
+  ctx.scale(pulseScale,pulseScale);
+  
+  // Massive armored body
+  ctx.fillStyle='#1a1a2a';
+  ctx.beginPath(); ctx.ellipse(0,0,25,12,0,0,Math.PI*2); ctx.fill();
+  
+  // Armor plates
+  ctx.strokeStyle='#4a4a6a'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.ellipse(0,0,22,10,0,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0,0,18,8,0,0,Math.PI*2); ctx.stroke();
+  
+  // Armor rivets
+  ctx.fillStyle='#666';
+  const rivetPos=[{x:-18,y:0},{x:18,y:0},{x:0,y:-8},{x:0,y:8},{x:-12,y:-6},{x:12,y:-6}];
+  for(const rp of rivetPos){
+    ctx.beginPath(); ctx.arc(rp.x,rp.y,2,0,Math.PI*2); ctx.fill();
+  }
+  
+  // Giant wings with armor
+  ctx.fillStyle='rgba(100,100,150,0.6)';
+  ctx.strokeStyle='#4a4a6a'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.ellipse(-20,-8,18,10,-0.4,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(20,-8,18,10,0.4,0,Math.PI*2); ctx.fill(); ctx.stroke();
+  
+  // Armored head
+  ctx.fillStyle='#2a2a3a';
+  ctx.beginPath(); ctx.arc(25,-3,12,0,Math.PI*2); ctx.fill();
+  
+  // Face armor
+  ctx.strokeStyle='#5a5a7a'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(25,-3,10,0,Math.PI*2); ctx.stroke();
+  
+  // Glowing red eyes
+  ctx.fillStyle='#ff0000'; ctx.shadowBlur=8; ctx.shadowColor='#ff0000';
+  ctx.beginPath(); ctx.arc(22,-5,2.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(28,-5,2.5,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0;
+  
+  // Reinforced legs
+  ctx.strokeStyle='#2a2a3a'; ctx.lineWidth=3;
+  for(let i=-2;i<=2;i++){
+    ctx.beginPath(); ctx.moveTo(i*8,10); ctx.lineTo(i*10,22); ctx.stroke();
+  }
+  
+  // Mega stinger
+  ctx.strokeStyle='#4a0000'; ctx.lineWidth=4;
+  ctx.shadowBlur=12; ctx.shadowColor='#aa0000';
+  ctx.beginPath(); ctx.moveTo(25,0); ctx.lineTo(42,-4); ctx.stroke();
+  ctx.fillStyle='#aa0000';
+  ctx.beginPath(); ctx.moveTo(42,-4); ctx.lineTo(48,-5); ctx.lineTo(44,0); ctx.fill();
+  ctx.shadowBlur=0;
+  
+  // Overall glow
+  ctx.strokeStyle='rgba(150,150,200,0.4)'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.arc(0,0,30,0,Math.PI*2); ctx.stroke();
+  
+  ctx.restore();
+}

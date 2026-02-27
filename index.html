@@ -129,6 +129,8 @@
   .modeBtn.mutatie { background: linear-gradient(135deg, #00c853 0%, #006600 50%, #004400 100%); color: #adffa3; text-shadow: 0 0 10px #00ff44; animation: mutatiePulse 2s ease-in-out infinite; border-color: #00ff44; }
   .modeBtn.dubbelhealth { background: linear-gradient(135deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%); color: #fff; text-shadow: 0 0 10px #4fc3f7; animation: dhPulse 2s ease-in-out infinite; }
   .modeBtn.tsjaad { background: linear-gradient(135deg, #ff6f00 0%, #e65100 50%, #bf360c 100%); color: #fff; text-shadow: 0 0 15px #ff9800; animation: tsjaadPulse 1.2s ease-in-out infinite; border-color: #ff9800; }
+  .modeBtn.tsjaadplus { background: linear-gradient(135deg, #000000 0%, #1a0000 30%, #3d0000 60%, #ff0000 100%); color: #ffd700; text-shadow: 0 0 20px #ff0000, 0 0 40px #ff6600; animation: tsjaadPlusPulse 0.8s ease-in-out infinite; border-color: #ffd700; border-width: 6px; }
+  @keyframes tsjaadPlusPulse { 0%, 100% { box-shadow: 0 10px 40px rgba(255,0,0,0.6), 0 0 80px rgba(255,100,0,0.3); transform: scale(1); } 50% { box-shadow: 0 10px 80px rgba(255,0,0,1), 0 0 120px rgba(255,100,0,0.8), inset 0 0 30px rgba(255,200,0,0.2); transform: scale(1.06); } }
   
   @keyframes plaagPulse { 0%, 100% { box-shadow: 0 10px 30px rgba(139,0,0,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 50px rgba(255,69,0,0.8), 0 0 40px rgba(255,69,0,0.6); transform: scale(1.02); } }
   @keyframes hardPulse { 0%, 100% { box-shadow: 0 10px 30px rgba(106,5,114,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 50px rgba(199,0,57,0.8), 0 0 40px rgba(255,0,128,0.6); transform: scale(1.03); } }
@@ -137,6 +139,7 @@
   @keyframes mutatiePulse { 0%, 100% { box-shadow: 0 10px 30px rgba(0,200,83,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 50px rgba(0,255,68,0.9), 0 0 60px rgba(0,255,68,0.6); transform: scale(1.03); } }
   @keyframes dhPulse { 0%, 100% { box-shadow: 0 10px 30px rgba(13,71,161,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 50px rgba(79,195,247,0.9), 0 0 60px rgba(79,195,247,0.6); transform: scale(1.03); } }
   @keyframes tsjaadPulse { 0%, 100% { box-shadow: 0 10px 30px rgba(255,111,0,0.5); transform: scale(1); } 50% { box-shadow: 0 10px 60px rgba(255,152,0,0.9), 0 0 60px rgba(255,152,0,0.8); transform: scale(1.05); } }
+
   
   .modeBtn:hover { transform: scale(1.15) rotate(1deg) !important; box-shadow: 0 15px 50px rgba(139,69,19,0.6); }
 
@@ -390,6 +393,7 @@
     <button class="modeBtn mutatie" onclick="startGame('mutatie')" id="btn-mutatie">🧬 MUTATIE MODUS 🧬</button>
     <button class="modeBtn dubbelhealth" onclick="startGame('dubbelhealth')" id="btn-dubbelhealth">💙 DUBBEL HEALTH 💙</button>
     <button class="modeBtn tsjaad" onclick="startGame('tsjaadmodus')" id="btn-tsjaad">🔥 TSJAAD MODUS 🔥</button>
+    <button class="modeBtn tsjaadplus" onclick="startGame('tsjaadplus')" id="btn-tsjaadplus">💀☠️ TSJAAD MODUS PLUS ☠️💀</button>
   </div>
 </div>
 
@@ -513,6 +517,8 @@ const STRINGS = {
     'mode-mutatie': 'MUTATIE MODUS',
     'mode-dubbelhealth': 'DUBBEL HEALTH',
     'mode-tsjaadmodus': 'TSJAAD MODUS',
+    'btn-tsjaadplus': '💀☠️ TSJAAD MODUS PLUS ☠️💀',
+    'mode-tsjaadplus': 'TSJAAD MODUS PLUS',
   },
   en: {
     'stg-title': '⚙️ SETTINGS',
@@ -572,6 +578,8 @@ const STRINGS = {
     'mode-mutatie': 'MUTATION MODE',
     'mode-dubbelhealth': 'DOUBLE HEALTH',
     'mode-tsjaadmodus': 'CHAD MODE',
+    'btn-tsjaadplus': '💀☠️ CHAD MODE PLUS ☠️💀',
+    'mode-tsjaadplus': 'CHAD MODE PLUS',
   },
   de: {
     'stg-title': '⚙️ EINSTELLUNGEN',
@@ -631,6 +639,8 @@ const STRINGS = {
     'mode-mutatie': 'MUTATIONS-MODUS',
     'mode-dubbelhealth': 'DOPPELTE GESUNDHEIT',
     'mode-tsjaadmodus': 'TSCHAD-MODUS',
+    'btn-tsjaadplus': '💀☠️ TSCHAD-MODUS PLUS ☠️💀',
+    'mode-tsjaadplus': 'TSCHAD-MODUS PLUS',
   }
 };
 
@@ -789,6 +799,15 @@ const tsjaadPath = [
   {x:980,y:300},{x:1100,y:300},{x:1100,y:600},{x:1220,y:600}
 ];
 
+// Tsjaad Plus: even more insane zigzag
+const tsjaadPlusPath = [
+  {x:-20,y:80},{x:80,y:80},{x:80,y:550},{x:200,y:550},
+  {x:200,y:120},{x:340,y:120},{x:340,y:480},{x:480,y:480},
+  {x:480,y:60},{x:620,y:60},{x:620,y:400},{x:760,y:400},
+  {x:760,y:160},{x:900,y:160},{x:900,y:540},{x:1060,y:540},
+  {x:1060,y:250},{x:1220,y:250}
+];
+
 let path = standardPath;
 let money=500, lives=20, round=1;
 let selectedTower=null;
@@ -945,6 +964,12 @@ function startGame(mode) {
     document.getElementById('startRoundBtn').style.display = 'none';
     document.getElementById('autoRoundMsg').textContent = t('auto-tsjaad');
     currentTheme = sounds.tsjaadModus;
+  } else if(mode === 'tsjaadplus') {
+    path = tsjaadPlusPath;
+    document.getElementById('gameTitle').innerHTML = '☠️ <span style="color:#ffd700;text-shadow:0 0 20px #ff0000,0 0 40px #ff4400">TSJAAD MODUS PLUS</span> ☠️';
+    document.getElementById('roundMax').textContent = '/40';
+    lives = 1; money = 1000; autoStartRounds = false;
+    currentTheme = sounds.tsjaadModus;
   } else {
     path = standardPath;
     document.getElementById('gameTitle').textContent = '🛡️ Tsjaad TD';
@@ -967,7 +992,7 @@ const towerTypes={
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
   geweer:{range:240,rate:12,dmg:4.2,speed:7,cost:550,ultCost:3000},   // +40% dmg: 3 -> 4.2
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:5000,ultCost:28000},
-  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000},
+  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000,secretCost:100000},
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
   aap:{range:120,rate:70,dmg:1.9,speed:0,cost:400,ultCost:2500,monkey:true},
@@ -1078,7 +1103,17 @@ function handleUpgrade(t){
     t.upText=90; playSound('upgrade'); return;
   }
 
-  if(t.ultimate) return;
+  if(t.ultimate) {
+    // Secret upgrade for tsjaadinator
+    if(t.key==='tsjaadinator'&&!t.secret){
+      const sCost=towerTypes.tsjaadinator.secretCost;
+      if(money<sCost) return;
+      money-=sCost;
+      t.secret=true; t.level=5;
+      t.upText=200; playSound('upgrade');
+    }
+    return;
+  }
   const cost=towerTypes[t.key].ultCost;
   if(money<cost) return;
   money-=cost;
@@ -1123,6 +1158,17 @@ function startRound(){
     spawning=true; return;
   }
 
+  // Tsjaad Plus mini-boss rounds: spawn 1 mini-boss + normal enemies
+  const miniBossRounds=[10,20,30,40];
+  if(gameMode==='tsjaadplus'&&miniBossRounds.includes(round)){
+    let baseEnemies=Math.floor(4+round*1.5);
+    spawnLeft=baseEnemies+1; // +1 for mini-boss (spawned first via flag)
+    spawning=true; spawnTimer=0;
+    // Flag so first spawn is the mini-boss
+    window._tsjaadPlusMiniBossQueued=true;
+    return;
+  }
+
   let baseEnemies=Math.floor(5+round*1.8);
   if(gameMode==='plaag') baseEnemies=Math.floor(10+round*2.5);
   else if(gameMode==='hard') baseEnemies=Math.floor(7+round*2.5);
@@ -1142,6 +1188,7 @@ function getMaxRound(){
   if(gameMode==='boss') return 1;
   if(gameMode==='mutatie') return 35;
   if(gameMode==='plaag') return 999;
+  if(gameMode==='tsjaadplus') return 40;
   return 30;
 }
 
@@ -1155,6 +1202,32 @@ function showRoundMsg(txt){
 function spawnEnemy(){
   const maxRound=getMaxRound();
   
+  // ===== TSJAAD PLUS: mini-boss rounds =====
+  if(gameMode==='tsjaadplus'){
+    const miniBossMap={10:'giraffe',20:'leeuw',30:'cheetah',40:'nijlpaard'};
+    const miniBossType=miniBossMap[round];
+    if(miniBossType && window._tsjaadPlusMiniBossQueued){
+      window._tsjaadPlusMiniBossQueued=false;
+      const baseData=animalTypes.find(a=>a.type===miniBossType)||animalTypes[0];
+      const hpScale=(1+round*0.14)*11.0; // 1000% extra HP = 11x
+      const speedScale=1+round*0.02;
+      const m1=pickMutation(round,'tsjaadplus');
+      let m2=pickMutation(round,'tsjaadplus');
+      let tries=0; while(m2===m1&&tries<10){m2=pickMutation(round,'tsjaadplus');tries++;}
+      const finalHp=Math.floor(baseData.hp*hpScale*(m1==='elite'||m2==='elite'?4:1));
+      const finalSpeed=baseData.speed*speedScale*(m1==='snelle'||m2==='snelle'?3:1);
+      const boss=makeEnemy({...baseData,hp:finalHp,speed:finalSpeed,size:baseData.size*1.8,
+        reward:Math.floor(baseData.reward*20)});
+      boss.mutation=m1; boss.mutation2=m2;
+      boss.name='⚠️ Gemuteerde '+baseData.name;
+      boss.isMiniBoss=true;
+      applyMutationToEnemy(boss,m1,finalHp,finalSpeed,baseData);
+      applyMutationToEnemy(boss,m2,finalHp,finalSpeed,baseData);
+      enemies.push(boss);
+      return;
+    }
+  }
+
   if(round===maxRound){
     if(gameMode==='mutatie'){
       enemies.push(makeEnemy({...hydraHydraBossType}));
@@ -1167,6 +1240,7 @@ function spawnEnemy(){
     if(gameMode==='boss'){ enemies.push(makeEnemy({...slowBossType})); return; }
     if(gameMode==='dubbelhealth'){ enemies.push(makeEnemy({...bossType})); return; }
     if(gameMode==='tsjaadmodus'){ enemies.push(makeEnemy({...mutatedBossType})); return; }
+    if(gameMode==='tsjaadplus'){ enemies.push(makeEnemy({...mutatedBossType})); return; }
   }
 
   const availableAnimals=animalTypes.filter(a=>!a.minRound||round>=a.minRound);
@@ -1180,6 +1254,7 @@ function spawnEnemy(){
   else if(gameMode==='speed'){ speedScale*=2.0; }
   else if(gameMode==='dubbelhealth'){ hpScale*=2.0; }
   else if(gameMode==='tsjaadmodus'){ hpScale*=2.0; speedScale*=2.0; }
+  else if(gameMode==='tsjaadplus'){ hpScale*=2.5; speedScale*=2.5; }
 
   if(round>8){ hpScale*=1+0.08*(round-8); speedScale*=1+0.01*(round-8); }
   if(round>20){ hpScale*=1.70; speedScale*=1.3; }
@@ -1192,26 +1267,25 @@ function spawnEnemy(){
   const baseSpeed=base.speed*speedScale;
 
   // ===== MUTATION LOGIC =====
-  // CHANGE: mutatie modus: double mutation possible after round 15
-  // CHANGE: tsjaadmodus: double mutation possible after round 15
   let mutationChance=0;
   let doubleMutationChance=0;
   if(gameMode==='mutatie'){
     mutationChance=0.20;
-    if(round>15) doubleMutationChance=0.40; // 40% of mutated enemies also get 2nd mutation
+    if(round>15) doubleMutationChance=0.40;
   } else if(gameMode==='tsjaadmodus'){
     mutationChance=0.02;
-    if(round>15) doubleMutationChance=0.50; // 50% of mutated tsjaad enemies get 2nd
+    if(round>15) doubleMutationChance=0.50;
+  } else if(gameMode==='tsjaadplus'){
+    mutationChance=1.0; // GUARANTEED mutation every enemy
+    doubleMutationChance=0.50; // 50% chance of second mutation
   }
 
   let mutation=null;
   let mutation2=null;
   if(mutationChance>0 && Math.random()<mutationChance){
     mutation=pickMutation(round, gameMode);
-    // Try second mutation if eligible
     if(doubleMutationChance>0 && Math.random()<doubleMutationChance){
       let secondPick=pickMutation(round, gameMode);
-      // Make sure it's different
       let tries=0;
       while(secondPick===mutation && tries<10){ secondPick=pickMutation(round, gameMode); tries++; }
       if(secondPick!==mutation) mutation2=secondPick;
@@ -1223,7 +1297,6 @@ function spawnEnemy(){
 
   if(mutation==='snelle'){ finalSpeed*=3.0; finalHp=Math.floor(finalHp*0.6); }
   if(mutation==='elite'){ finalSpeed*=1.5; finalHp=Math.floor(finalHp*4.0); }
-  // Second mutation stacks
   if(mutation2==='snelle'){ finalSpeed*=3.0; finalHp=Math.floor(finalHp*0.6); }
   if(mutation2==='elite'){ finalSpeed*=1.5; finalHp=Math.floor(finalHp*4.0); }
 
@@ -1485,6 +1558,11 @@ function update(){
     }
 
     const target=enemies.find(e=>{
+      // Secret Tsjaadinator: infinite range, can hit metalen
+      if(tw.key==='tsjaadinator'&&tw.secret){
+        if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')) return false;
+        return true;
+      }
       if(Math.hypot(e.x-tw.x,e.y-tw.y)>=cfg.range) return false;
       if((e.mutation==='metalen'||e.mutation2==='metalen')&&tw.key!=='atoom') return false;
       if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')&&(tw.key==='geweer'||tw.key==='sniper')) return false;
@@ -1499,10 +1577,29 @@ function update(){
     });
     if(!target) continue;
 
+    // Secret Tsjaadinator: compute 1000% base dmg + tower cash bonus
+    let finalDmg = tw.dmg;
+    if(tw.key==='tsjaadinator'&&tw.secret){
+      finalDmg = tw.dmg * 11.0; // 1000% extra = 11x total
+      // For every €1000 of tower value in radius, +20% dmg
+      let towerCashInRadius=0;
+      for(const otw of towers){
+        if(otw===tw) continue;
+        if(Math.hypot(otw.x-tw.x,otw.y-tw.y)<999999){ // infinite radius for cash check
+          const baseCost=towerTypes[otw.key].cost||0;
+          const upgradeVal=otw.level*200;
+          towerCashInRadius+=baseCost+upgradeVal;
+        }
+      }
+      const bonusMultiplier=1+(Math.floor(towerCashInRadius/1000)*0.10);
+      finalDmg*=bonusMultiplier;
+    }
+
     projectiles.push({
       x:tw.x,y:tw.y,tx:target.x,ty:target.y,target,
-      speed:cfg.speed,dmg:tw.dmg,bomb:cfg.bomb,
-      gold:tw.ultimate,towerKey:tw.key,tower:tw,
+      speed:tw.secret&&tw.key==='tsjaadinator'?20:cfg.speed,
+      dmg:finalDmg,bomb:cfg.bomb,
+      gold:tw.ultimate,secret:tw.secret||false,towerKey:tw.key,tower:tw,
       fire:tw.fire,fireChance:tw.fireChance||0
     });
     tw.cool=tw.rate*rateMultiplier*verslomendeSlow;
@@ -1526,6 +1623,17 @@ function update(){
       }
       if(p.fire&&Math.random()<p.fireChance){ p.target.burning=true; p.target.burnDuration=300; }
       if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});
+      // Secret Tsjaadinator: golden explosion + splash
+      if(p.secret&&p.towerKey==='tsjaadinator'){
+        explosions.push({x:p.target.x,y:p.target.y,r:8,t:35,gold:true});
+        explosions.push({x:p.target.x,y:p.target.y,r:4,t:20,gold:true});
+        // Small splash to nearby enemies
+        for(const e2 of enemies){
+          if(e2!==p.target && Math.hypot(e2.x-p.target.x,e2.y-p.target.y)<80){
+            e2.hp-=p.dmg*0.5;
+          }
+        }
+      }
       p.dead=true;
     } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
   }
@@ -1837,6 +1945,19 @@ function drawEnemy(e){
 }
 
 function drawMutationEffects(e){
+  if(!e.mutation && !e.isMiniBoss) return;
+
+  // Mini-boss aura
+  if(e.isMiniBoss){
+    const t_mb=Date.now()*0.004;
+    ctx.strokeStyle=`rgba(255,215,0,${0.6+Math.sin(t_mb)*0.3})`; ctx.lineWidth=5;
+    ctx.shadowBlur=20; ctx.shadowColor='#ffd700';
+    ctx.beginPath(); ctx.arc(0,0,e.size+10+Math.sin(t_mb)*3,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.fillStyle=`rgba(255,150,0,0.08)`;
+    ctx.beginPath(); ctx.arc(0,0,e.size+10,0,Math.PI*2); ctx.fill();
+  }
+
   if(!e.mutation) return;
 
   // Draw both mutations
@@ -1924,9 +2045,15 @@ function drawMutationEffects(e){
 }
 
 function drawEnemyHUD(e){
-  ctx.fillStyle='red'; ctx.fillRect(-20,-24,40,5);
-  ctx.fillStyle='lime'; ctx.fillRect(-20,-24,40*(e.hp/e.max),5);
-  ctx.fillStyle='white'; ctx.font='9px Arial'; ctx.textAlign='center';
+  const barW = e.isMiniBoss ? 60 : 40;
+  const half = barW/2;
+  ctx.fillStyle='red'; ctx.fillRect(-half,-24,barW,5);
+  ctx.fillStyle=e.isMiniBoss?'#ffd700':'lime'; ctx.fillRect(-half,-24,barW*(e.hp/e.max),5);
+  if(e.isMiniBoss){
+    ctx.strokeStyle='#ffd700'; ctx.lineWidth=1.5;
+    ctx.strokeRect(-half,-24,barW,5);
+  }
+  ctx.fillStyle='white'; ctx.font=e.isMiniBoss?'bold 10px Arial':'9px Arial'; ctx.textAlign='center';
   ctx.fillText(e.name,0,-28);
   
   if(e.mutation){
@@ -2148,9 +2275,22 @@ function drawTower(tw){
     else if(tw.key==='fakkel') nextCost=125;
     else nextCost=200;
   } else { nextCost=tw.ultimate?0:cfg.ultCost; }
-  const label=tw.level<3?`Lvl ${tw.level} (€${nextCost})`:(tw.ultimate?'ULTIMATE':`ULT (€${cfg.ultCost})`);
+
+  let label;
+  if(tw.secret){ label='⭐ GOD MODE'; }
+  else if(tw.level<3){ label=`Lvl ${tw.level} (€${nextCost})`; }
+  else if(tw.ultimate){
+    if(tw.key==='tsjaadinator') label='??? (€100000)';
+    else label='ULTIMATE';
+  } else { label=`ULT (€${cfg.ultCost})`; }
+
+  ctx.fillStyle=tw.secret?'#ffd700':'white';
   ctx.fillText(label,0,22/scale);
-  if(tw.upText>0){ ctx.fillStyle='yellow'; ctx.font='bold 10px Arial'; ctx.fillText('UPGRADED!',0,-16/scale); }
+  if(tw.upText>0){ 
+    ctx.fillStyle=tw.secret?'#ffd700':'yellow'; 
+    ctx.font='bold 10px Arial'; 
+    ctx.fillText(tw.secret?'⭐ GOD MODE!':'UPGRADED!',0,-16/scale); 
+  }
   ctx.restore();
 }
 
@@ -2251,6 +2391,42 @@ function drawKatoenTower(tw){
   for(let i=1;i<=tw.level&&i<bollen.length;i++){ ctx.beginPath(); ctx.arc(bollen[i][0],bollen[i][1],3,0,Math.PI*2); ctx.fill(); }
 }
 function drawTsjaadinator(tw){
+  if(tw.secret){
+    // God mode Tsjaadinator: massive glowing star with rotating rings
+    const t_now=Date.now()*0.002;
+    // Outer pulsing ring
+    ctx.strokeStyle='rgba(255,215,0,0.8)'; ctx.lineWidth=4;
+    ctx.shadowBlur=30; ctx.shadowColor='#ffd700';
+    ctx.beginPath(); ctx.arc(0,0,18+Math.sin(t_now)*3,0,Math.PI*2); ctx.stroke();
+    // Inner rotating cross beams
+    ctx.save(); ctx.rotate(t_now);
+    ctx.strokeStyle='#00ffff'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(-16,0); ctx.lineTo(16,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,16); ctx.stroke();
+    ctx.restore();
+    ctx.save(); ctx.rotate(-t_now*1.5);
+    ctx.strokeStyle='#ff4400'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(-13,-13); ctx.lineTo(13,13); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(13,-13); ctx.lineTo(-13,13); ctx.stroke();
+    ctx.restore();
+    // Core
+    const coreGrad=ctx.createRadialGradient(0,0,0,0,0,11);
+    coreGrad.addColorStop(0,'#ffffff');
+    coreGrad.addColorStop(0.3,'#ffd700');
+    coreGrad.addColorStop(0.7,'#ff6600');
+    coreGrad.addColorStop(1,'#ff0000');
+    ctx.fillStyle=coreGrad;
+    ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+    // Star points
+    ctx.fillStyle='rgba(255,215,0,0.9)';
+    for(let i=0;i<8;i++){
+      ctx.save(); ctx.rotate(i*Math.PI/4+t_now*0.5);
+      ctx.beginPath(); ctx.moveTo(0,-11); ctx.lineTo(2,-18); ctx.lineTo(0,-20); ctx.lineTo(-2,-18); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    return;
+  }
   ctx.fillStyle=tw.ultimate?'#00ffff':'#00bcd4'; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle=tw.ultimate?'#003366':'#00363a'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(-10,-10); ctx.lineTo(10,10); ctx.moveTo(10,-10); ctx.lineTo(-10,10); ctx.stroke();
@@ -2302,9 +2478,24 @@ function drawProjectiles(){
       ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(8,0); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(11,-2.5); ctx.lineTo(11,2.5); ctx.closePath(); ctx.fill();
     } else if(p.towerKey==='tsjaadinator'){
-      ctx.strokeStyle=p.gold?'#ffd700':'#00bcd4'; ctx.fillStyle=p.gold?'#ffd700':'#00e5ff'; ctx.lineWidth=2;
-      ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(7,0); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(7,0); ctx.lineTo(12,-3); ctx.lineTo(12,3); ctx.closePath(); ctx.fill();
+      if(p.secret){
+        // Golden rocket with trail
+        ctx.fillStyle='#ffd700'; ctx.strokeStyle='#ff6600'; ctx.lineWidth=2;
+        ctx.shadowBlur=15; ctx.shadowColor='#ffd700';
+        // Rocket body
+        ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(6,-4); ctx.lineTo(-8,-3); ctx.lineTo(-10,0); ctx.lineTo(-8,3); ctx.lineTo(6,4); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // Nose cone
+        ctx.fillStyle='#ff4400';
+        ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(20,-3); ctx.lineTo(22,0); ctx.lineTo(20,3); ctx.closePath(); ctx.fill();
+        // Flame trail
+        ctx.fillStyle='rgba(255,150,0,0.8)';
+        ctx.beginPath(); ctx.moveTo(-10,0); ctx.lineTo(-18,-4); ctx.lineTo(-22,0); ctx.lineTo(-18,4); ctx.closePath(); ctx.fill();
+        ctx.shadowBlur=0;
+      } else {
+        ctx.strokeStyle=p.gold?'#ffd700':'#00bcd4'; ctx.fillStyle=p.gold?'#ffd700':'#00e5ff'; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(7,0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(7,0); ctx.lineTo(12,-3); ctx.lineTo(12,3); ctx.closePath(); ctx.fill();
+      }
     } else if(p.towerKey==='geweer'){
       ctx.fillStyle=p.gold?'#ffd700':'#ffeb3b';
       ctx.beginPath(); ctx.ellipse(0,0,3.5,1.5,0,0,Math.PI*2); ctx.fill();

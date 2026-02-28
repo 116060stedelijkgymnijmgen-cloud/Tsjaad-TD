@@ -876,7 +876,7 @@ function playSound(soundName) {
 const MUTATIONS = [
   'ondode','snelle','hydra','random','dodelijke',
   'radioactieve','metalen','kogelvrije','beschermde',
-  'terugkerende','arme','onzichtbare','verslomende',
+  'terugkerende','arme','Nutteloze','verslomende',
   'accelererende','genezende','elite'
 ];
 
@@ -990,7 +990,7 @@ const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1000},
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
-  geweer:{range:240,rate:12,dmg:4.2,speed:7,cost:550,ultCost:3000},   // +40% dmg: 3 -> 4.2
+  geweer:{range:240,rate:12,dmg:5,speed:7,cost:550,ultCost:5000},   // +40% dmg: 3 -> 4.2
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:5000,ultCost:28000},
   tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000,secretCost:100000},
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
@@ -1098,7 +1098,7 @@ function handleUpgrade(t){
     else if(t.key==='plaagdokter'){ t.dmg*=1.25; t.rate*=0.85; t.slowAmount+=0.05; }
     else if(t.key==='aap'){ t.dmg*=1.5; }
     // CHANGE: fakkel upgrade dmg scaling boosted more
-    else if(t.key==='fakkel'){ t.dmg*=1.5; t.rate*=0.85; }
+    else if(t.key==='fakkel'){ t.dmg*=5.5; t.rate*=0.85; }
     else if(!t.farm){ t.dmg*=1.25; t.rate*=0.85; }
     t.upText=90; playSound('upgrade'); return;
   }
@@ -1123,13 +1123,13 @@ function handleUpgrade(t){
   else if(t.key==='tsjaadinator'){ t.dmg*=2; t.rate*=0.25; }
   else if(t.key==='speer'){ t.dmg*=3; t.rate*=1.2; }
   // CHANGE: geweer ultimate dmg set to exactly 5000
-  else if(t.key==='geweer'){ t.dmg=5000; t.rate*=0.45; }
+  else if(t.key==='geweer'){ t.dmg=40; t.rate*=0.45; }
   else if(t.key==='boog'){ t.dmg*=1.9; t.rate*=0.50; }
   else if(t.key==='sniper'){ t.dmg=5000; }
   else if(t.key==='plaagdokter'){ t.dmg*=4; t.slowDuration=999999; }
   else if(t.key==='aap'){ t.dmg*=2; }
   // CHANGE: fakkel ultimate: huge dmg + 100% fire chance
-  else if(t.key==='fakkel'){ t.dmg*=6; t.fireChance=1.0; }
+  else if(t.key==='fakkel'){ t.dmg*=30; t.fireChance=1.0; }
   t.upText=140; playSound('upgrade');
 }
 
@@ -1591,7 +1591,7 @@ function update(){
           towerCashInRadius+=baseCost+upgradeVal;
         }
       }
-      const bonusMultiplier=1+(Math.floor(towerCashInRadius/1000)*0.10);
+      const bonusMultiplier=1+(Math.floor(towerCashInRadius/5000)*0.10);
       finalDmg*=bonusMultiplier;
     }
 

@@ -449,7 +449,7 @@ const towerBaseRanges = {
 
 const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,ultCost:800},
-  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1000},
+  boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1500},
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
   geweer:{range:240,rate:12,dmg:7.5,speed:7,cost:550,ultCost:5000},
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:5000,ultCost:28000},
@@ -457,7 +457,7 @@ const towerTypes={
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
   aap:{range:120,rate:70,dmg:1.9,speed:0,cost:400,ultCost:2500,monkey:true},
-  fakkel:{range:95,rate:45,dmg:5,speed:3,cost:150,ultCost:4000,fire:true}
+  fakkel:{range:95,rate:45,dmg:3,speed:3,cost:150,ultCost:4000,fire:true}
 };
 
 // Get the effective range for a tower given its current upgrade level
@@ -643,11 +643,20 @@ function updateTooltip(tw, cx, cy){
       const cooldownSecs = Math.max(5, 90 - tw.level*10 - (tw.ultimate?50:0));
       const nextCooldownSecs = next ? Math.max(5, 90 - (tw.level+1)*10 - (isUltNext?50:0)) : null;
       html += statRow('💥 Nuke cooldown', cooldownSecs+'s', nextCooldownSecs?nextCooldownSecs+'s':null);
+      const curFire = '+'+Math.round(((tw.fireBonusMultiplier||1.20)-1)*100)+'%';
+      const nextFireBonus = next ? '+'+Math.round(((tw.fireBonusMultiplier||1.20)-1+0.10)*100)+'%' : null;
+      html += statRow('🔥 Bonus vs brand', curFire, nextFireBonus);
+    }
+    if(tw.key==='boog' && (tw.ultimate || isUltNext)){
+      const curPoison = tw.poisonArrows ? '☠️ 10/s · 3s · -10%' : '—';
+      const nextPoison = isUltNext ? '☠️ 10/s · 3s · -10%' : null;
+      html += statRow('☠️ Vergif', curPoison, !tw.poisonArrows ? nextPoison : null);
     }
     if(tw.key==='fakkel'){
-      const burnDmg = (tw.dmg/10).toFixed(1);
-      const nextBurnDmg = next ? (next.dmg/10).toFixed(1) : null;
-      html += statRow('🔥 Brand dmg/s', burnDmg, nextBurnDmg);
+      const burnDmg = tw.ultimate ? '80' : '1';
+      const nextBurnDmg = next ? (isUltNext ? '80' : '1') : null;
+      html += statRow('🔥 Brand dmg/s', burnDmg, nextBurnDmg !== burnDmg ? nextBurnDmg : null);
+      html += statRow('⏱️ Brand duur', tw.ultimate ? '8s' : '8s', null);
     }
   }
 
@@ -734,6 +743,7 @@ canvas.onclick=e=>{
   };
   if(selectedTower==='plaagdokter'){ newTower.slowAmount=0.20; newTower.slowDuration=180; newTower.plaagDmgBonus=1.05; }
   if(selectedTower==='fakkel'){ newTower.fireChance=1.0; }
+  if(selectedTower==='atoom'){ newTower.fireBonusMultiplier=1.20; } // 20% bonus vs burning enemies
   towers.push(newTower);
   playSound('placement');
 };
@@ -759,6 +769,8 @@ function handleUpgrade(t2){
     else if(t2.key==='aap'){ t2.dmg*=1.5; }
     else if(t2.key==='fakkel'){ t2.dmg*=5.5; t2.rate*=0.85; }
     else if(!t2.farm){ t2.dmg*=1.25; t2.rate*=0.85; }
+    // Atoom: +10% fire bonus per upgrade
+    if(t2.key==='atoom'){ t2.fireBonusMultiplier=(t2.fireBonusMultiplier||1.20)+0.10; }
     t2.upText=90; playSound('upgrade'); return;
   }
 
@@ -785,11 +797,11 @@ function handleUpgrade(t2){
   money-=cost;
   t2.ultimate=true; t2.level=4;
 
-  if(t2.key==='atoom'){ t2.dmg*=3.8; t2.rate*=0.55; t2.nukeTimer=0; }
+  if(t2.key==='atoom'){ t2.dmg*=3.8; t2.rate*=0.55; t2.nukeTimer=0; t2.fireBonusMultiplier=(t2.fireBonusMultiplier||1.20)+0.10; }
   else if(t2.key==='tsjaadinator'){ t2.dmg*=2; t2.rate*=0.25; }
   else if(t2.key==='speer'){ t2.dmg*=3; t2.rate*=1.2; }
   else if(t2.key==='geweer'){ t2.dmg=10; t2.rate*=0.45; }
-  else if(t2.key==='boog'){ t2.dmg*=1.9; t2.rate*=0.50; }
+  else if(t2.key==='boog'){ t2.dmg*=1.9; t2.rate*=0.50; t2.poisonArrows=true; }
   else if(t2.key==='sniper'){ t2.dmg=5000; }
   else if(t2.key==='plaagdokter'){ t2.dmg*=4; t2.slowDuration=999999; t2.plaagDmgBonus=(t2.plaagDmgBonus||1.05)+0.05; }
   else if(t2.key==='aap'){ t2.dmg*=2; }
@@ -937,6 +949,8 @@ function makeEnemy(t2){
     healTimer:0,kameelBoosted:false,kameelBoostTimer:0,kameelLionsSpawned:false,
     // Plaag dokter debuff tracking
     plaagDebuffed:false,
+    // Poison (ultimate boog)
+    poisoned:false, poisonTimer:0, poisonDmgPerSec:0,
     // Bird specific
     isBird: t2.type==='vogel',
     windRadius: t2.type==='vogel' ? 80 : 0,
@@ -1055,6 +1069,22 @@ function update(){
       e.burnTickTimer++;
       if(e.burnTickTimer>=60){ e.burnTickTimer=0; e.hp-=e.burnDamagePerSec; }
       if(e.burnDuration<=0){ e.burning=false; e.burnTickTimer=0; }
+    }
+
+    // Poison update (ultimate boog)
+    if(e.poisoned&&e.poisonTimer>0){
+      e.poisonTimer--;
+      if(!e._poisonTickTimer) e._poisonTickTimer=0;
+      e._poisonTickTimer++;
+      if(e._poisonTickTimer>=60){ e._poisonTickTimer=0; e.hp-=e.poisonDmgPerSec; }
+      if(e.poisonTimer<=0){
+        e.poisoned=false; e._poisonTickTimer=0;
+        // Restore speed slow
+        if(e.poisonSlowApplied){
+          e.speed/=0.90; e.baseSpeed/=0.90;
+          e.poisonSlowApplied=false;
+        }
+      }
     }
 
     if(e.mutation==='accelererende'||e.mutation2==='accelererende'){ const progress=e.i/Math.max(1,path.length-1); e.speed=e.baseSpeedForAccel*(1+progress*3); }
@@ -1179,13 +1209,18 @@ function update(){
     if(tw.key==='plaagdokter' && target.plaagDebuffed){
       finalDmg *= (tw.plaagDmgBonus||1.05);
     }
+    // Atoom: bonus damage vs burning enemies (20% base + 10% per upgrade)
+    if(tw.key==='atoom' && target.burning && target.burnDuration>0){
+      finalDmg *= (tw.fireBonusMultiplier||1.20);
+    }
 
     projectiles.push({
       x:tw.x,y:tw.y,tx:target.x,ty:target.y,target,
       speed:tw.secret&&tw.key==='tsjaadinator'?20:cfg.speed,
       dmg:finalDmg,bomb:cfg.bomb,gold:tw.ultimate,secret:tw.secret||false,towerKey:tw.key,tower:tw,
       fire:tw.fire,
-      fireBurnDmg: tw.fire ? (tw.dmg / 10) : 0
+      fireBurnDmg: tw.fire ? (tw.ultimate ? 80 : 1) : 0,
+      poisonArrow: tw.key==='boog' && tw.poisonArrows
     });
     tw.cool=tw.rate*rateMultiplier*verslomendeSlow;
     if(tw.key==='sniper') playSound('sniper');
@@ -1202,9 +1237,20 @@ function update(){
         if(p.target.slowEndTime<=0||tw2.ultimate){ p.target.speed=p.target.baseSpeed*(1-tw2.slowAmount); p.target.slowEndTime=tw2.slowDuration; }
         p.target.plaagDebuffed = true; // Mark as debuffed for damage bonus
       }
+      // Ultimate boog: poison (10% slow, 10 dmg/s for 3 sec)
+      if(p.poisonArrow){
+        p.target.poisoned=true;
+        p.target.poisonTimer=180; // 3 seconds = 180 frames
+        p.target.poisonDmgPerSec=10;
+        if(!p.target.poisonSlowApplied){
+          p.target.speed*=0.90;
+          p.target.baseSpeed*=0.90;
+          p.target.poisonSlowApplied=true;
+        }
+      }
       if(p.fire){
         p.target.burning=true;
-        p.target.burnDuration=300;
+        p.target.burnDuration=480;
         p.target.burnTickTimer=0;
         p.target.burnDamagePerSec=Math.max(p.target.burnDamagePerSec||0, p.fireBurnDmg);
       }
@@ -1541,9 +1587,31 @@ function drawMutationEffects(e){
   }
   if(e.slowEndTime>0){ ctx.strokeStyle='#9333ea'; ctx.lineWidth=2; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(0,0,e.size+3,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
 
+  // Poison effect (ultimate boog)
+  if(e.poisoned&&e.poisonTimer>0){
+    const t_p = Date.now()*0.005;
+    const alpha = 0.5 + Math.sin(t_p*3)*0.2;
+    // Bubbling poison rings
+    ctx.strokeStyle=`rgba(50,220,50,${alpha})`; ctx.lineWidth=2.5;
+    ctx.shadowBlur=8; ctx.shadowColor='#00ff44';
+    ctx.beginPath(); ctx.arc(0,0,e.size+5+Math.sin(t_p*4)*2,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0;
+    // Poison drip particles
+    for(let pi=0;pi<3;pi++){
+      const angle = t_p*2 + pi*Math.PI*0.67;
+      const px2 = Math.cos(angle)*(e.size+3);
+      const py2 = Math.sin(angle)*(e.size+3) + Math.sin(t_p*4+pi)*3;
+      ctx.fillStyle=`rgba(0,255,80,${0.7+Math.sin(t_p*5+pi)*0.2})`;
+      ctx.beginPath(); ctx.arc(px2,py2,2.5,0,Math.PI*2); ctx.fill();
+    }
+    // Toxic fill overlay
+    ctx.fillStyle=`rgba(0,200,50,0.07)`;
+    ctx.beginPath(); ctx.arc(0,0,e.size+5,0,Math.PI*2); ctx.fill();
+  }
+
   if(e.burning&&e.burnDuration>0){
     const t_fire = Date.now() * 0.008;
-    const flameIntensity = e.burnDuration / 300;
+    const flameIntensity = Math.min(1, e.burnDuration / 180);
     const numFlames = 5;
     for(let fi = 0; fi < numFlames; fi++){
       const angle = (fi / numFlames) * Math.PI * 2 + t_fire * (fi % 2 === 0 ? 1 : -0.7);
@@ -1608,6 +1676,7 @@ function drawEnemyHUD(e){
     const col=mutColors[e.mutation]||'#ffff00'; ctx.fillStyle=col; ctx.font='bold 8px Arial'; ctx.fillText(mutLabel,0,-38);
   }
   if(e.burning&&e.burnDuration>0){ ctx.fillStyle='rgba(255,120,0,0.9)'; ctx.font='bold 8px Arial'; ctx.fillText('🔥'+(e.burnDamagePerSec||0).toFixed(1)+'/s',0,-48); }
+  if(e.poisoned&&e.poisonTimer>0){ ctx.fillStyle='rgba(0,255,80,0.95)'; ctx.font='bold 8px Arial'; ctx.fillText('☠️10/s',e.burning?22:0,-48); }
   // Onstabiele countdown
   const hasOnstabiel = e.mutation==='onstabiele'||e.mutation2==='onstabiele';
   if(hasOnstabiel&&!e.onstabielExploded&&e.onstabielTimer>0){
@@ -1678,7 +1747,7 @@ function drawTower(tw){
 function drawAapTower(tw){ const isUltimate=tw.ultimate; const monkeyColor=isUltimate?'#ffd700':'#8b4513'; const faceColor=isUltimate?'#ffed4e':'#d2691e'; const eyeColor=isUltimate?'#ff4500':'#000'; ctx.fillStyle=monkeyColor; ctx.beginPath(); ctx.ellipse(0,2,10,12,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(0,-6,8,0,Math.PI*2); ctx.fill(); ctx.fillStyle=faceColor; ctx.beginPath(); ctx.ellipse(0,-5,5,6,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle=eyeColor; ctx.beginPath(); ctx.arc(-3,-7,isUltimate?2:1.5,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(3,-7,isUltimate?2:1.5,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=eyeColor; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,-3,2,0,Math.PI); ctx.stroke(); ctx.fillStyle=monkeyColor; ctx.beginPath(); ctx.arc(-7,-6,3,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(7,-6,3,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=monkeyColor; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(-12,6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(12,6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-4,12); ctx.lineTo(-6,18); ctx.stroke(); ctx.beginPath(); ctx.moveTo(4,12); ctx.lineTo(6,18); ctx.stroke(); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(8,8); ctx.quadraticCurveTo(15,5,12,-2); ctx.stroke(); }
 function drawFakkelTower(tw){ ctx.fillStyle=tw.ultimate?'#ff6b35':'#8b4513'; ctx.fillRect(-8,-10,16,20); ctx.fillStyle='#d2b48c'; ctx.beginPath(); ctx.arc(0,-12,6,0,Math.PI*2); ctx.fill(); ctx.fillStyle=tw.ultimate?'#ff4500':'#8b7355'; ctx.fillRect(8,-8,3,12); ctx.fillStyle=tw.ultimate?'#ff0000':'#ff8800'; ctx.beginPath(); ctx.moveTo(9.5,-10); ctx.lineTo(7,-16); ctx.lineTo(9.5,-14); ctx.lineTo(12,-16); ctx.closePath(); ctx.fill(); if(tw.level>=2){ ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.arc(9.5,-13,2,0,Math.PI*2); ctx.fill(); } if(tw.level>=3){ ctx.fillStyle='#ff4500'; ctx.beginPath(); ctx.moveTo(9.5,-16); ctx.lineTo(6,-22); ctx.lineTo(9.5,-19); ctx.lineTo(13,-22); ctx.closePath(); ctx.fill(); } if(tw.ultimate){ ctx.strokeStyle='#ff0000'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; ctx.fillStyle='rgba(255,50,0,0.8)'; ctx.beginPath(); ctx.moveTo(9.5,-20); ctx.lineTo(5,-30); ctx.lineTo(9.5,-26); ctx.lineTo(14,-30); ctx.closePath(); ctx.fill(); } }
 function drawSpeerTower(tw){ ctx.fillStyle=tw.ultimate?'#9b59b6':'#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=tw.ultimate?'#8e44ad':'#e0e0e0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#dcd6f7':'#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill(); if(tw.level>=2){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-6); ctx.lineTo(8,-6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,-6); ctx.lineTo(4,-9); ctx.lineTo(4,-3); ctx.fill(); } if(tw.level>=3){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,6); ctx.lineTo(8,6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(4,3); ctx.lineTo(4,9); ctx.fill(); } }
-function drawBoogTower(tw){ ctx.strokeStyle=tw.ultimate?'#3498db':'#c68642'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); ctx.stroke(); ctx.strokeStyle=tw.ultimate?'#5dade2':'#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#21618c':'#8b5a2b'; ctx.fillRect(-3,-3,6,6); if(tw.level>=2){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } if(tw.level>=3){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } }
+function drawBoogTower(tw){ ctx.strokeStyle=tw.ultimate?'#00ff44':'#c68642'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); if(tw.ultimate){ctx.shadowBlur=10;ctx.shadowColor='#00ff44';} ctx.stroke(); ctx.shadowBlur=0; ctx.strokeStyle=tw.ultimate?'#aaffcc':'#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#006622':'#8b5a2b'; ctx.fillRect(-3,-3,6,6); if(tw.level>=2){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } if(tw.level>=3){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } }
 function drawPlaagdokterTower(tw){ ctx.fillStyle=tw.ultimate?'#ffd700':'#e91e63'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillRect(-2,-7,4,14); ctx.fillRect(-7,-2,14,4); if(tw.level>=2){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(8,-8); ctx.lineTo(11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(10,-12,2,2); } if(tw.level>=3){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(-11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(-12,-12,2,2); ctx.beginPath(); ctx.moveTo(8,8); ctx.lineTo(11,11); ctx.stroke(); ctx.fillRect(10,10,2,2); } if(tw.ultimate){ ctx.strokeStyle='#ffed4e'; ctx.lineWidth=3; ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; } }
 function drawGeweerTower(tw){ ctx.fillStyle=tw.ultimate?'#2c3e50':'#444'; ctx.fillRect(-8,-6,16,12); ctx.fillStyle=tw.ultimate?'#2980b9':'#777'; ctx.fillRect(8,-2,10,4); ctx.fillStyle=tw.ultimate?'#ecf0f1':'#999'; ctx.fillRect(-4,-14,8,6); if(tw.level>=2){ ctx.fillStyle='#777'; ctx.fillRect(-7,3,2,8); ctx.fillRect(5,3,2,8); } if(tw.level>=3){ ctx.strokeStyle='#888'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI); ctx.stroke(); } }
 function drawSniperTower(tw){ ctx.fillStyle=tw.ultimate?'#01579b':'#0d47a1'; ctx.fillRect(-7,-6,14,12); ctx.fillStyle=tw.ultimate?'#263238':'#37474f'; ctx.fillRect(7,-2,18,4); ctx.fillStyle=tw.ultimate?'#ffd700':'#546e7a'; ctx.beginPath(); ctx.arc(-2,-9,4,0,Math.PI*2); ctx.fill(); ctx.fillRect(-4,-10,4,2); if(tw.level>=2){ ctx.fillStyle=tw.ultimate?'#01579b':'#1565c0'; ctx.fillRect(20,-1,5,2); } if(tw.level>=3){ ctx.fillStyle=tw.ultimate?'#ffd700':'#78909c'; ctx.fillRect(-7,6,3,6); ctx.fillRect(4,6,3,6); } if(tw.ultimate){ ctx.strokeStyle='#00e5ff'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.strokeRect(-8,-7,16,14); ctx.globalAlpha=1; } }
@@ -1762,7 +1831,20 @@ function drawProjectiles(){
     else if(p.towerKey==='sniper'){ ctx.fillStyle=p.gold?'#ffd700':'#ffeb3b'; ctx.beginPath(); ctx.ellipse(0,0,4,1.5,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=p.gold?'#ff6b35':'#ff9800'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(-8,0); ctx.stroke(); }
     else if(p.towerKey==='atoom'){ ctx.fillStyle=p.gold?'#ffd700':'#2d5016'; ctx.strokeStyle=p.gold?'#ffed4e':'#4caf50'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill(); ctx.stroke(); }
     else if(p.towerKey==='speer'){ ctx.strokeStyle=p.gold?'#ffd700':'#8b7355'; ctx.fillStyle=p.gold?'#ffd700':'#c0c0c0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(6,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(11,-3); ctx.lineTo(11,3); ctx.closePath(); ctx.fill(); }
-    else if(p.towerKey==='boog'){ ctx.strokeStyle=p.gold?'#ffd700':'#8b4513'; ctx.fillStyle=p.gold?'#ffd700':'#696969'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(8,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(11,-2.5); ctx.lineTo(11,2.5); ctx.closePath(); ctx.fill(); }
+    else if(p.towerKey==='boog'){
+      ctx.strokeStyle=p.poisonArrow?'#00ff44':(p.gold?'#ffd700':'#8b4513');
+      ctx.fillStyle=p.poisonArrow?'#00cc33':(p.gold?'#ffd700':'#696969');
+      ctx.lineWidth=1.5;
+      if(p.poisonArrow){ ctx.shadowBlur=6; ctx.shadowColor='#00ff44'; }
+      ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(8,0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(11,-2.5); ctx.lineTo(11,2.5); ctx.closePath(); ctx.fill();
+      // Poison drip on arrow
+      if(p.poisonArrow){
+        ctx.fillStyle='rgba(0,255,80,0.8)';
+        ctx.beginPath(); ctx.arc(0,1,2,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur=0;
+      }
+    }
     else if(p.towerKey==='tsjaadinator'){
       if(p.secret){ ctx.fillStyle='rgba(255,215,0,0.85)'; ctx.strokeStyle='rgba(255,102,0,0.7)'; ctx.lineWidth=2; ctx.shadowBlur=8; ctx.shadowColor='rgba(255,215,0,0.5)'; ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(6,-4); ctx.lineTo(-8,-3); ctx.lineTo(-10,0); ctx.lineTo(-8,3); ctx.lineTo(6,4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.shadowBlur=0; }
       else { ctx.strokeStyle=p.gold?'#ffd700':'#00bcd4'; ctx.fillStyle=p.gold?'#ffd700':'#00e5ff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(7,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(7,0); ctx.lineTo(12,-3); ctx.lineTo(12,3); ctx.closePath(); ctx.fill(); }

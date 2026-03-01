@@ -443,7 +443,7 @@ const towerTypes={
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
   aap:{range:120,rate:70,dmg:1.9,speed:0,cost:400,ultCost:2500,monkey:true},
-  fakkel:{range:95,rate:45,dmg:18,speed:3,cost:150,ultCost:4000,fire:true}
+  fakkel:{range:95,rate:45,dmg:5,speed:3,cost:150,ultCost:4000,fire:true}
 };
 
 // Helper: get atoom nuke cooldown in frames for a given tower
@@ -571,7 +571,7 @@ function handleUpgrade(t2){
   if(t2.key==='atoom'){ t2.dmg*=3.8; t2.rate*=0.55; t2.nukeTimer=0; }
   else if(t2.key==='tsjaadinator'){ t2.dmg*=2; t2.rate*=0.25; }
   else if(t2.key==='speer'){ t2.dmg*=3; t2.rate*=1.2; }
-  else if(t2.key==='geweer'){ t2.dmg=12; t2.rate*=0.45; } // CHANGE: ultimate soldaat = 12 dmg
+  else if(t2.key==='geweer'){ t2.dmg=10; t2.rate*=0.45; } // CHANGE: ultimate soldaat = 12 dmg
   else if(t2.key==='boog'){ t2.dmg*=1.9; t2.rate*=0.50; }
   else if(t2.key==='sniper'){ t2.dmg=5000; }
   else if(t2.key==='plaagdokter'){ t2.dmg*=4; t2.slowDuration=999999; }
@@ -887,7 +887,7 @@ function update(){
         p.target.burning=true;
         p.target.burnDuration=300; // 5 seconds
         p.target.burnTickTimer=0;
-        // burnDamagePerSec = dmg / 10 (refreshes on new hit, or accumulates if stronger)
+        // burnDamagePerSec = dmg / 4 (refreshes on new hit, or accumulates if stronger)
         p.target.burnDamagePerSec=Math.max(p.target.burnDamagePerSec||0, p.fireBurnDmg);
       }
       if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});

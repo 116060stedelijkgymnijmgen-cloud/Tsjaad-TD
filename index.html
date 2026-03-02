@@ -562,7 +562,7 @@ function getNextLevelStats(tw){
     else if(!tw.farm){ dmg = tw.dmg * 1.25; rate = tw.rate * 0.85; }
   } else if(!tw.ultimate){
     // Ultimate upgrade
-    if(tw.key==='atoom'){ dmg = tw.dmg * 3.8; rate = tw.rate * 0.55; }
+    if(tw.key==='atoom'){ dmg = tw.dmg * 2.8; rate = tw.rate * 0.55; }
     else if(tw.key==='tsjaadinator'){ dmg = tw.dmg * 2; rate = tw.rate * 0.25; }
     else if(tw.key==='speer'){ dmg = tw.dmg * 3; rate = tw.rate * 1.2; }
     else if(tw.key==='geweer'){ dmg = 10; rate = tw.rate * 0.45; }
@@ -785,7 +785,7 @@ function handleUpgrade(t2){
         totalCashRemoved += getTowerTotalInvestedCost(tw);
       }
       towers = towers.filter(tw => tw === t2);
-      const bonusMultiplier = 1 + (totalCashRemoved / 1000 * 0.02);
+      const bonusMultiplier = 1 + (totalCashRemoved / 1000 * 0.05);
       t2.secretDmgBonus = bonusMultiplier;
       t2.secret=true; t2.level=5;
       t2.upText=200; playSound('upgrade');
@@ -1323,7 +1323,7 @@ function update(){
 // ===== NUKE STRIKE =====
 function triggerNukeStrike(tower){
   playSound('explosion');
-  for(const e of enemies){ if(!e.beschermdActive) e.hp-=5000; }
+  for(const e of enemies){ if(!e.beschermdActive) e.hp-=100; }
   const cx=canvas.width/2, cy=canvas.height/2;
   nukeStrikes.push({x:cx,y:cy,r:10,maxR:600,t:90,maxT:90,phase:'expand'});
   for(const e of enemies){ explosions.push({x:e.x,y:e.y,r:8,t:30,gold:true}); }

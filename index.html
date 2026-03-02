@@ -451,7 +451,7 @@ const towerTypes={
   speer:{range:90,rate:40,dmg:3.6,speed:3.2,cost:80,ultCost:800},
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1500},
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
-  geweer:{range:240,rate:12,dmg:7.5,speed:7,cost:550,ultCost:5000},
+  geweer:{range:240,rate:12,dmg:3.8,speed:7,cost:550,ultCost:5000},
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:5000,ultCost:28000},
   tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000,secretCost:100000},
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
@@ -767,7 +767,7 @@ function handleUpgrade(t2){
     if(t2.key==='sniper'){ t2.dmg+=200; }
     else if(t2.key==='plaagdokter'){ t2.dmg*=1.25; t2.rate*=0.85; t2.slowAmount+=0.05; t2.plaagDmgBonus=(t2.plaagDmgBonus||1.05)+0.05; }
     else if(t2.key==='aap'){ t2.dmg*=1.5; }
-    else if(t2.key==='fakkel'){ t2.dmg*=5.5; t2.rate*=0.85; }
+    else if(t2.key==='fakkel'){ t2.dmg*=1.25; t2.rate*=0.85; }
     else if(!t2.farm){ t2.dmg*=1.25; t2.rate*=0.85; }
     // Atoom: +10% fire bonus per upgrade
     if(t2.key==='atoom'){ t2.fireBonusMultiplier=(t2.fireBonusMultiplier||1.20)+0.10; }

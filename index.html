@@ -97,7 +97,7 @@
   .restartBtn { padding: 18px 50px; font-size: 28px; margin-top: 35px; border: 4px solid #fff; border-radius: 15px; cursor: pointer; font-weight: bold; background: rgba(0,0,0,0.6); color: #fff; transition: all 0.3s; }
   .restartBtn:hover { transform: scale(1.1); background: rgba(255,255,255,0.2); box-shadow: 0 0 30px rgba(255,255,255,0.5); }
   /* Tower tooltip overlay */
-  #towerTooltip { position: fixed; background: linear-gradient(160deg,rgba(18,12,2,0.98),rgba(30,20,5,0.97)); border: 2px solid #daa520; border-radius: 14px; padding: 13px 15px 10px; pointer-events: none; z-index: 500; display: none; min-width: 230px; max-width: 270px; box-shadow: 0 6px 28px rgba(0,0,0,0.9), 0 0 12px rgba(218,165,32,0.15); }
+  #towerTooltip { position: fixed; background: linear-gradient(160deg,rgba(18,12,2,0.98),rgba(30,20,5,0.97)); border: 2px solid #daa520; border-radius: 14px; padding: 13px 15px 10px; pointer-events: none; z-index: 500; display: none; min-width: 230px; max-width: 280px; box-shadow: 0 6px 28px rgba(0,0,0,0.9), 0 0 12px rgba(218,165,32,0.15); }
   #towerTooltip .tt-name { font-size: 14px; font-weight: bold; color: #ffd700; margin-bottom: 2px; letter-spacing: 1px; }
   #towerTooltip .tt-level { font-size: 11px; color: #cd853f; margin-bottom: 8px; letter-spacing: 0.5px; }
   #towerTooltip .tt-divider { border: none; border-top: 1px solid rgba(218,165,32,0.25); margin: 7px 0; }
@@ -111,6 +111,7 @@
   #towerTooltip .tt-upgrade-header.ult { color: #ffd700; }
   #towerTooltip .tt-upgrade-header.max { color: #666; }
   #towerTooltip .tt-sell { font-size: 10px; color: #ff6b6b; margin-top: 6px; border-top: 1px solid rgba(255,100,100,0.2); padding-top: 6px; }
+  #towerTooltip .tt-passive { font-size: 10px; color: #aaffcc; margin-top: 4px; border-top: 1px solid rgba(100,255,150,0.2); padding-top: 4px; font-style: italic; }
   /* Sell flash */
   #sellFlash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,200,0,0.18); pointer-events: none; z-index: 998; display: none; animation: sellFade 0.4s ease-out; }
   @keyframes sellFade { 0% { opacity: 1; } 100% { opacity: 0; } }
@@ -378,7 +379,6 @@ let nuclearExplosions = [];
 let towersSlowedUntil = new Map();
 let visualEffects = [];
 let nukeStrikes = [];
-// NEW: Bird eggs on path
 let birdEggs = [];
 
 // ===== AUDIO =====
@@ -402,7 +402,7 @@ function playSound(soundName) {
   if(sounds[soundName]){ const sound=sounds[soundName].cloneNode(); const baseVol=soundName==='sniper'?0.4:(soundName==='monkey'?0.6:0.5); sound.volume=baseVol*sfxVolume*2; sound.play().catch(e=>{}); }
 }
 
-// ===== MUTATIONS (now includes onstabiele) =====
+// ===== MUTATIONS =====
 const MUTATIONS = ['ondode','snelle','hydra','random','dodelijke','radioactieve','metalen','kogelvrije','beschermde','terugkerende','arme','Nutteloze','verslomende','accelererende','genezende','elite','onstabiele'];
 function pickMutation(round, mode) {
   let available = MUTATIONS.filter(m => {
@@ -441,7 +441,6 @@ function startGame(mode) {
 }
 
 // ===== TOWERS =====
-// Base ranges stored per tower type
 const towerBaseRanges = {
   speer:90, boog:130, plaagdokter:140, geweer:240, sniper:550,
   tsjaadinator:180, atoom:180, katoen:0, aap:120, fakkel:95
@@ -452,19 +451,24 @@ const towerTypes={
   boog:{range:130,rate:55,dmg:7,speed:2,cost:125,ultCost:1500},
   plaagdokter:{range:140,rate:40,dmg:8,speed:3.5,cost:300,ultCost:2000,slow:true},
   geweer:{range:240,rate:12,dmg:3.8,speed:7,cost:550,ultCost:5000},
+  // CHANGED: sniper secretCost removed, cost stays same
   sniper:{range:550,rate:300,dmg:300,speed:10,cost:5000,ultCost:28000},
-  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000,secretCost:100000},
+  // CHANGED: secretCost is now 300000
+  tsjaadinator:{range:180,rate:5,dmg:3.8,speed:8,cost:2500,ultCost:15000,secretCost:300000},
   atoom:{range:180,rate:120,dmg:25,speed:3,cost:600,bomb:true,ultCost:3500},
   katoen:{range:0,rate:9999,dmg:0,speed:0,cost:950,farm:true,ultCost:4000},
   aap:{range:120,rate:70,dmg:1.9,speed:0,cost:400,ultCost:2500,monkey:true},
   fakkel:{range:95,rate:45,dmg:3,speed:3,cost:150,ultCost:4000,fire:true}
 };
 
-// Get the effective range for a tower given its current upgrade level
 function getTowerRange(tw) {
   const baseRange = towerBaseRanges[tw.key] || towerTypes[tw.key].range || 0;
-  // Each upgrade level adds 5% range (levels 1-4)
-  return baseRange * (1 + tw.level * 0.05);
+  let range = baseRange * (1 + tw.level * 0.05);
+  // NEW: Apply speer ultimate range boost if active
+  if(tw.speerRangeBoostUntil && Date.now() < tw.speerRangeBoostUntil){
+    range *= 1.30;
+  }
+  return range;
 }
 
 function getAtoomNukeCooldown(tw) {
@@ -483,9 +487,7 @@ const animalTypes=[
   {name:'Cheetah',hp:5.6,speed:1.485,size:14,reward:15,type:'cheetah',minRound:15},
   {name:'Nijlpaard',hp:28,speed:0.4,size:22,reward:30,type:'nijlpaard',minRound:12},
   {name:'Kameel',hp:28,speed:0.4,size:20,reward:35,type:'kameel',minRound:18},
-  // NEW: Robo Leeuw (unlocks after round 15) - has hp like olifant, speed like leeuw, immune to guns/sniper AND radioactive on death
   {name:'Robo Leeuw',hp:20,speed:1.25,size:16,reward:40,type:'roboleeuw',minRound:16},
-  // NEW: Vogel (unlocks round 16 too) - flies, immune to bananas, has wind aura
   {name:'Vogel',hp:10,speed:1.4,size:13,reward:30,type:'vogel',minRound:16},
 ];
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
@@ -542,10 +544,8 @@ function getTowerTotalInvestedCost(tw){
   return total;
 }
 
-// Helper: simulate what stats look like after ONE more upgrade
 function getNextLevelStats(tw){
   const cfg = towerTypes[tw.key];
-  // Returns {dmg, rate, range, slowAmount, special} for next upgrade
   let dmg = tw.dmg, rate = tw.rate, range = getTowerRange(tw);
   let slow = tw.slowAmount || null;
   let plaagBonus = tw.plaagDmgBonus || null;
@@ -554,19 +554,21 @@ function getNextLevelStats(tw){
   const nextRange = nextRangeBase * (1 + nextLevel * 0.05);
 
   if(tw.level < 3){
-    // Normal upgrade
     if(tw.key==='sniper'){ dmg = tw.dmg + 200; }
     else if(tw.key==='plaagdokter'){ dmg = tw.dmg * 1.25; rate = tw.rate * 0.85; slow = (tw.slowAmount||0.20) + 0.05; plaagBonus = (tw.plaagDmgBonus||1.05) + 0.05; }
     else if(tw.key==='aap'){ dmg = tw.dmg * 1.5; }
     else if(tw.key==='fakkel'){ dmg = tw.dmg * 5.5; rate = tw.rate * 0.85; }
     else if(!tw.farm){ dmg = tw.dmg * 1.25; rate = tw.rate * 0.85; }
   } else if(!tw.ultimate){
-    // Ultimate upgrade
+    const isUltNext = true;
+    // Ultimate upgrades
     if(tw.key==='atoom'){ dmg = tw.dmg * 2.8; rate = tw.rate * 0.55; }
     else if(tw.key==='tsjaadinator'){ dmg = tw.dmg * 2; rate = tw.rate * 0.25; }
+    // UPDATED: speer ultimate now shows range boost passive
     else if(tw.key==='speer'){ dmg = tw.dmg * 3; rate = tw.rate * 1.2; }
     else if(tw.key==='geweer'){ dmg = 10; rate = tw.rate * 0.45; }
     else if(tw.key==='boog'){ dmg = tw.dmg * 1.9; rate = tw.rate * 0.50; }
+    // UPDATED: sniper ultimate shows slow effect
     else if(tw.key==='sniper'){ dmg = 5000; }
     else if(tw.key==='plaagdokter'){ dmg = tw.dmg * 4; slow = null; plaagBonus = (tw.plaagDmgBonus||1.05) + 0.05; }
     else if(tw.key==='aap'){ dmg = tw.dmg * 2; }
@@ -575,7 +577,6 @@ function getNextLevelStats(tw){
   return { dmg, rate, range: nextRange, slow, plaagBonus };
 }
 
-// Format fire rate: frames-per-shot → shots per second
 function fmtRate(frames){ return (60/frames).toFixed(2)+'/s'; }
 function fmtDmg(d){ return d >= 1000 ? (d/1000).toFixed(1)+'K' : d.toFixed(1); }
 function fmtRange(r){ return Math.round(r)+''; }
@@ -609,18 +610,15 @@ function updateTooltip(tw, cx, cy){
   let next = null;
   if(canUpgrade && !isMaxed) next = getNextLevelStats(tw);
 
-  // Build stats HTML
   let html = '';
 
   if(tw.farm){
-    // Katoen Plantage: show income
     const curIncome = 80 + tw.level*40 + (tw.ultimate?500:0);
     const nextIncome = next ? (80 + (tw.level+1)*40 + (isUltNext?500:0)) : null;
     html += `<div class="tt-stats-title">📊 Huidige Stats</div>`;
     html += statRow('💰 Inkomen/ronde', `€${curIncome}`, nextIncome?`€${nextIncome}`:null);
     html += statRow('📏 Range', fmtRange(effRange), next?fmtRange(next.range):null);
   } else if(tw.monkey){
-    // Wilde Aap: dmg per banana
     html += `<div class="tt-stats-title">📊 Huidige Stats</div>`;
     html += statRow('🍌 Dmg/banaan', fmtDmg(tw.dmg*3), next?fmtDmg(next.dmg*3):null);
     html += statRow('📏 Gebiedsradius', fmtRange(effRange), next?fmtRange(next.range):null);
@@ -658,6 +656,18 @@ function updateTooltip(tw, cx, cy){
       html += statRow('🔥 Brand dmg/s', burnDmg, nextBurnDmg !== burnDmg ? nextBurnDmg : null);
       html += statRow('⏱️ Brand duur', tw.ultimate ? '8s' : '8s', null);
     }
+    // UPDATED: Sniper ultimate - show slow passive
+    if(tw.key==='sniper' && (tw.ultimate || isUltNext)){
+      const curSlow = tw.ultimate ? '50% · 0.3s' : '—';
+      const nextSlow2 = isUltNext ? '50% · 0.3s' : null;
+      html += statRow('❄️ Raakshot slow', curSlow, !tw.ultimate ? nextSlow2 : null);
+    }
+    // UPDATED: Speer ultimate - show range aura passive
+    if(tw.key==='speer' && (tw.ultimate || isUltNext)){
+      const curAura = tw.ultimate ? '+30% range' : '—';
+      const nextAura = isUltNext ? '+30% range' : null;
+      html += statRow('📡 Range aura', curAura, !tw.ultimate ? nextAura : null);
+    }
   }
 
   // Upgrade section
@@ -673,10 +683,30 @@ function updateTooltip(tw, cx, cy){
   } else if(!tw.ultimate){
     const cost = cfg.ultCost;
     const canAfford = money >= cost;
-    html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#f44'}">⭐ ULTIMATE — €${cost}</div>`;
+    // UPDATED: speer and sniper show their new passives in upgrade description
+    if(tw.key==='speer'){
+      html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#f44'}">⭐ ULTIMATE — €${cost} | 📡 +30% range aura</div>`;
+    } else if(tw.key==='sniper'){
+      html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#f44'}">⭐ ULTIMATE — €${cost} | ❄️ Shot slow 50%</div>`;
+    } else {
+      html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#ف44'}">⭐ ULTIMATE — €${cost}</div>`;
+    }
   } else if(tw.key==='tsjaadinator'){
-    const canAfford = money >= 100000;
-    html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#f44'}">👁️ GOD MODE — €100,000</div>`;
+    // UPDATED: Secret cost is now 300000, no tower removal
+    const canAfford = money >= 300000;
+    html += `<div class="tt-upgrade-header ult" style="color:${canAfford?'#ffd700':'#f44'}">👁️ GOD MODE — €300,000</div>`;
+    html += `<div style="font-size:9px;color:#aaa;margin-top:2px;">⚠️ Haalt GEEN torens weg</div>`;
+  }
+
+  // Passive description section for active ultimates
+  if(tw.ultimate){
+    if(tw.key==='speer'){
+      const activeBoost = tw.speerRangeBoostUntil && Date.now() < tw.speerRangeBoostUntil;
+      html += `<div class="tt-passive">📡 Range Aura: geeft alle torens in radius +30% range voor 3s bij schot${activeBoost?' <span style="color:#4fc3f7">[ACTIEF]</span>':''}</div>`;
+    }
+    if(tw.key==='sniper'){
+      html += `<div class="tt-passive">❄️ Raakshot: vertraagt doel 50% voor 0.3 seconde</div>`;
+    }
   }
 
   document.getElementById('tt-stats-section').innerHTML = html;
@@ -684,10 +714,9 @@ function updateTooltip(tw, cx, cy){
   const sellVal = Math.floor(getTowerTotalInvestedCost(tw) * 0.8);
   document.getElementById('tt-sell').textContent = `🗑️ [Backspace] Verkopen: €${sellVal}`;
 
-  // Position tooltip - smart placement
   let tx = cx + 18;
   let ty = cy - 10;
-  const ttW = 270, ttH = 240;
+  const ttW = 280, ttH = 260;
   if(tx + ttW > window.innerWidth) tx = cx - ttW - 10;
   if(ty + ttH > window.innerHeight) ty = cy - ttH + 10;
   if(ty < 0) ty = 5;
@@ -695,7 +724,6 @@ function updateTooltip(tw, cx, cy){
   tooltipEl.style.top = ty + 'px';
 }
 
-// Sell tower on backspace
 document.addEventListener('keydown', e => {
   if(e.key === 'Backspace' && hoveredTower && !gameWon){
     e.preventDefault();
@@ -711,7 +739,6 @@ function sellTower(tw){
   hoveredTower = null;
   tooltipEl.style.display = 'none';
   playSound('sell');
-  // Flash effect
   const flash = document.getElementById('sellFlash');
   flash.style.display = 'block';
   setTimeout(()=>{ flash.style.display='none'; }, 400);
@@ -738,12 +765,12 @@ canvas.onclick=e=>{
     monkey:cfg.monkey||false,fire:cfg.fire||false,
     monkeyTimer:0,boosted:false,boostEndTime:0,
     nukeTimer:0,
-    // Track how much has been invested for sell price
-    investedCost: cfg.cost
+    investedCost: cfg.cost,
+    speerRangeBoostUntil: 0,
   };
   if(selectedTower==='plaagdokter'){ newTower.slowAmount=0.20; newTower.slowDuration=180; newTower.plaagDmgBonus=1.05; }
   if(selectedTower==='fakkel'){ newTower.fireChance=1.0; }
-  if(selectedTower==='atoom'){ newTower.fireBonusMultiplier=1.20; } // 20% bonus vs burning enemies
+  if(selectedTower==='atoom'){ newTower.fireBonusMultiplier=1.20; }
   towers.push(newTower);
   playSound('placement');
 };
@@ -761,37 +788,31 @@ function handleUpgrade(t2){
     if(money<upgradeCost) return;
     money-=upgradeCost;
     t2.level++;
-    // +5% range per upgrade (stored on tower as range multiplier)
-    // We use getTowerRange() which reads level, no extra storage needed
 
     if(t2.key==='sniper'){ t2.dmg+=200; }
     else if(t2.key==='plaagdokter'){ t2.dmg*=1.25; t2.rate*=0.85; t2.slowAmount+=0.05; t2.plaagDmgBonus=(t2.plaagDmgBonus||1.05)+0.05; }
     else if(t2.key==='aap'){ t2.dmg*=1.5; }
     else if(t2.key==='fakkel'){ t2.dmg*=1.25; t2.rate*=0.85; }
     else if(!t2.farm){ t2.dmg*=1.25; t2.rate*=0.85; }
-    // Atoom: +10% fire bonus per upgrade
     if(t2.key==='atoom'){ t2.fireBonusMultiplier=(t2.fireBonusMultiplier||1.20)+0.10; }
     t2.upText=90; playSound('upgrade'); return;
   }
 
   if(t2.ultimate){
     if(t2.key==='tsjaadinator'&&!t2.secret){
-      const sCost=towerTypes.tsjaadinator.secretCost;
+      // CHANGED: Now costs 300000, and does NOT remove other towers
+      const sCost=300000;
       if(money<sCost) return;
       money-=sCost;
-      let totalCashRemoved = 0;
-      const towersToRemove = towers.filter(tw => tw !== t2);
-      for(const tw of towersToRemove){
-        totalCashRemoved += getTowerTotalInvestedCost(tw);
-      }
-      towers = towers.filter(tw => tw === t2);
-      const bonusMultiplier = 1 + (totalCashRemoved / 1000 * 0.05);
+      // NO tower removal - just empower the Tsjaadinator
+      const bonusMultiplier = 5.0; // Fixed large bonus since no removal mechanic
       t2.secretDmgBonus = bonusMultiplier;
       t2.secret=true; t2.level=5;
       t2.upText=200; playSound('upgrade');
     }
     return;
   }
+
   const cost=towerTypes[t2.key].ultCost;
   if(money<cost) return;
   money-=cost;
@@ -799,10 +820,12 @@ function handleUpgrade(t2){
 
   if(t2.key==='atoom'){ t2.dmg*=3.8; t2.rate*=0.55; t2.nukeTimer=0; t2.fireBonusMultiplier=(t2.fireBonusMultiplier||1.20)+0.10; }
   else if(t2.key==='tsjaadinator'){ t2.dmg*=2; t2.rate*=0.25; }
-  else if(t2.key==='speer'){ t2.dmg*=3; t2.rate*=1.2; }
+  // UPDATED: speer ultimate also buffs nearby towers range
+  else if(t2.key==='speer'){ t2.dmg*=3; t2.rate*=1.2; t2.speerRangeBoostUntil=0; }
   else if(t2.key==='geweer'){ t2.dmg=10; t2.rate*=0.45; }
   else if(t2.key==='boog'){ t2.dmg*=1.9; t2.rate*=0.50; t2.poisonArrows=true; }
-  else if(t2.key==='sniper'){ t2.dmg=5000; }
+  // UPDATED: sniper ultimate enables slow on hit
+  else if(t2.key==='sniper'){ t2.dmg=5000; t2.sniperSlowOnHit=true; }
   else if(t2.key==='plaagdokter'){ t2.dmg*=4; t2.slowDuration=999999; t2.plaagDmgBonus=(t2.plaagDmgBonus||1.05)+0.05; }
   else if(t2.key==='aap'){ t2.dmg*=2; }
   else if(t2.key==='fakkel'){ t2.dmg*=30; t2.fireChance=1.0; }
@@ -849,7 +872,7 @@ function getMaxRound(){
   if(gameMode==='boss') return 1;
   if(gameMode==='mutatie') return 35;
   if(gameMode==='plaag') return 999;
-  if(gameMode==='tsjaadplus') return 50; // CHANGED from 40 to 50
+  if(gameMode==='tsjaadplus') return 50;
   return 30;
 }
 
@@ -932,7 +955,6 @@ function applyMutationToEnemy(enemy,mutation,hp,speed,base){
   if(mutation==='terugkerende'){ enemy.terugkerendeCount=(enemy.terugkerendeCount||0)+3; }
   if(mutation==='accelererende'){ enemy.baseSpeedForAccel=speed; enemy.accelFactor=0; }
   if(mutation==='genezende'){ enemy.healTimer=0; }
-  // NEW: onstabiele - set countdown timer 5 seconds = 300 frames, then auto-explode
   if(mutation==='onstabiele'){ enemy.onstabielTimer=300; enemy.onstabielExploded=false; }
 }
 
@@ -947,22 +969,15 @@ function makeEnemy(t2){
     mutation:null,mutation2:null,beschermdShieldUsed:false,beschermdActive:false,
     beschermdTimer:0,terugkerendeCount:0,accelFactor:0,baseSpeedForAccel:t2.speed,
     healTimer:0,kameelBoosted:false,kameelBoostTimer:0,kameelLionsSpawned:false,
-    // Plaag dokter debuff tracking
     plaagDebuffed:false,
-    // Poison (ultimate boog)
     poisoned:false, poisonTimer:0, poisonDmgPerSec:0,
-    // Bird specific
     isBird: t2.type==='vogel',
     windRadius: t2.type==='vogel' ? 80 : 0,
     isChildBird: t2.isChildBird||false,
-    // Egg laid flag
     eggLaid: false,
-    // Robo leeuw
     isRoboLeeuw: t2.type==='roboleeuw',
-    // Onstabiele timer
     onstabielTimer: 0,
     onstabielExploded: false,
-    onstabielKilledBefore: false, // if killed before timer = no explosion
   };
   return e;
 }
@@ -992,13 +1007,11 @@ function saveAndShowLeaderboard(score,mode='plaag'){
   lb.forEach((e,i)=>{ const isPlayer=e.id===entry.id; const div=document.createElement('div'); div.className='leaderboard-entry'+(isPlayer?' player':''); div.innerHTML=`<span><strong>#${i+1}</strong> - Ronde ${e.score}</span><span style="opacity:0.7">${e.date}</span>`; listEl.appendChild(div); });
 }
 
-// Helper: trigger radioactive/onstabiele nuclear explosion
 function triggerEnemyNuclearExplosion(e, mega=false){
   playSound('explosion');
   const range = mega ? 150 : 90;
   nuclearExplosions.push({x:e.x,y:e.y,range:range,t:120,maxT:120});
   visualEffects.push({type:'nuclear',x:e.x,y:e.y,r:5,maxR:range,t:60,maxT:60});
-  // Damage nearby enemies
   for(const other of enemies){
     if(other!==e&&Math.hypot(other.x-e.x,other.y-e.y)<range){
       if(!other.beschermdActive) other.hp -= mega ? 9999999 : other.max * 0.5;
@@ -1021,41 +1034,27 @@ function update(){
   }
 
   // Update bird eggs
-  for(const egg of birdEggs){
-    egg.timer--;
-    // Check if hit by projectiles - handled in projectile update below
-  }
+  for(const egg of birdEggs){ egg.timer--; }
 
-  // Bird wind aura - boost nearby enemies speed
+  // Bird wind aura
   for(const bird of enemies){
     if(!bird.isBird || bird.hp <= 0) continue;
     const radius = bird.windRadius || 80;
     for(const other of enemies){
       if(other===bird||other.hp<=0) continue;
       const dist = Math.hypot(other.x-bird.x, other.y-bird.y);
-      if(dist < radius){
-        other.birdWindBoosted = true;
-        other.birdWindTimer = 5; // refresh every frame while in range
-      }
+      if(dist < radius){ other.birdWindBoosted = true; other.birdWindTimer = 5; }
     }
   }
 
   for(const e of enemies){
-    // Bird wind boost decay
     if(e.birdWindTimer > 0) e.birdWindTimer--;
     else e.birdWindBoosted = false;
 
-    // Onstabiele mutation timer
     const hasOnstabiel = e.mutation==='onstabiele' || e.mutation2==='onstabiele';
     if(hasOnstabiel && !e.onstabielExploded && e.onstabielTimer > 0){
       e.onstabielTimer--;
-      if(e.onstabielTimer <= 0){
-        // AUTO-EXPLODE with mega explosion
-        e.onstabielExploded = true;
-        e.hp = 0;
-        triggerEnemyNuclearExplosion(e, true);
-        continue;
-      }
+      if(e.onstabielTimer <= 0){ e.onstabielExploded = true; e.hp = 0; triggerEnemyNuclearExplosion(e, true); continue; }
     }
 
     if(e.mutation==='beschermde'&&!e.beschermdShieldUsed&&e.hp<=e.max*0.5){ e.beschermdShieldUsed=true; e.beschermdActive=true; e.beschermdTimer=180; }
@@ -1071,7 +1070,6 @@ function update(){
       if(e.burnDuration<=0){ e.burning=false; e.burnTickTimer=0; }
     }
 
-    // Poison update (ultimate boog)
     if(e.poisoned&&e.poisonTimer>0){
       e.poisonTimer--;
       if(!e._poisonTickTimer) e._poisonTickTimer=0;
@@ -1079,11 +1077,7 @@ function update(){
       if(e._poisonTickTimer>=60){ e._poisonTickTimer=0; e.hp-=e.poisonDmgPerSec; }
       if(e.poisonTimer<=0){
         e.poisoned=false; e._poisonTickTimer=0;
-        // Restore speed slow
-        if(e.poisonSlowApplied){
-          e.speed/=0.90; e.baseSpeed/=0.90;
-          e.poisonSlowApplied=false;
-        }
+        if(e.poisonSlowApplied){ e.speed/=0.90; e.baseSpeed/=0.90; e.poisonSlowApplied=false; }
       }
     }
 
@@ -1091,7 +1085,6 @@ function update(){
     if(e.type==='kameel'&&!e.kameelBoosted&&e.hp<=e.max*0.5){ e.kameelBoosted=true; e.kameelBoostTimer=60; e.speed*=4; e.baseSpeed*=4; }
     if(e.kameelBoosted&&e.kameelBoostTimer>0){ e.kameelBoostTimer--; if(e.kameelBoostTimer<=0){ e.kameelBoosted=false; e.speed/=4; e.baseSpeed/=4; } }
 
-    // Apply bird wind boost to speed
     let effectiveSpeed = e.speed;
     if(e.birdWindBoosted && !e.isBird) effectiveSpeed = e.speed * 1.3;
 
@@ -1122,24 +1115,11 @@ function update(){
     if(tw.boosted&&tw.boostEndTime>0){ tw.boostEndTime--; if(tw.boostEndTime<=0) tw.boosted=false; }
   }
 
-  // Update bird eggs - check projectile hits
-  const eggHits = new Set();
-  for(const p of projectiles){
-    for(let ei=0;ei<birdEggs.length;ei++){
-      const egg = birdEggs[ei];
-      if(Math.hypot(p.x-egg.x,p.y-egg.y)<15){
-        egg.destroyed=true;
-        p.dead=true;
-      }
-    }
-  }
-  // Hatch eggs after 3 seconds (180 frames) if not destroyed
+  // Egg hatching
   const eggsToHatch = birdEggs.filter(e=>e.timer<=0&&!e.destroyed);
   for(const egg of eggsToHatch){
-    // Spawn a new bird (child bird - cannot lay eggs)
     const childBird = makeEnemy({...animalTypes.find(a=>a.type==='vogel'), hp: Math.floor(animalTypes.find(a=>a.type==='vogel').hp*(1+round*0.14)), speed: 1.4*(1+round*0.02), reward:15});
     childBird.isBird=true; childBird.isChildBird=true; childBird.windRadius=80; childBird.eggLaid=false;
-    // Find closest path point near egg
     let closestI=0, closestDist=999999;
     for(let pi=0;pi<path.length;pi++){
       const d2=Math.hypot(path[pi].x-egg.x,path[pi].y-egg.y);
@@ -1148,12 +1128,19 @@ function update(){
     childBird.i=Math.max(0,closestI-1); childBird.x=egg.x; childBird.y=egg.y;
     enemies.push(childBird);
   }
+
+  // Handle projectile/egg collision
+  for(const p of projectiles){
+    for(let ei=0;ei<birdEggs.length;ei++){
+      const egg = birdEggs[ei];
+      if(Math.hypot(p.x-egg.x,p.y-egg.y)<15){ egg.destroyed=true; p.dead=true; }
+    }
+  }
   birdEggs = birdEggs.filter(e=>e.timer>0&&!e.destroyed);
 
   for(const banana of bananas){
     banana.lifetime--;
     for(const e of enemies){
-      // Bananas can't hit birds
       if(e.isBird) continue;
       if(Math.hypot(e.x-banana.x,e.y-banana.y)<e.size+10){ e.hp-=banana.dmg; banana.dead=true; break; }
     }
@@ -1191,7 +1178,6 @@ function update(){
     const target=enemies.find(e=>{
       if(tw.key==='tsjaadinator'&&tw.secret){ if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')) return false; return true; }
       if(Math.hypot(e.x-tw.x,e.y-tw.y)>=effectiveRange) return false;
-      // Robo Leeuw: immune to guns and sniper
       if(e.isRoboLeeuw && (tw.key==='geweer'||tw.key==='sniper')) return false;
       if((e.mutation==='metalen'||e.mutation2==='metalen')&&tw.key!=='atoom') return false;
       if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')&&(tw.key==='geweer'||tw.key==='sniper')) return false;
@@ -1205,14 +1191,8 @@ function update(){
       finalDmg=tw.dmg*11.0;
       if(tw.secretDmgBonus) finalDmg*=tw.secretDmgBonus;
     }
-    // Plaag dokter damage bonus if target has been debuffed
-    if(tw.key==='plaagdokter' && target.plaagDebuffed){
-      finalDmg *= (tw.plaagDmgBonus||1.05);
-    }
-    // Atoom: bonus damage vs burning enemies (20% base + 10% per upgrade)
-    if(tw.key==='atoom' && target.burning && target.burnDuration>0){
-      finalDmg *= (tw.fireBonusMultiplier||1.20);
-    }
+    if(tw.key==='plaagdokter' && target.plaagDebuffed){ finalDmg *= (tw.plaagDmgBonus||1.05); }
+    if(tw.key==='atoom' && target.burning && target.burnDuration>0){ finalDmg *= (tw.fireBonusMultiplier||1.20); }
 
     projectiles.push({
       x:tw.x,y:tw.y,tx:target.x,ty:target.y,target,
@@ -1220,7 +1200,12 @@ function update(){
       dmg:finalDmg,bomb:cfg.bomb,gold:tw.ultimate,secret:tw.secret||false,towerKey:tw.key,tower:tw,
       fire:tw.fire,
       fireBurnDmg: tw.fire ? (tw.ultimate ? 80 : 1) : 0,
-      poisonArrow: tw.key==='boog' && tw.poisonArrows
+      poisonArrow: tw.key==='boog' && tw.poisonArrows,
+      // NEW: pass sniper slow flag
+      sniperSlowOnHit: tw.key==='sniper' && tw.sniperSlowOnHit,
+      // NEW: pass speer ultimate aura flag
+      speerUltAura: tw.key==='speer' && tw.ultimate,
+      speerTower: tw.key==='speer' ? tw : null,
     });
     tw.cool=tw.rate*rateMultiplier*verslomendeSlow;
     if(tw.key==='sniper') playSound('sniper');
@@ -1235,25 +1220,43 @@ function update(){
       if(p.towerKey==='plaagdokter'){
         const tw2=p.tower;
         if(p.target.slowEndTime<=0||tw2.ultimate){ p.target.speed=p.target.baseSpeed*(1-tw2.slowAmount); p.target.slowEndTime=tw2.slowDuration; }
-        p.target.plaagDebuffed = true; // Mark as debuffed for damage bonus
+        p.target.plaagDebuffed = true;
       }
-      // Ultimate boog: poison (10% slow, 10 dmg/s for 3 sec)
       if(p.poisonArrow){
-        p.target.poisoned=true;
-        p.target.poisonTimer=180; // 3 seconds = 180 frames
-        p.target.poisonDmgPerSec=10;
-        if(!p.target.poisonSlowApplied){
-          p.target.speed*=0.90;
-          p.target.baseSpeed*=0.90;
-          p.target.poisonSlowApplied=true;
-        }
+        p.target.poisoned=true; p.target.poisonTimer=180; p.target.poisonDmgPerSec=10;
+        if(!p.target.poisonSlowApplied){ p.target.speed*=0.90; p.target.baseSpeed*=0.90; p.target.poisonSlowApplied=true; }
       }
       if(p.fire){
-        p.target.burning=true;
-        p.target.burnDuration=480;
-        p.target.burnTickTimer=0;
+        p.target.burning=true; p.target.burnDuration=480; p.target.burnTickTimer=0;
         p.target.burnDamagePerSec=Math.max(p.target.burnDamagePerSec||0, p.fireBurnDmg);
       }
+
+      // NEW: Sniper ultimate slow on hit (50% speed for 0.3s = 18 frames)
+      if(p.sniperSlowOnHit && p.target.hp > 0){
+        const slowFactor = 0.5;
+        // Only apply if not already slowed more
+        if(!p.target.sniperSlowed){
+          p.target.sniperSlowedPrevSpeed = p.target.speed;
+          p.target.sniperSlowedPrevBaseSpeed = p.target.baseSpeed;
+          p.target.speed *= slowFactor;
+          p.target.baseSpeed *= slowFactor;
+          p.target.sniperSlowed = true;
+        }
+        p.target.sniperSlowEndTime = 18; // 0.3s at 60fps
+      }
+
+      // NEW: Speer ultimate - give nearby towers +30% range for 3 seconds on shot hit
+      if(p.speerUltAura && p.speerTower){
+        const spTw = p.speerTower;
+        const auraRange = getTowerRange(spTw);
+        const boostUntil = Date.now() + 3000; // 3 seconds
+        for(const other of towers){
+          if(Math.hypot(other.x-spTw.x,other.y-spTw.y) <= auraRange){
+            other.speerRangeBoostUntil = Math.max(other.speerRangeBoostUntil||0, boostUntil);
+          }
+        }
+      }
+
       if(p.bomb) explosions.push({x:p.target.x,y:p.target.y,r:12,t:22,gold:p.gold});
       if(p.secret&&p.towerKey==='tsjaadinator'){
         explosions.push({x:p.target.x,y:p.target.y,r:5,t:20,gold:true,subtle:true});
@@ -1261,6 +1264,19 @@ function update(){
       }
       p.dead=true;
     } else { p.x+=dx/d*p.speed; p.y+=dy/d*p.speed; }
+  }
+
+  // Update sniper slow timers
+  for(const e of enemies){
+    if(e.sniperSlowed && e.sniperSlowEndTime > 0){
+      e.sniperSlowEndTime--;
+      if(e.sniperSlowEndTime <= 0){
+        // Restore speed
+        e.speed = e.sniperSlowedPrevSpeed || e.baseSpeed;
+        e.baseSpeed = e.sniperSlowedPrevBaseSpeed || e.baseSpeed;
+        e.sniperSlowed = false;
+      }
+    }
   }
 
   for(const ex of explosions){ ex.r+=2.5; ex.t--; }
@@ -1272,15 +1288,9 @@ function update(){
       if(e.boss){ winGame(); return false; }
 
       const hasOnstabiel = e.mutation==='onstabiele' || e.mutation2==='onstabiele';
-      // If killed before timer expired (not auto-exploded), NO explosion
-      if(hasOnstabiel && !e.onstabielExploded){
-        // No explosion - was killed early
-      } else if(hasOnstabiel && e.onstabielExploded){
-        // Already exploded via timer - already handled
-      }
+      if(hasOnstabiel && !e.onstabielExploded){ /* killed early, no explosion */ }
 
       if(e.mutation==='radioactieve'||e.mutation2==='radioactieve'){ triggerEnemyNuclearExplosion(e, false); }
-      // Robo Leeuw: also has radioactive explosion on death
       if(e.isRoboLeeuw){ triggerEnemyNuclearExplosion(e, false); }
 
       if(e.mutation==='ondode'||e.mutation2==='ondode'){ toSpawn.push(makeGhostEnemy(e)); }
@@ -1290,12 +1300,9 @@ function update(){
       if(e.mutation==='terugkerende'&&e.terugkerendeCount>0){ e.terugkerendeCount--; e.i=0; e.x=path[0].x; e.y=path[0].y; e.hp=e.max; return true; }
       if(e.type==='kameel'&&!e.kameelLionsSpawned){ e.kameelLionsSpawned=true; const hpScale=1+round*0.14; for(let l=0;l<4;l++){ const lion=makeEnemy({...animalTypes.find(a=>a.type==='leeuw'),hp:Math.floor(6*hpScale),speed:1.25*(1+round*0.02),reward:8}); lion.i=Math.max(0,e.i-1); lion.x=path[Math.max(0,e.i-1)].x+(Math.random()-0.5)*50; lion.y=path[Math.max(0,e.i-1)].y+(Math.random()-0.5)*50; toSpawn.push(lion); } }
 
-      // Bird: lay egg on death (only if not child bird)
       if(e.isBird && !e.isChildBird && !e.eggLaid){
         e.eggLaid=true;
-        // Find nearest point on path
-        let closestI=e.i;
-        birdEggs.push({x:e.x,y:e.y,timer:180,destroyed:false,pathI:closestI});
+        birdEggs.push({x:e.x,y:e.y,timer:180,destroyed:false,pathI:e.i});
       }
 
       const isArme=(e.mutation==='arme'||e.mutation2==='arme');
@@ -1434,18 +1441,15 @@ function drawEnemy(e){
   if(e.infected) ctx.globalAlpha=0.95;
   const baseColor=e.infected?'#4a5a2a':null;
 
-  // Bird: draw wind aura first
   if(e.isBird){
     const t_bird = Date.now() * 0.004;
     const radius = e.windRadius || 80;
     ctx.save();
     ctx.globalAlpha = 0.12 + Math.sin(t_bird*2)*0.05;
-    // Wind aura rings
     for(let wi=0;wi<3;wi++){
       const ringR = radius * (0.4 + wi * 0.3) + Math.sin(t_bird*3 + wi*1.0)*5;
       ctx.strokeStyle=`rgba(180,220,255,${0.5-wi*0.12})`;
-      ctx.lineWidth=2;
-      ctx.setLineDash([8,4]);
+      ctx.lineWidth=2; ctx.setLineDash([8,4]);
       ctx.beginPath(); ctx.arc(0,0,ringR,0,Math.PI*2); ctx.stroke();
     }
     ctx.setLineDash([]);
@@ -1479,97 +1483,62 @@ function drawEnemy(e){
   ctx.restore();
 }
 
-// NEW: Robo Leeuw - metallic lion with radioactive aura
 function drawRoboLeeuw(e){
   const t_r = Date.now()*0.005;
-  // Body - metallic/chrome
   const metalGrad = ctx.createRadialGradient(-4,-4,1,0,0,16);
-  metalGrad.addColorStop(0,'#e0e0e0');
-  metalGrad.addColorStop(0.4,'#8a8a9a');
-  metalGrad.addColorStop(0.7,'#555566');
-  metalGrad.addColorStop(1,'#222233');
-  ctx.fillStyle=metalGrad;
-  ctx.fillRect(-12,-8,22,14);
-  // Head
+  metalGrad.addColorStop(0,'#e0e0e0'); metalGrad.addColorStop(0.4,'#8a8a9a');
+  metalGrad.addColorStop(0.7,'#555566'); metalGrad.addColorStop(1,'#222233');
+  ctx.fillStyle=metalGrad; ctx.fillRect(-12,-8,22,14);
   ctx.fillStyle='#9090aa';
   ctx.beginPath(); ctx.arc(12,-2,8,0,Math.PI*2); ctx.fill();
-  // Mane (chrome rings)
   ctx.strokeStyle='#c0c0d0'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(12,-2,8,0,Math.PI*2); ctx.stroke();
   ctx.strokeStyle='#aaaacc'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.arc(12,-2,6,0,Math.PI*2); ctx.stroke();
-  // Eyes - glowing red (radioactive)
   ctx.fillStyle=`rgba(255,50,50,${0.7+Math.sin(t_r*3)*0.3})`;
   ctx.shadowBlur=5; ctx.shadowColor='#ff0000';
   ctx.beginPath(); ctx.arc(10,-4,2,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(14,-4,2,0,Math.PI*2); ctx.fill();
   ctx.shadowBlur=0;
-  // Tail
   ctx.strokeStyle='#8a8a9a'; ctx.lineWidth=3;
   ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(-20,2); ctx.stroke();
-  // Legs - angular robot legs
   ctx.fillStyle='#7a7a8a';
   ctx.fillRect(-10,6,4,8); ctx.fillRect(-2,6,4,8); ctx.fillRect(6,6,4,8);
-  // Radioactive symbol on body
   ctx.save(); ctx.translate(0,0); ctx.globalAlpha=0.6;
   drawRadiationSymbol(0,0,8);
   ctx.restore();
-  // Green radioactive glow
   ctx.strokeStyle=`rgba(0,255,100,${0.3+Math.sin(t_r*2)*0.15})`; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(0,0,e.size+5,0,Math.PI*2); ctx.stroke();
 }
 
-// NEW: Vogel - bird flying in air
 function drawVogel(e){
   const t_v = Date.now()*0.006;
   const wingFlap = Math.sin(t_v*4)*0.4;
-
-  // Shadow on ground (bird flies above)
-  ctx.save();
-  ctx.globalAlpha=0.15;
-  ctx.fillStyle='#000';
-  ctx.beginPath();
-  ctx.ellipse(0,8,12,4,0,0,Math.PI*2);
-  ctx.fill();
-  ctx.restore();
-
-  // Body
+  ctx.save(); ctx.globalAlpha=0.15; ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.ellipse(0,8,12,4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
   ctx.fillStyle='#4a7ab8';
   ctx.beginPath(); ctx.ellipse(0,0,9,6,0,0,Math.PI*2); ctx.fill();
-  // Head
   ctx.fillStyle='#3a6aa8';
   ctx.beginPath(); ctx.arc(8,-2,5,0,Math.PI*2); ctx.fill();
-  // Beak
   ctx.fillStyle='#ffa500';
   ctx.beginPath(); ctx.moveTo(12,-2); ctx.lineTo(16,-1); ctx.lineTo(12,0); ctx.fill();
-  // Eye
   ctx.fillStyle='#111';
   ctx.beginPath(); ctx.arc(9,-3,1.5,0,Math.PI*2); ctx.fill();
   ctx.fillStyle='#fff';
   ctx.beginPath(); ctx.arc(9.5,-3.5,0.6,0,Math.PI*2); ctx.fill();
-  // Wings
-  ctx.save();
-  ctx.rotate(wingFlap);
+  ctx.save(); ctx.rotate(wingFlap);
   ctx.fillStyle='#5a8ac8';
   ctx.beginPath(); ctx.moveTo(-2,0); ctx.lineTo(-14,-12); ctx.lineTo(-8,-2); ctx.closePath(); ctx.fill();
   ctx.fillStyle='#6a9ad8';
   ctx.beginPath(); ctx.moveTo(-2,0); ctx.lineTo(-14,-8); ctx.lineTo(-8,-1); ctx.closePath(); ctx.fill();
   ctx.restore();
-  ctx.save();
-  ctx.rotate(-wingFlap);
+  ctx.save(); ctx.rotate(-wingFlap);
   ctx.fillStyle='#5a8ac8';
   ctx.beginPath(); ctx.moveTo(2,0); ctx.lineTo(12,-12); ctx.lineTo(7,-2); ctx.closePath(); ctx.fill();
   ctx.restore();
-  // Tail
   ctx.fillStyle='#3a5a88';
   ctx.beginPath(); ctx.moveTo(-9,1); ctx.lineTo(-16,4); ctx.lineTo(-16,7); ctx.lineTo(-9,3); ctx.closePath(); ctx.fill();
-  // Child bird has slightly different color
-  if(e.isChildBird){
-    ctx.globalAlpha=0.3;
-    ctx.fillStyle='#ff9900';
-    ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
-  }
+  if(e.isChildBird){ ctx.globalAlpha=0.3; ctx.fillStyle='#ff9900'; ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1; }
 }
 
 function drawMutationEffects(e){
@@ -1586,17 +1555,22 @@ function drawMutationEffects(e){
     if(mutation==='beschermde'&&e.beschermdActive){ ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=4; ctx.shadowBlur=15; ctx.shadowColor='#fff'; ctx.beginPath(); ctx.arc(0,0,e.size+6,0,Math.PI*2); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.beginPath(); ctx.arc(0,0,e.size+6,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
   }
   if(e.slowEndTime>0){ ctx.strokeStyle='#9333ea'; ctx.lineWidth=2; ctx.globalAlpha=0.5; ctx.beginPath(); ctx.arc(0,0,e.size+3,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; }
+  // Sniper slow indicator
+  if(e.sniperSlowed && e.sniperSlowEndTime > 0){
+    ctx.strokeStyle='rgba(150,220,255,0.9)'; ctx.lineWidth=3;
+    ctx.shadowBlur=8; ctx.shadowColor='#88ccff';
+    ctx.beginPath(); ctx.arc(0,0,e.size+7,0,Math.PI*2); ctx.stroke(); ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(150,220,255,0.12)';
+    ctx.beginPath(); ctx.arc(0,0,e.size+7,0,Math.PI*2); ctx.fill();
+  }
 
-  // Poison effect (ultimate boog)
   if(e.poisoned&&e.poisonTimer>0){
     const t_p = Date.now()*0.005;
     const alpha = 0.5 + Math.sin(t_p*3)*0.2;
-    // Bubbling poison rings
     ctx.strokeStyle=`rgba(50,220,50,${alpha})`; ctx.lineWidth=2.5;
     ctx.shadowBlur=8; ctx.shadowColor='#00ff44';
     ctx.beginPath(); ctx.arc(0,0,e.size+5+Math.sin(t_p*4)*2,0,Math.PI*2); ctx.stroke();
     ctx.shadowBlur=0;
-    // Poison drip particles
     for(let pi=0;pi<3;pi++){
       const angle = t_p*2 + pi*Math.PI*0.67;
       const px2 = Math.cos(angle)*(e.size+3);
@@ -1604,7 +1578,6 @@ function drawMutationEffects(e){
       ctx.fillStyle=`rgba(0,255,80,${0.7+Math.sin(t_p*5+pi)*0.2})`;
       ctx.beginPath(); ctx.arc(px2,py2,2.5,0,Math.PI*2); ctx.fill();
     }
-    // Toxic fill overlay
     ctx.fillStyle=`rgba(0,200,50,0.07)`;
     ctx.beginPath(); ctx.arc(0,0,e.size+5,0,Math.PI*2); ctx.fill();
   }
@@ -1622,18 +1595,13 @@ function drawMutationEffects(e){
       ctx.save();
       ctx.globalAlpha = flameIntensity * (0.6 + Math.sin(t_fire * 5 + fi) * 0.3);
       const flameGrad = ctx.createRadialGradient(fx2, fy2, 0, fx2, fy2, flameH);
-      flameGrad.addColorStop(0, 'rgba(255,220,50,1)');
-      flameGrad.addColorStop(0.3, 'rgba(255,100,0,0.9)');
-      flameGrad.addColorStop(0.7, 'rgba(200,20,0,0.5)');
-      flameGrad.addColorStop(1, 'rgba(100,0,0,0)');
+      flameGrad.addColorStop(0, 'rgba(255,220,50,1)'); flameGrad.addColorStop(0.3, 'rgba(255,100,0,0.9)');
+      flameGrad.addColorStop(0.7, 'rgba(200,20,0,0.5)'); flameGrad.addColorStop(1, 'rgba(100,0,0,0)');
       ctx.fillStyle = flameGrad;
       ctx.beginPath();
-      ctx.moveTo(fx2, fy2 + flameH * 0.3);
-      ctx.quadraticCurveTo(fx2 - flameH*0.2, fy2 - flameH*0.2, fx2, fy2 - flameH);
+      ctx.moveTo(fx2, fy2 + flameH * 0.3); ctx.quadraticCurveTo(fx2 - flameH*0.2, fy2 - flameH*0.2, fx2, fy2 - flameH);
       ctx.quadraticCurveTo(fx2 + flameH*0.2, fy2 - flameH*0.3, fx2 + flameH*0.15, fy2 + flameH*0.2);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      ctx.closePath(); ctx.fill(); ctx.restore();
     }
   }
 
@@ -1648,7 +1616,6 @@ function drawMutationEffects(e){
     if(mutation==='verslomende'){ ctx.strokeStyle='rgba(100,100,255,0.4)'; ctx.lineWidth=1; ctx.setLineDash([3,3]); ctx.globalAlpha=0.3; ctx.beginPath(); ctx.arc(0,0,120,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; }
     if(mutation==='onzichtbare'){ ctx.strokeStyle='rgba(200,200,255,0.5)'; ctx.lineWidth=2; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.arc(0,0,e.size+3,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
     if(mutation==='kogelvrije'){ ctx.strokeStyle='rgba(200,150,50,0.6)'; ctx.lineWidth=3; ctx.setLineDash([4,2]); ctx.beginPath(); ctx.arc(0,0,e.size+2,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); }
-    // NEW: Onstabiele - pulsing orange/red glow
     if(mutation==='onstabiele'){
       const t_ons = Date.now()*0.01;
       const pulseFast = Math.sin(t_ons*5)*0.4+0.6;
@@ -1677,19 +1644,16 @@ function drawEnemyHUD(e){
   }
   if(e.burning&&e.burnDuration>0){ ctx.fillStyle='rgba(255,120,0,0.9)'; ctx.font='bold 8px Arial'; ctx.fillText('🔥'+(e.burnDamagePerSec||0).toFixed(1)+'/s',0,-48); }
   if(e.poisoned&&e.poisonTimer>0){ ctx.fillStyle='rgba(0,255,80,0.95)'; ctx.font='bold 8px Arial'; ctx.fillText('☠️10/s',e.burning?22:0,-48); }
-  // Onstabiele countdown
+  // Sniper slow
+  if(e.sniperSlowed&&e.sniperSlowEndTime>0){ ctx.fillStyle='rgba(150,220,255,0.95)'; ctx.font='bold 8px Arial'; ctx.fillText('❄️-50%',0,-56); }
   const hasOnstabiel = e.mutation==='onstabiele'||e.mutation2==='onstabiele';
   if(hasOnstabiel&&!e.onstabielExploded&&e.onstabielTimer>0){
     const secsLeft = Math.ceil(e.onstabielTimer/60);
     ctx.fillStyle=secsLeft<=2?'#ff0000':'#ff8800';
     ctx.font='bold 11px Arial'; ctx.textAlign='center';
-    ctx.fillText('💥'+secsLeft+'s',0,-56);
+    ctx.fillText('💥'+secsLeft+'s',0,-64);
   }
-  // Plaag debuff indicator
-  if(e.plaagDebuffed){
-    ctx.fillStyle='rgba(233,30,99,0.8)'; ctx.font='7px Arial';
-    ctx.fillText('💉',barW/2+4,-24);
-  }
+  if(e.plaagDebuffed){ ctx.fillStyle='rgba(233,30,99,0.8)'; ctx.font='7px Arial'; ctx.fillText('💉',barW/2+4,-24); }
 }
 
 function drawOlifant(e,baseColor){ ctx.fillStyle=baseColor||'#8b8b8b'; ctx.beginPath(); ctx.ellipse(0,0,16,12,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(14,-2,8,7,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=baseColor||'#8b8b8b'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(20,-2); ctx.quadraticCurveTo(26,4,24,10); ctx.stroke(); ctx.fillStyle=e.infected?'#3a4a1a':'#7a7a7a'; ctx.beginPath(); ctx.ellipse(12,-8,5,6,0,0,Math.PI*2); ctx.fill(); ctx.fillRect(-12,8,4,6); ctx.fillRect(-4,8,4,6); ctx.fillRect(4,8,4,6); ctx.fillRect(12,8,4,6); }
@@ -1709,12 +1673,24 @@ function drawTower(tw){
   const scale=1+tw.level*0.05;
   ctx.save(); ctx.translate(tw.x,tw.y); ctx.scale(scale,scale);
 
-  // Show range circle only on hover
   const isHovered = hoveredTower===tw;
   if(isHovered){
     const effRange = getTowerRange(tw) / scale;
     ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]);
     ctx.beginPath(); ctx.arc(0,0,effRange,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // NEW: Show speer range boost aura circle when active
+  if(tw.key==='speer' && tw.ultimate && tw.speerRangeBoostUntil && Date.now() < tw.speerRangeBoostUntil){
+    const effRange = getTowerRange(tw) / scale;
+    const timeLeft = tw.speerRangeBoostUntil - Date.now();
+    const alpha = Math.min(1, timeLeft/500) * 0.4;
+    ctx.strokeStyle=`rgba(200,220,255,${alpha+0.2})`; ctx.lineWidth=2; ctx.setLineDash([3,3]);
+    ctx.shadowBlur=10; ctx.shadowColor='rgba(150,200,255,0.7)';
+    ctx.beginPath(); ctx.arc(0,0,effRange,0,Math.PI*2); ctx.stroke();
+    ctx.shadowBlur=0; ctx.setLineDash([]);
+    ctx.fillStyle=`rgba(150,200,255,${alpha*0.3})`;
+    ctx.beginPath(); ctx.arc(0,0,effRange,0,Math.PI*2); ctx.fill();
   }
 
   if(tw.nuclearSlowUntil&&Date.now()<tw.nuclearSlowUntil){ ctx.strokeStyle='rgba(0,255,0,0.6)'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.stroke(); ctx.fillStyle='rgba(0,255,0,0.1)'; ctx.beginPath(); ctx.arc(0,0,22,0,Math.PI*2); ctx.fill(); }
@@ -1746,11 +1722,43 @@ function drawTower(tw){
 
 function drawAapTower(tw){ const isUltimate=tw.ultimate; const monkeyColor=isUltimate?'#ffd700':'#8b4513'; const faceColor=isUltimate?'#ffed4e':'#d2691e'; const eyeColor=isUltimate?'#ff4500':'#000'; ctx.fillStyle=monkeyColor; ctx.beginPath(); ctx.ellipse(0,2,10,12,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(0,-6,8,0,Math.PI*2); ctx.fill(); ctx.fillStyle=faceColor; ctx.beginPath(); ctx.ellipse(0,-5,5,6,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle=eyeColor; ctx.beginPath(); ctx.arc(-3,-7,isUltimate?2:1.5,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(3,-7,isUltimate?2:1.5,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=eyeColor; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,-3,2,0,Math.PI); ctx.stroke(); ctx.fillStyle=monkeyColor; ctx.beginPath(); ctx.arc(-7,-6,3,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(7,-6,3,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=monkeyColor; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(-12,6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(12,6); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-4,12); ctx.lineTo(-6,18); ctx.stroke(); ctx.beginPath(); ctx.moveTo(4,12); ctx.lineTo(6,18); ctx.stroke(); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(8,8); ctx.quadraticCurveTo(15,5,12,-2); ctx.stroke(); }
 function drawFakkelTower(tw){ ctx.fillStyle=tw.ultimate?'#ff6b35':'#8b4513'; ctx.fillRect(-8,-10,16,20); ctx.fillStyle='#d2b48c'; ctx.beginPath(); ctx.arc(0,-12,6,0,Math.PI*2); ctx.fill(); ctx.fillStyle=tw.ultimate?'#ff4500':'#8b7355'; ctx.fillRect(8,-8,3,12); ctx.fillStyle=tw.ultimate?'#ff0000':'#ff8800'; ctx.beginPath(); ctx.moveTo(9.5,-10); ctx.lineTo(7,-16); ctx.lineTo(9.5,-14); ctx.lineTo(12,-16); ctx.closePath(); ctx.fill(); if(tw.level>=2){ ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.arc(9.5,-13,2,0,Math.PI*2); ctx.fill(); } if(tw.level>=3){ ctx.fillStyle='#ff4500'; ctx.beginPath(); ctx.moveTo(9.5,-16); ctx.lineTo(6,-22); ctx.lineTo(9.5,-19); ctx.lineTo(13,-22); ctx.closePath(); ctx.fill(); } if(tw.ultimate){ ctx.strokeStyle='#ff0000'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; ctx.fillStyle='rgba(255,50,0,0.8)'; ctx.beginPath(); ctx.moveTo(9.5,-20); ctx.lineTo(5,-30); ctx.lineTo(9.5,-26); ctx.lineTo(14,-30); ctx.closePath(); ctx.fill(); } }
-function drawSpeerTower(tw){ ctx.fillStyle=tw.ultimate?'#9b59b6':'#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=tw.ultimate?'#8e44ad':'#e0e0e0'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#dcd6f7':'#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill(); if(tw.level>=2){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-6); ctx.lineTo(8,-6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,-6); ctx.lineTo(4,-9); ctx.lineTo(4,-3); ctx.fill(); } if(tw.level>=3){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,6); ctx.lineTo(8,6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(4,3); ctx.lineTo(4,9); ctx.fill(); } }
+
+function drawSpeerTower(tw){
+  // Draw range aura effect when boosted (pulsing purple glow for ultimate)
+  if(tw.ultimate && tw.speerRangeBoostUntil && Date.now() < tw.speerRangeBoostUntil){
+    ctx.fillStyle='rgba(180,150,255,0.25)'; ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle=tw.ultimate?'#9b59b6':'#3f8f4a'; ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=tw.ultimate?'#8e44ad':'#e0e0e0'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(12,0); ctx.stroke();
+  ctx.fillStyle=tw.ultimate?'#dcd6f7':'#ccc'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(6,-4); ctx.lineTo(6,4); ctx.fill();
+  if(tw.level>=2){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,-6); ctx.lineTo(8,-6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,-6); ctx.lineTo(4,-9); ctx.lineTo(4,-3); ctx.fill(); }
+  if(tw.level>=3){ ctx.strokeStyle='#e0e0e0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-8,6); ctx.lineTo(8,6); ctx.stroke(); ctx.fillStyle='#ccc'; ctx.beginPath(); ctx.moveTo(8,6); ctx.lineTo(4,3); ctx.lineTo(4,9); ctx.fill(); }
+  // Ultimate: extra radiant rings
+  if(tw.ultimate){
+    ctx.strokeStyle='rgba(180,150,255,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.stroke();
+  }
+}
+
 function drawBoogTower(tw){ ctx.strokeStyle=tw.ultimate?'#00ff44':'#c68642'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(0,0,10,-Math.PI/2,Math.PI/2); if(tw.ultimate){ctx.shadowBlur=10;ctx.shadowColor='#00ff44';} ctx.stroke(); ctx.shadowBlur=0; ctx.strokeStyle=tw.ultimate?'#aaffcc':'#fff'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,-10); ctx.lineTo(0,10); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#006622':'#8b5a2b'; ctx.fillRect(-3,-3,6,6); if(tw.level>=2){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(-6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } if(tw.level>=3){ ctx.strokeStyle='#c68642'; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(6,0,8,-Math.PI/2,Math.PI/2); ctx.stroke(); } }
 function drawPlaagdokterTower(tw){ ctx.fillStyle=tw.ultimate?'#ffd700':'#e91e63'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillRect(-2,-7,4,14); ctx.fillRect(-7,-2,14,4); if(tw.level>=2){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(8,-8); ctx.lineTo(11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(10,-12,2,2); } if(tw.level>=3){ ctx.strokeStyle=tw.ultimate?'#ffd700':'#c2185b'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(-8,-8); ctx.lineTo(-11,-11); ctx.stroke(); ctx.fillStyle=tw.ultimate?'#ffd700':'#fff'; ctx.fillRect(-12,-12,2,2); ctx.beginPath(); ctx.moveTo(8,8); ctx.lineTo(11,11); ctx.stroke(); ctx.fillRect(10,10,2,2); } if(tw.ultimate){ ctx.strokeStyle='#ffed4e'; ctx.lineWidth=3; ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(0,0,13,0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; } }
 function drawGeweerTower(tw){ ctx.fillStyle=tw.ultimate?'#2c3e50':'#444'; ctx.fillRect(-8,-6,16,12); ctx.fillStyle=tw.ultimate?'#2980b9':'#777'; ctx.fillRect(8,-2,10,4); ctx.fillStyle=tw.ultimate?'#ecf0f1':'#999'; ctx.fillRect(-4,-14,8,6); if(tw.level>=2){ ctx.fillStyle='#777'; ctx.fillRect(-7,3,2,8); ctx.fillRect(5,3,2,8); } if(tw.level>=3){ ctx.strokeStyle='#888'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,-4,7,0,Math.PI); ctx.stroke(); } }
-function drawSniperTower(tw){ ctx.fillStyle=tw.ultimate?'#01579b':'#0d47a1'; ctx.fillRect(-7,-6,14,12); ctx.fillStyle=tw.ultimate?'#263238':'#37474f'; ctx.fillRect(7,-2,18,4); ctx.fillStyle=tw.ultimate?'#ffd700':'#546e7a'; ctx.beginPath(); ctx.arc(-2,-9,4,0,Math.PI*2); ctx.fill(); ctx.fillRect(-4,-10,4,2); if(tw.level>=2){ ctx.fillStyle=tw.ultimate?'#01579b':'#1565c0'; ctx.fillRect(20,-1,5,2); } if(tw.level>=3){ ctx.fillStyle=tw.ultimate?'#ffd700':'#78909c'; ctx.fillRect(-7,6,3,6); ctx.fillRect(4,6,3,6); } if(tw.ultimate){ ctx.strokeStyle='#00e5ff'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.strokeRect(-8,-7,16,14); ctx.globalAlpha=1; } }
+
+function drawSniperTower(tw){
+  ctx.fillStyle=tw.ultimate?'#01579b':'#0d47a1'; ctx.fillRect(-7,-6,14,12);
+  ctx.fillStyle=tw.ultimate?'#263238':'#37474f'; ctx.fillRect(7,-2,18,4);
+  ctx.fillStyle=tw.ultimate?'#ffd700':'#546e7a'; ctx.beginPath(); ctx.arc(-2,-9,4,0,Math.PI*2); ctx.fill(); ctx.fillRect(-4,-10,4,2);
+  if(tw.level>=2){ ctx.fillStyle=tw.ultimate?'#01579b':'#1565c0'; ctx.fillRect(20,-1,5,2); }
+  if(tw.level>=3){ ctx.fillStyle=tw.ultimate?'#ffd700':'#78909c'; ctx.fillRect(-7,6,3,6); ctx.fillRect(4,6,3,6); }
+  if(tw.ultimate){
+    ctx.strokeStyle='#00e5ff'; ctx.lineWidth=2; ctx.globalAlpha=0.7; ctx.strokeRect(-8,-7,16,14); ctx.globalAlpha=1;
+    // Sniper ultimate: ice/frost ring indicating slow ability
+    ctx.strokeStyle='rgba(150,220,255,0.5)'; ctx.lineWidth=1.5; ctx.setLineDash([3,2]);
+    ctx.beginPath(); ctx.arc(0,0,14,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+  }
+}
+
 function drawAtoomTower(tw){ ctx.fillStyle=tw.ultimate?'#e74c3c':'#4caf50'; ctx.beginPath(); ctx.arc(0,0,10,0,Math.PI*2); ctx.fill(); ctx.fillStyle=tw.ultimate?'#e67e22':'#b2ffb2'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill(); const symbols=tw.level>=3?4:3; ctx.strokeStyle='#000'; ctx.lineWidth=2; for(let i=0;i<symbols;i++){ ctx.save(); ctx.rotate(i*Math.PI*2/symbols); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-8); ctx.stroke(); ctx.restore(); } if(tw.level>=3){ ctx.fillStyle='#76ff03'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill(); } }
 function drawKatoenTower(tw){ ctx.fillStyle=tw.ultimate?'#27ae60':'#e8e2b8'; ctx.fillRect(-12,-12,24,24); ctx.fillStyle=tw.ultimate?'#2ecc71':'#fff'; ctx.beginPath(); ctx.arc(0,0,7,0,Math.PI*2); ctx.fill(); const bollen=[[0,0],[-4,-4],[4,-4],[4,4],[-4,4]]; for(let i=1;i<=tw.level&&i<bollen.length;i++){ ctx.beginPath(); ctx.arc(bollen[i][0],bollen[i][1],3,0,Math.PI*2); ctx.fill(); } }
 function drawTsjaadinator(tw){
@@ -1765,12 +1773,9 @@ function drawTsjaadinator(tw){
     ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,16); ctx.stroke();
     ctx.restore();
     const coreGrad=ctx.createRadialGradient(0,0,0,0,0,11);
-    coreGrad.addColorStop(0,'rgba(255,255,255,0.9)');
-    coreGrad.addColorStop(0.3,'rgba(255,215,0,0.85)');
-    coreGrad.addColorStop(0.7,'rgba(255,102,0,0.8)');
-    coreGrad.addColorStop(1,'rgba(255,0,0,0.7)');
-    ctx.fillStyle=coreGrad;
-    ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
+    coreGrad.addColorStop(0,'rgba(255,255,255,0.9)'); coreGrad.addColorStop(0.3,'rgba(255,215,0,0.85)');
+    coreGrad.addColorStop(0.7,'rgba(255,102,0,0.8)'); coreGrad.addColorStop(1,'rgba(255,0,0,0.7)');
+    ctx.fillStyle=coreGrad; ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2); ctx.fill();
     ctx.shadowBlur=0;
     return;
   }
@@ -1791,27 +1796,15 @@ function drawRadiationSymbol(x,y,r){
 
 function drawBananas(){ for(const banana of bananas){ ctx.save(); ctx.translate(banana.x,banana.y); ctx.rotate(-0.3); ctx.fillStyle='#ffeb3b'; ctx.beginPath(); ctx.moveTo(-8,0); ctx.quadraticCurveTo(-6,-4,0,-5); ctx.quadraticCurveTo(6,-4,8,0); ctx.quadraticCurveTo(6,2,0,3); ctx.quadraticCurveTo(-6,2,-8,0); ctx.fill(); ctx.strokeStyle='#f9a825'; ctx.lineWidth=1; ctx.stroke(); ctx.restore(); } }
 
-// Draw bird eggs on path
 function drawBirdEggs(){
   for(const egg of birdEggs){
     ctx.save(); ctx.translate(egg.x, egg.y);
     const pulseFrac = 1 - egg.timer/180;
     const crackAmount = pulseFrac;
-    // Egg shape
-    ctx.fillStyle='#f5e6c8';
-    ctx.beginPath(); ctx.ellipse(0,0,7,9,0,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#c4a567'; ctx.lineWidth=1.5;
-    ctx.beginPath(); ctx.ellipse(0,0,7,9,0,0,Math.PI*2); ctx.stroke();
-    // Crack lines as egg gets close to hatching
-    if(crackAmount>0.4){
-      ctx.strokeStyle=`rgba(180,100,50,${crackAmount})`;
-      ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(0,-9); ctx.lineTo(-3,-2); ctx.lineTo(2,4); ctx.stroke();
-    }
-    if(crackAmount>0.7){
-      ctx.beginPath(); ctx.moveTo(3,-8); ctx.lineTo(5,-1); ctx.stroke();
-    }
-    // Timer text
+    ctx.fillStyle='#f5e6c8'; ctx.beginPath(); ctx.ellipse(0,0,7,9,0,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#c4a567'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.ellipse(0,0,7,9,0,0,Math.PI*2); ctx.stroke();
+    if(crackAmount>0.4){ ctx.strokeStyle=`rgba(180,100,50,${crackAmount})`; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(0,-9); ctx.lineTo(-3,-2); ctx.lineTo(2,4); ctx.stroke(); }
+    if(crackAmount>0.7){ ctx.beginPath(); ctx.moveTo(3,-8); ctx.lineTo(5,-1); ctx.stroke(); }
     const secsLeft = Math.ceil(egg.timer/60);
     ctx.fillStyle='#ff6600'; ctx.font='bold 8px Arial'; ctx.textAlign='center';
     ctx.fillText(secsLeft+'s',0,-13);
@@ -1828,9 +1821,15 @@ function drawProjectiles(){
       ctx.fillStyle=p.gold?'#ffd700':flameColors[Math.floor(Date.now()*0.02)%3]; ctx.shadowBlur=8; ctx.shadowColor='#ff6600';
       ctx.beginPath(); ctx.moveTo(-4,0); ctx.quadraticCurveTo(0,-5,8,-2); ctx.quadraticCurveTo(12,0,8,2); ctx.quadraticCurveTo(0,5,-4,0); ctx.fill(); ctx.shadowBlur=0;
     } else if(p.towerKey==='plaagdokter'){ ctx.strokeStyle=p.gold?'#ffd700':'#e91e63'; ctx.fillStyle=p.gold?'#ffd700':'#f8bbd0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-6,0); ctx.lineTo(6,0); ctx.stroke(); ctx.fillStyle=p.gold?'#ffd700':'#e91e63'; ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(9,-2); ctx.lineTo(9,2); ctx.closePath(); ctx.fill(); ctx.fillRect(-8,-1,3,2); }
-    else if(p.towerKey==='sniper'){ ctx.fillStyle=p.gold?'#ffd700':'#ffeb3b'; ctx.beginPath(); ctx.ellipse(0,0,4,1.5,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=p.gold?'#ff6b35':'#ff9800'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(-8,0); ctx.stroke(); }
+    else if(p.towerKey==='sniper'){
+      // Sniper ultimate projectile has ice/blue tint
+      ctx.fillStyle=p.sniperSlowOnHit?'rgba(150,220,255,0.95)':(p.gold?'#ffd700':'#ffeb3b');
+      ctx.beginPath(); ctx.ellipse(0,0,4,1.5,0,0,Math.PI*2); ctx.fill();
+      if(p.sniperSlowOnHit){ ctx.shadowBlur=6; ctx.shadowColor='#88ddff'; ctx.strokeStyle='rgba(100,200,255,0.8)'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(0,0,4,1.5,0,0,Math.PI*2); ctx.stroke(); ctx.shadowBlur=0; }
+      ctx.strokeStyle=p.sniperSlowOnHit?'rgba(100,180,255,0.7)':(p.gold?'#ff6b35':'#ff9800'); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(-5,0); ctx.lineTo(-8,0); ctx.stroke();
+    }
     else if(p.towerKey==='atoom'){ ctx.fillStyle=p.gold?'#ffd700':'#2d5016'; ctx.strokeStyle=p.gold?'#ffed4e':'#4caf50'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill(); ctx.stroke(); }
-    else if(p.towerKey==='speer'){ ctx.strokeStyle=p.gold?'#ffd700':'#8b7355'; ctx.fillStyle=p.gold?'#ffd700':'#c0c0c0'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(6,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(11,-3); ctx.lineTo(11,3); ctx.closePath(); ctx.fill(); }
+    else if(p.towerKey==='speer'){ ctx.strokeStyle=p.gold?'#ffd700':(p.speerUltAura?'#bb99ff':'#8b7355'); ctx.fillStyle=p.gold?'#ffd700':(p.speerUltAura?'#dcd6f7':'#c0c0c0'); ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-9,0); ctx.lineTo(6,0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(6,0); ctx.lineTo(11,-3); ctx.lineTo(11,3); ctx.closePath(); ctx.fill(); }
     else if(p.towerKey==='boog'){
       ctx.strokeStyle=p.poisonArrow?'#00ff44':(p.gold?'#ffd700':'#8b4513');
       ctx.fillStyle=p.poisonArrow?'#00cc33':(p.gold?'#ffd700':'#696969');
@@ -1838,12 +1837,7 @@ function drawProjectiles(){
       if(p.poisonArrow){ ctx.shadowBlur=6; ctx.shadowColor='#00ff44'; }
       ctx.beginPath(); ctx.moveTo(-8,0); ctx.lineTo(8,0); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(8,0); ctx.lineTo(11,-2.5); ctx.lineTo(11,2.5); ctx.closePath(); ctx.fill();
-      // Poison drip on arrow
-      if(p.poisonArrow){
-        ctx.fillStyle='rgba(0,255,80,0.8)';
-        ctx.beginPath(); ctx.arc(0,1,2,0,Math.PI*2); ctx.fill();
-        ctx.shadowBlur=0;
-      }
+      if(p.poisonArrow){ ctx.fillStyle='rgba(0,255,80,0.8)'; ctx.beginPath(); ctx.arc(0,1,2,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
     }
     else if(p.towerKey==='tsjaadinator'){
       if(p.secret){ ctx.fillStyle='rgba(255,215,0,0.85)'; ctx.strokeStyle='rgba(255,102,0,0.7)'; ctx.lineWidth=2; ctx.shadowBlur=8; ctx.shadowColor='rgba(255,215,0,0.5)'; ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(6,-4); ctx.lineTo(-8,-3); ctx.lineTo(-10,0); ctx.lineTo(-8,3); ctx.lineTo(6,4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.shadowBlur=0; }
@@ -1923,8 +1917,8 @@ function draw(){
 
 function loop(){ update(); draw(); if(!gameWon) requestAnimationFrame(loop); }
 
-console.log('🏜️ Tsjaad TD – Ultimate Edition v3 🐪');
-console.log('NEW: Robo Leeuw, Vogel, Onstabiele mutation, Plaagdokter rework, Sell system, Range upgrades, Tsjaad+ 50 rounds');
+console.log('🏜️ Tsjaad TD – Ultimate Edition v4 🐪');
+console.log('UPDATES: Speer Ultimate +30% range aura on shot | Sniper Ultimate 50% slow 0.3s on hit | Secret Tsjaadinator €300k (no tower removal) | UI tooltips updated');
 </script>
 </body>
 </html>

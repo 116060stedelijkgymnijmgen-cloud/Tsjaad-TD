@@ -489,6 +489,8 @@ const animalTypes=[
   {name:'Kameel',hp:28,speed:0.4,size:20,reward:35,type:'kameel',minRound:18},
   {name:'Robo Leeuw',hp:20,speed:1.25,size:16,reward:40,type:'roboleeuw',minRound:16},
   {name:'Vogel',hp:10,speed:1.4,size:13,reward:30,type:'vogel',minRound:16},
+  // Krokodil: same HP as Nijlpaard, immune to Sniper & Soldier, spawns after round 20 in all modes
+  {name:'Krokodil',hp:28,speed:0.75,size:20,reward:38,type:'krokodil',minRound:20},
 ];
 const bossType = {name:'Malaria Mug',hp:50000,speed:0.7,size:80,reward:1000,boss:true,type:'mug'};
 const mutatedBossType = {name:'Gemuteerde Malaria Mug',hp:5000000,speed:0.75,size:95,reward:2500,boss:true,type:'mutatedmug'};
@@ -976,6 +978,7 @@ function makeEnemy(t2){
     isChildBird: t2.isChildBird||false,
     eggLaid: false,
     isRoboLeeuw: t2.type==='roboleeuw',
+    isKrokodil: t2.type==='krokodil',
     onstabielTimer: 0,
     onstabielExploded: false,
   };
@@ -1179,6 +1182,8 @@ function update(){
       if(tw.key==='tsjaadinator'&&tw.secret){ if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')) return false; return true; }
       if(Math.hypot(e.x-tw.x,e.y-tw.y)>=effectiveRange) return false;
       if(e.isRoboLeeuw && (tw.key==='geweer'||tw.key==='sniper')) return false;
+      // Krokodil: immune to sniper and soldier (thick scales)
+      if(e.isKrokodil && (tw.key==='geweer'||tw.key==='sniper')) return false;
       if((e.mutation==='metalen'||e.mutation2==='metalen')&&tw.key!=='atoom') return false;
       if((e.mutation==='kogelvrije'||e.mutation2==='kogelvrije')&&(tw.key==='geweer'||tw.key==='sniper')) return false;
       if(e.mutation==='onzichtbare'||e.mutation2==='onzichtbare'){ let inRange=false; for(const otw of towers){ if(Math.hypot(e.x-otw.x,e.y-otw.y)<getTowerRange(otw)){ inRange=true; break; } } if(!inRange) return false; }
@@ -1466,6 +1471,7 @@ function drawEnemy(e){
 
   if(e.isRoboLeeuw) drawRoboLeeuw(e);
   else if(e.isBird) drawVogel(e);
+  else if(e.type==='krokodil') drawKrokodil(e,baseColor);
   else if(e.type==='olifant') drawOlifant(e,baseColor);
   else if(e.type==='neushoorn') drawNeushoorn(e,baseColor);
   else if(e.type==='giraffe') drawGiraffe(e,baseColor);
@@ -1654,6 +1660,8 @@ function drawEnemyHUD(e){
     ctx.fillText('💥'+secsLeft+'s',0,-64);
   }
   if(e.plaagDebuffed){ ctx.fillStyle='rgba(233,30,99,0.8)'; ctx.font='7px Arial'; ctx.fillText('💉',barW/2+4,-24); }
+  // Krokodil: show immunity indicator under name
+  if(e.isKrokodil){ ctx.fillStyle='rgba(255,215,0,0.9)'; ctx.font='bold 7px Arial'; ctx.textAlign='center'; ctx.fillText('🔫❌🎯❌',-barW/2+barW*0.5,-37); }
 }
 
 function drawOlifant(e,baseColor){ ctx.fillStyle=baseColor||'#8b8b8b'; ctx.beginPath(); ctx.ellipse(0,0,16,12,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(14,-2,8,7,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=baseColor||'#8b8b8b'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(20,-2); ctx.quadraticCurveTo(26,4,24,10); ctx.stroke(); ctx.fillStyle=e.infected?'#3a4a1a':'#7a7a7a'; ctx.beginPath(); ctx.ellipse(12,-8,5,6,0,0,Math.PI*2); ctx.fill(); ctx.fillRect(-12,8,4,6); ctx.fillRect(-4,8,4,6); ctx.fillRect(4,8,4,6); ctx.fillRect(12,8,4,6); }
@@ -1662,6 +1670,53 @@ function drawGiraffe(e,baseColor){ ctx.fillStyle=e.infected?'#6b6b00':'#daa520';
 function drawLeeuw(e,baseColor){ ctx.fillStyle='#cd853f'; ctx.fillRect(-12,-8,22,14); ctx.fillStyle='#8b6914'; ctx.beginPath(); ctx.arc(12,-2,8,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#cd853f'; ctx.beginPath(); ctx.arc(12,-2,5,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#cd853f'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(-12,0); ctx.lineTo(-20,2); ctx.stroke(); ctx.fillStyle='#cd853f'; ctx.fillRect(-8,6,3,8); ctx.fillRect(0,6,3,8); ctx.fillRect(8,6,3,8); }
 function drawCheetah(e,baseColor){ ctx.fillStyle=e.infected?'#6b6b00':'#daa520'; ctx.fillRect(-10,-6,20,11); ctx.beginPath(); ctx.arc(12,-1,6,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#000'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(14,-4); ctx.lineTo(14,2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(10,-4); ctx.lineTo(10,2); ctx.stroke(); ctx.fillStyle=e.infected?'#4a5a00':'#8b4513'; ctx.fillRect(-6,-3,2,2); ctx.fillRect(-2,-5,2,2); ctx.fillRect(2,-2,2,2); ctx.fillRect(6,-4,2,2); ctx.strokeStyle=e.infected?'#6b6b00':'#daa520'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-10,0); ctx.lineTo(-18,4); ctx.stroke(); ctx.fillRect(-7,5,2,9); ctx.fillRect(-1,5,2,9); ctx.fillRect(7,5,2,9); }
 function drawNijlpaard(e,baseColor){ ctx.fillStyle=e.infected?'#3a4a2a':'#5a5a5a'; ctx.beginPath(); ctx.ellipse(0,0,18,14,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle=e.infected?'#2a3a1a':'#4a4a4a'; ctx.fillRect(12,-10,14,16); ctx.fillStyle=e.infected?'#3a4a2a':'#5a5a5a'; ctx.beginPath(); ctx.ellipse(14,-9,3,2,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(24,-9,3,2,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#2a2a2a'; ctx.beginPath(); ctx.arc(16,-6,2,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(22,-6,2,0,Math.PI*2); ctx.fill(); ctx.fillStyle=e.infected?'#6b0000':'#ff69b4'; ctx.fillRect(14,2,12,4); ctx.fillStyle='#fff'; ctx.fillRect(16,2,2,3); ctx.fillRect(20,2,2,3); ctx.fillRect(24,2,2,3); ctx.fillStyle=e.infected?'#2a3a1a':'#4a4a4a'; ctx.fillRect(-14,8,6,10); ctx.fillRect(-4,8,6,10); ctx.fillRect(6,8,6,10); ctx.fillRect(16,8,6,10); }
+
+function drawKrokodil(e, baseColor){
+  const bodyCol = e.infected ? '#2a4a1a' : '#2d6a2d';
+  const scaleCol = e.infected ? '#1a3a0a' : '#1e4d1e';
+  const bellyCol = e.infected ? '#4a6a2a' : '#7aaa4a';
+  // Body
+  ctx.fillStyle = bodyCol;
+  ctx.beginPath(); ctx.ellipse(0, 2, 20, 10, 0, 0, Math.PI*2); ctx.fill();
+  // Back ridge spines
+  ctx.fillStyle = scaleCol;
+  for(let si = -3; si <= 3; si++){
+    const sx = si * 5;
+    ctx.beginPath(); ctx.moveTo(sx-3,-6); ctx.lineTo(sx,-13); ctx.lineTo(sx+3,-6); ctx.closePath(); ctx.fill();
+  }
+  ctx.strokeStyle='#3a8a3a'; ctx.lineWidth=0.8;
+  for(let si=-3;si<=3;si++){
+    const sx=si*5;
+    ctx.beginPath(); ctx.moveTo(sx-3,-6); ctx.lineTo(sx,-13); ctx.lineTo(sx+3,-6); ctx.stroke();
+  }
+  // Belly
+  ctx.fillStyle = bellyCol;
+  ctx.beginPath(); ctx.ellipse(0, 6, 16, 5, 0, 0, Math.PI*2); ctx.fill();
+  // Head - flat snout
+  ctx.fillStyle = bodyCol;
+  ctx.beginPath(); ctx.moveTo(14,-4); ctx.lineTo(26,-2); ctx.lineTo(28,2); ctx.lineTo(26,4); ctx.lineTo(14,6); ctx.closePath(); ctx.fill();
+  // Teeth
+  ctx.fillStyle = '#f0f0e0';
+  ctx.fillRect(20,-2,2,3); ctx.fillRect(24,-1,2,3); ctx.fillRect(18,3,2,2); ctx.fillRect(22,3,2,2);
+  // Eye - slit pupil
+  ctx.fillStyle='#d4aa00'; ctx.beginPath(); ctx.ellipse(16,-3,3,2,0,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.ellipse(16,-3,1,2,0,0,Math.PI*2); ctx.fill();
+  // Nostril
+  ctx.fillStyle='#1a4a1a'; ctx.beginPath(); ctx.arc(25,0,1.2,0,Math.PI*2); ctx.fill();
+  // Legs
+  ctx.fillStyle = scaleCol;
+  ctx.fillRect(-16,8,5,8); ctx.fillRect(-6,9,5,7); ctx.fillRect(4,9,5,7); ctx.fillRect(14,8,5,8);
+  // Tail
+  ctx.strokeStyle=bodyCol; ctx.lineWidth=7; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-20,2); ctx.quadraticCurveTo(-28,0,-30,6); ctx.stroke();
+  ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(-28,1); ctx.lineTo(-36,5); ctx.stroke();
+  // Tail spines
+  ctx.strokeStyle=scaleCol; ctx.lineWidth=1;
+  for(let ri=0;ri<4;ri++){ const rx=-20-ri*4; ctx.beginPath(); ctx.moveTo(rx,-1); ctx.lineTo(rx+1,-5); ctx.lineTo(rx+2,-1); ctx.stroke(); }
+  // Immunity shield indicator
+  ctx.fillStyle='rgba(255,215,0,0.9)'; ctx.font='bold 9px Arial'; ctx.textAlign='center';
+  ctx.fillText('🛡️',0,-20);
+}
 function drawKameel(e,baseColor){ const isRed=e.kameelBoosted; ctx.fillStyle=isRed?'#ff4400':(baseColor||'#c8860a'); ctx.beginPath(); ctx.ellipse(0,2,16,10,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(-5,-8,7,6,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(5,-6,6,5,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle=isRed?'#ff6600':(baseColor||'#d4961a'); ctx.beginPath(); ctx.arc(18,-2,7,0,Math.PI*2); ctx.fill(); ctx.fillRect(10,-4,10,4); ctx.fillStyle=isRed?'#ff4400':'#c8860a'; ctx.beginPath(); ctx.arc(16,-8,3,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(22,-8,3,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(20,-2,2,0,Math.PI*2); ctx.fill(); ctx.fillStyle=isRed?'#ff6600':'#a06a00'; ctx.fillRect(22,0,5,4); ctx.fillStyle=isRed?'#ff4400':(baseColor||'#c8860a'); ctx.fillRect(-12,10,4,12); ctx.fillRect(-4,10,4,12); ctx.fillRect(4,10,4,12); ctx.fillRect(12,10,4,12); ctx.strokeStyle=isRed?'#ff4400':'#a06a00'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-16,2); ctx.lineTo(-22,8); ctx.stroke(); }
 function drawMetalenEnemy(e){ const silverGrad=ctx.createRadialGradient(-5,-5,2,0,0,e.size*1.5); silverGrad.addColorStop(0,'#ffffff'); silverGrad.addColorStop(0.3,'#c0c0c0'); silverGrad.addColorStop(0.7,'#808080'); silverGrad.addColorStop(1,'#404040'); ctx.fillStyle=silverGrad; ctx.beginPath(); ctx.ellipse(0,0,e.size,e.size*0.7,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#a0a0a0'; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(0,0,e.size*0.7,e.size*0.5,0,0,Math.PI*2); ctx.stroke(); ctx.fillStyle='#606060'; const positions=[{x:e.size*0.6,y:0},{x:-e.size*0.6,y:0},{x:0,y:e.size*0.5},{x:0,y:-e.size*0.5}]; for(const pos of positions){ ctx.beginPath(); ctx.arc(pos.x,pos.y,3,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#c0c0c0'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pos.x-2,pos.y); ctx.lineTo(pos.x+2,pos.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(pos.x,pos.y-2); ctx.lineTo(pos.x,pos.y+2); ctx.stroke(); } ctx.fillStyle='#333'; ctx.font='bold 9px Arial'; ctx.textAlign='center'; ctx.fillText(e.type.toUpperCase().slice(0,3),0,3); }
 function drawMug(e){ ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.ellipse(0,0,12,5,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='rgba(200,200,255,0.3)'; ctx.beginPath(); ctx.ellipse(-8,-4,10,6,-0.3,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(8,-4,10,6,0.3,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1.5; for(let i=-1;i<=1;i++){ ctx.beginPath(); ctx.moveTo(i*6,4); ctx.lineTo(i*8,12); ctx.stroke(); } ctx.strokeStyle='#3a3a3a'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(20,0); ctx.stroke(); }
